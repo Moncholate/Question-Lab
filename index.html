@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Question Lab 🧩</title>
+<style>
+  :root{
+    --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
+    --wh:#8b5cf6; --aux:#3b82f6; --subj:#10b981; --verb:#f59e0b; --comp:#94a3b8; --new:#14b8a6;
+    --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
+    --shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --border:#334155;
+      --comp:#64748b; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.55;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem; flex:1;}
+  header{text-align:center; padding:1.4rem 0 .6rem;}
+  header h1{font-size:1.7rem; letter-spacing:-.02em;}
+  header p{color:var(--muted); font-size:.95rem; margin-top:.2rem;}
+
+  /* Tabs */
+  .tabs{display:flex; gap:.5rem; margin:1.2rem 0 1rem;}
+  .tab{
+    flex:1; padding:.7rem; border:1px solid var(--border); border-radius:12px;
+    background:var(--card); color:var(--muted); font-size:1rem; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .tab.active{color:var(--text); border-color:var(--aux); box-shadow:0 0 0 2px color-mix(in srgb, var(--aux) 25%, transparent);}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fadein .25s;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:1.1rem; margin-bottom:1rem; box-shadow:var(--shadow);
+  }
+  .card h2{font-size:1.02rem; margin-bottom:.6rem;}
+  .hint{color:var(--muted); font-size:.88rem;}
+
+  /* Analyze input */
+  .qinput{display:flex; gap:.5rem; margin-bottom:.6rem;}
+  .qinput input{
+    flex:1; padding:.85rem 1rem; font-size:1.05rem; border:1.5px solid var(--border);
+    border-radius:12px; background:var(--bg); color:var(--text); outline:none;
+  }
+  .qinput input:focus{border-color:var(--aux);}
+  button.primary{
+    padding:.85rem 1.2rem; font-size:1rem; font-weight:700; border:none; border-radius:12px;
+    background:var(--aux); color:#fff; cursor:pointer; transition:transform .1s;
+  }
+  button.primary:active{transform:scale(.96);}
+  .examples{display:flex; flex-wrap:wrap; gap:.4rem;}
+  .chip{
+    font-size:.82rem; padding:.3rem .7rem; border-radius:999px; border:1px solid var(--border);
+    background:transparent; color:var(--muted); cursor:pointer;
+  }
+  .chip:hover{border-color:var(--aux); color:var(--text);}
+
+  /* Lego blocks */
+  .blocks{display:flex; flex-wrap:wrap; gap:.45rem; align-items:flex-end;}
+  .block{
+    position:relative; padding:.9rem .8rem .55rem; border-radius:8px; color:#fff;
+    font-weight:700; font-size:1rem; min-width:2.6rem; text-align:center;
+    animation:pop .3s backwards;
+  }
+  .block::before{ /* lego studs */
+    content:""; position:absolute; top:.28rem; left:50%; transform:translateX(-50%);
+    width:60%; height:.28rem;
+    background:radial-gradient(circle at 25% 50%, rgba(255,255,255,.55) .12rem, transparent .13rem),
+               radial-gradient(circle at 75% 50%, rgba(255,255,255,.55) .12rem, transparent .13rem);
+  }
+  .block small{display:block; font-size:.62rem; font-weight:600; opacity:.85; margin-top:.05rem; text-transform:uppercase; letter-spacing:.04em;}
+  .block.wh{background:var(--wh);} .block.aux{background:var(--aux);}
+  .block.semiaux{background:#60a5fa;}
+  .block.subj{background:var(--subj);} .block.verb{background:var(--verb);}
+  .block.comp{background:var(--comp);} .block.new{background:transparent; color:var(--new); border:2px dashed var(--new);}
+  .block.new::before{display:none;}
+  @keyframes pop{from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);}}
+
+  .badges{display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.8rem;}
+  .badge{
+    padding:.35rem .8rem; border-radius:999px; font-size:.85rem; font-weight:700;
+    background:color-mix(in srgb, var(--aux) 14%, transparent); color:var(--aux);
+    border:1px solid color-mix(in srgb, var(--aux) 35%, transparent);
+  }
+  .badge.type{background:color-mix(in srgb, var(--wh) 14%, transparent); color:var(--wh);
+    border-color:color-mix(in srgb, var(--wh) 35%, transparent);}
+
+  .pingpong{margin-top:.9rem; padding-top:.9rem; border-top:1px dashed var(--border);}
+  .pingpong h3{font-size:.95rem; margin-bottom:.55rem;}
+  .ansline{display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin:.4rem 0;}
+  .ansline .tag{font-size:1.1rem; margin-right:.15rem;}
+  .note{
+    margin-top:.7rem; padding:.6rem .8rem; border-radius:10px; font-size:.86rem;
+    background:color-mix(in srgb, var(--warn) 12%, transparent);
+    border:1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  }
+  .errbox{
+    padding:.8rem 1rem; border-radius:12px; font-size:.95rem;
+    background:color-mix(in srgb, var(--err) 10%, transparent);
+    border:1px solid color-mix(in srgb, var(--err) 30%, transparent);
+  }
+
+  /* Build mode */
+  .prompt{font-size:1.05rem; font-weight:600; margin-bottom:.8rem;}
+  .slotarea{
+    min-height:3.6rem; border:2px dashed var(--border); border-radius:12px;
+    padding:.5rem; display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; margin-bottom:.8rem;
+    transition:border-color .2s;
+  }
+  .slotarea.correct{border-color:var(--ok);}
+  .slotarea.wrong{border-color:var(--err); animation:shake .35s;}
+  @keyframes shake{0%,100%{transform:none;} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);}}
+  .pool .block, .slotarea .block{cursor:pointer; user-select:none;}
+  .pool .block:hover, .slotarea .block:hover{filter:brightness(1.08);}
+  .buildmsg{min-height:1.5rem; font-size:.92rem; margin-bottom:.5rem;}
+  .buildmsg.ok{color:var(--ok); font-weight:700;}
+  .buildmsg.bad{color:var(--err);}
+  .buildbar{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+  .streak{font-weight:700; font-size:.95rem;}
+  button.ghost{
+    padding:.55rem 1rem; border-radius:10px; border:1px solid var(--border);
+    background:transparent; color:var(--muted); cursor:pointer; font-size:.9rem;
+  }
+  button.ghost:hover{color:var(--text);}
+  .progress{font-size:.85rem; color:var(--muted);}
+
+  /* Legend */
+  details{margin-bottom:1rem;}
+  summary{cursor:pointer; color:var(--muted); font-size:.92rem; padding:.3rem 0;}
+  .legend{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.6rem;}
+  .piecelist{list-style:none; margin-top:.6rem; display:flex; flex-direction:column; gap:.55rem;}
+  .piecelist li{display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;}
+  .piecelist .block{flex-shrink:0; min-width:5.5rem; text-align:center;}
+  .piecelist .pdesc{font-size:.88rem; color:var(--muted); flex:1; min-width:10rem;}
+  .explain{margin-top:.5rem;}
+  .explain p{font-size:.9rem; color:var(--muted); margin:.45rem 0;}
+  .explain b, .explain i{color:var(--text);}
+
+  /* Guía */
+  .gtable{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .gtable td{padding:.45rem .4rem; border-bottom:1px solid var(--border); vertical-align:top;}
+  .gtable td:first-child{color:var(--wh); font-weight:700; white-space:nowrap;}
+  .gtable td:last-child{color:var(--muted); font-style:italic;}
+  .tense{padding:.7rem 0; border-bottom:1px dashed var(--border);}
+  .tense:last-child{border-bottom:none;}
+  .tense h3{font-size:.95rem; margin-bottom:.25rem;}
+  .tense .uso{font-size:.86rem; color:var(--muted); margin:.25rem 0;}
+  .tense .ej{font-size:.88rem; font-style:italic;}
+  .pat{display:flex; flex-wrap:wrap; gap:.25rem; margin:.3rem 0;}
+  .mini{padding:.12rem .5rem; border-radius:6px; color:#fff; font-size:.76rem; font-weight:700;}
+  .mini.wh{background:var(--wh);} .mini.aux{background:var(--aux);}
+  .mini.semiaux{background:#60a5fa;}
+  .mini.subj{background:var(--subj);} .mini.verb{background:var(--verb);}
+  .mini.comp{background:var(--comp);}
+  footer{text-align:center; color:var(--muted); font-size:.8rem; padding:1rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Question Lab 🧩</h1>
+    <p>Arma preguntas en inglés como legos. Respóndelas como ping pong.</p>
+  </header>
+
+  <details>
+    <summary>🧩 ¿Qué significa cada pieza?</summary>
+    <ol class="piecelist">
+      <li><span class="block wh">Wh-word</span><span class="pdesc">Lo que se pregunta (el tipo de pregunta).</span></li>
+      <li><span class="block aux">Auxiliar</span><span class="pdesc">Verbo ayudante — lleva la información de tiempo.</span></li>
+      <li><span class="block semiaux">Semi-aux</span><span class="pdesc">Ayuda extra para ciertos casos (going to, used to).</span></li>
+      <li><span class="block subj">Sujeto</span><span class="pdesc">De quién se habla, o quién hace la acción.</span></li>
+      <li><span class="block verb">Verbo principal</span><span class="pdesc">Acción o estado que se realiza.</span></li>
+      <li><span class="block comp">Complemento</span><span class="pdesc">Información adicional de la oración.</span></li>
+      <li><span class="block new">+ Info nueva</span><span class="pdesc">Lo que tú agregas al responder — no viene de la pregunta.</span></li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>🏓 La analogía del ping pong: ¿qué se devuelve?</summary>
+    <div class="explain">
+      <p>Hablar es como jugar <b>ping pong</b>: alguien te lanza la pelota (la pregunta) y tú la devuelves, pero no igual — le agregas algo tuyo.</p>
+      <p>Lo que <b>rebota</b> de la pregunta a la respuesta es: el <b>sujeto</b> 🟢 (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> 🟠, el <b>auxiliar</b> 🔵 (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> ⚪.</p>
+      <p>La <b>wh-word</b> 🟣 <b>no rebota</b>: nunca aparece en la respuesta. Es solo la <b>guía</b> que te dice qué tipo de información nueva 🆕 debes agregar — un lugar si preguntó «where», una persona si preguntó «who», etc.</p>
+      <p>Y esa información nueva es la única pieza que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>🍦 La analogía del helado: ¿simple o compuesto?</summary>
+    <div class="explain">
+      <p>Los tiempos <b>simples</b> son como los helados simples: en su forma <b>positiva</b> se utiliza un solo verbo — <b>una bolita de helado</b> 🍦 — que lleva toda la <b>carga temporal</b> (<i>works</i> = work + s, <i>played</i> = play + ed).</p>
+      <p>Sin embargo, para el <b>negativo</b> y el <b>interrogativo</b> piden una <b>bolita prestada: do / does / did</b>, y es la bolita prestada la que lleva la carga temporal — por eso el verbo queda en forma base (<i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>). Al responder en positivo, <b>sueltas</b> la bolita prestada — ya no hace falta — y su carga <b>pasa al verbo</b>: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i></p>
+      <p>Los tiempos <b>compuestos</b>, como su nombre lo dice, traen <b>más de una bolita por naturaleza</b> 🍦🍦, y todas deben estar presentes siempre — en positivo, negativo e interrogativo. Entre todas las bolitas se reparten la carga temporal: <i>She <b>is sleeping</b>. / She <b>isn't sleeping</b>. / <b>Is</b> she <b>sleeping</b>?</i></p>
+      <p>¿Y el verbo <b>to be</b>? Es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. Nunca pide bolitas prestadas: <i>Is she a doctor? — Yes, she <b>is</b>.</i></p>
+    </div>
+  </details>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="analyze">🔍 Analiza</button>
+    <button class="tab" data-panel="build">🧱 Construye</button>
+    <button class="tab" data-panel="guide">📖 Guía</button>
+  </div>
+
+  <!-- ============ ANALYZE ============ -->
+  <div class="panel active" id="analyze">
+    <div class="card">
+      <h2>Escribe una pregunta en inglés</h2>
+      <div class="qinput">
+        <input type="text" id="qin" placeholder="Where do you live?" autocomplete="off" autocapitalize="off">
+        <button class="primary" id="goBtn">Analizar</button>
+      </div>
+      <div class="examples" id="examples"></div>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <!-- ============ BUILD ============ -->
+  <div class="panel" id="build">
+    <div class="card">
+      <div class="prompt" id="bPrompt"></div>
+      <div class="slotarea" id="bSlots"></div>
+      <div class="blocks pool" id="bPool"></div>
+      <div class="buildmsg" id="bMsg"></div>
+      <div class="buildbar">
+        <span class="streak" id="bStreak"></span>
+        <span class="progress" id="bProg"></span>
+        <span>
+          <button class="ghost" id="bReset">Borrar</button>
+          <button class="ghost" id="bSkip">Saltar →</button>
+        </span>
+      </div>
+    </div>
+    <div id="bResult"></div>
+  </div>
+
+  <!-- ============ GUÍA ============ -->
+  <div class="panel" id="guide">
+    <div class="card">
+      <h2>🟣 Wh-words: la pieza que pregunta</h2>
+      <table class="gtable">
+        <tr><td>What</td><td>cosas, ideas, acciones</td><td>What do you do?</td></tr>
+        <tr><td>Where</td><td>lugares</td><td>Where do you live?</td></tr>
+        <tr><td>When</td><td>tiempo, fechas</td><td>When did they arrive?</td></tr>
+        <tr><td>Why</td><td>razones (→ because…)</td><td>Why are you tired?</td></tr>
+        <tr><td>Who</td><td>personas</td><td>Who painted the Mona Lisa?</td></tr>
+        <tr><td>Whose</td><td>posesión (¿de quién?)</td><td>Whose phone is this?</td></tr>
+        <tr><td>Which</td><td>opción entre pocas</td><td>Which one do you prefer?</td></tr>
+        <tr><td>How</td><td>manera, estado</td><td>How do you travel to class?</td></tr>
+        <tr><td>How many</td><td>cantidad (contable)</td><td>How many students came?</td></tr>
+        <tr><td>How much</td><td>cantidad (incontable), precio</td><td>How much does it cost?</td></tr>
+        <tr><td>How often</td><td>frecuencia</td><td>How often do you exercise?</td></tr>
+        <tr><td>How long</td><td>duración</td><td>How long have you studied English?</td></tr>
+        <tr><td>How old</td><td>edad</td><td>How old is she?</td></tr>
+        <tr><td>What time</td><td>hora exacta</td><td>What time does the class start?</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>⏱️ Tiempos: cuándo se usa cada uno</h2>
+
+      <div class="tense">
+        <h3>Presente Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
+        <div class="pat"><span class="mini aux">Do / Does</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
+        <p class="uso">Rutinas, hábitos, hechos generales, gustos.</p>
+        <p class="ej">Do you drink coffee every day?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Presente de «to be» 👑 <span class="hint">(el punki: no pide prestado)</span></h3>
+        <div class="pat"><span class="mini verb">Am / Is / Are</span><span class="mini subj">sujeto</span><span class="mini comp">…?</span></div>
+        <p class="uso">Identidad, estados, descripciones, nacionalidad, profesión.</p>
+        <p class="ej">Is she a doctor?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Presente Continuo 🍦🍦</h3>
+        <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj">sujeto</span><span class="mini verb">verbo-ing</span><span class="mini comp">…?</span></div>
+        <p class="uso">Lo que pasa ahora mismo; también planes ya agendados.</p>
+        <p class="ej">What are you doing right now?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Pasado Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
+        <div class="pat"><span class="mini aux">Did</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
+        <p class="uso">Acciones terminadas en un momento específico del pasado.</p>
+        <p class="ej">Did she travel to Peru last year?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Pasado de «to be» 👑</h3>
+        <div class="pat"><span class="mini verb">Was / Were</span><span class="mini subj">sujeto</span><span class="mini comp">…?</span></div>
+        <p class="uso">Estados y descripciones en el pasado.</p>
+        <p class="ej">Were you tired yesterday?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Pasado Continuo 🍦🍦</h3>
+        <div class="pat"><span class="mini aux">Was / Were</span><span class="mini subj">sujeto</span><span class="mini verb">verbo-ing</span><span class="mini comp">…?</span></div>
+        <p class="uso">Acción en progreso en el pasado, a menudo interrumpida por otra.</p>
+        <p class="ej">Was he sleeping when you called?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Presente Perfecto 🍦🍦</h3>
+        <div class="pat"><span class="mini aux">Have / Has</span><span class="mini subj">sujeto</span><span class="mini verb">participio</span><span class="mini comp">…?</span></div>
+        <p class="uso">Experiencias de vida (sin fecha específica) y acciones pasadas con efecto en el presente.</p>
+        <p class="ej">Have you ever visited Chiloé?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Pasado Perfecto 🍦🍦</h3>
+        <div class="pat"><span class="mini aux">Had</span><span class="mini subj">sujeto</span><span class="mini verb">participio</span><span class="mini comp">…?</span></div>
+        <p class="uso">Lo que pasó <b>antes</b> de otra acción en el pasado.</p>
+        <p class="ej">Had you eaten before the meeting?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Futuro con «will» 🍦🍦</h3>
+        <div class="pat"><span class="mini aux">Will</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
+        <p class="uso">Decisiones espontáneas, promesas, predicciones.</p>
+        <p class="ej">Will you come to class tomorrow?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Futuro con «going to» 🍦🍦</h3>
+        <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj">sujeto</span><span class="mini semiaux">going to</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
+        <p class="uso">Planes e intenciones ya decididos. El «be» es el auxiliar oficial; «going to» es su ayudante (semi-aux).</p>
+        <p class="ej">What are you going to do this weekend?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Hábito pasado con «used to» 🍦</h3>
+        <div class="pat"><span class="mini aux">Did</span><span class="mini subj">sujeto</span><span class="mini semiaux">use to</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
+        <p class="uso">Hábitos o estados del pasado que ya no ocurren. En positivo el semi-aux recupera la carga temporal: I <b>used to</b> play football.</p>
+        <p class="ej">Did you use to play football as a child?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Modales 🍦🍦 <span class="hint">(can, could, should, would…)</span></h3>
+        <div class="pat"><span class="mini aux">Can / Should…</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
+        <p class="uso">Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.</p>
+        <p class="ej">Can you swim?</p>
+      </div>
+
+      <div class="tense">
+        <h3>Pregunta de sujeto 🕵️ <span class="hint">(la excepción sin auxiliar)</span></h3>
+        <div class="pat"><span class="mini wh">Who / What</span><span class="mini verb">verbo conjugado</span><span class="mini comp">…?</span></div>
+        <p class="uso">Cuando la wh-word ES el sujeto, no se usa auxiliar y el verbo va conjugado.</p>
+        <p class="ej">Who painted the Mona Lisa?</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Herramienta pedagógica de análisis por reglas — puede equivocarse con preguntas muy complejas. 🇨🇱</footer>
+
+<script>
+/* ================================================================
+   DICCIONARIOS
+================================================================ */
+const WH1 = ["what","where","when","why","who","whom","whose","which","how"];
+const WH2 = {how:["many","much","often","long","old","far","fast"], what:["time","kind","color","colour"]};
+const AUX_NEG = {
+  do:"don't", does:"doesn't", did:"didn't",
+  am:"'m not", is:"isn't", are:"aren't", was:"wasn't", were:"weren't",
+  have:"haven't", has:"hasn't", had:"hadn't",
+  will:"won't", would:"wouldn't", can:"can't", could:"couldn't",
+  should:"shouldn't", shall:"shan't", may:"may not", might:"might not", must:"mustn't"
+};
+const AUXES = Object.keys(AUX_NEG);
+/* Contracciones negativas -> auxiliar positivo (didn't -> did) */
+const NEG_AUX = {cannot:"can"};
+for(const [p,n] of Object.entries(AUX_NEG)){ if(n.includes("'") && !n.includes(" ")) NEG_AUX[n] = p; }
+const isAuxTok = w => AUXES.includes(w) || !!NEG_AUX[w];
+const MODALS = ["will","would","can","could","should","shall","may","might","must"];
+const PRONOUNS = ["i","you","he","she","it","we","they"];
+const DETS = ["the","a","an","my","your","his","her","its","our","their","this","that","these","those","some","any"];
+const ADVS = ["ever","never","always","usually","often","already","just","still","also","really","sometimes","generally","recently"];
+
+/* Verbos irregulares: base -> [pasado, participio] */
+const IRR = {
+  be:["was","been"], have:["had","had"], do:["did","done"], go:["went","gone"],
+  get:["got","gotten"], make:["made","made"], know:["knew","known"], think:["thought","thought"],
+  take:["took","taken"], see:["saw","seen"], come:["came","come"], give:["gave","given"],
+  find:["found","found"], tell:["told","told"], become:["became","become"], leave:["left","left"],
+  feel:["felt","felt"], put:["put","put"], bring:["brought","brought"], begin:["began","begun"],
+  keep:["kept","kept"], hold:["held","held"], write:["wrote","written"], stand:["stood","stood"],
+  hear:["heard","heard"], let:["let","let"], mean:["meant","meant"], set:["set","set"],
+  meet:["met","met"], run:["ran","run"], pay:["paid","paid"], sit:["sat","sat"],
+  speak:["spoke","spoken"], lead:["led","led"], read:["read","read"], grow:["grew","grown"],
+  lose:["lost","lost"], fall:["fell","fallen"], send:["sent","sent"], build:["built","built"],
+  understand:["understood","understood"], draw:["drew","drawn"], break:["broke","broken"],
+  spend:["spent","spent"], cut:["cut","cut"], rise:["rose","risen"], drive:["drove","driven"],
+  buy:["bought","bought"], wear:["wore","worn"], choose:["chose","chosen"], eat:["ate","eaten"],
+  drink:["drank","drunk"], sleep:["slept","slept"], swim:["swam","swum"], sing:["sang","sung"],
+  teach:["taught","taught"], catch:["caught","caught"], fly:["flew","flown"], win:["won","won"],
+  forget:["forgot","forgotten"], say:["said","said"], sell:["sold","sold"], wake:["woke","woken"]
+};
+const REG = ["like","live","work","play","study","travel","visit","cook","dance","listen","watch",
+  "learn","want","need","love","hate","use","try","ask","call","talk","walk","open","close",
+  "start","finish","help","clean","arrive","stay","enjoy","practice","wash","rain","happen",
+  "look","move","plan","hope","wait","cost","change","believe","paint","invent","discover",
+  "create","design","teach","order","prefer","remember","celebrate","graduate","exercise",
+  "answer","explain","recommend","suggest","email","text","download","upload","program"];
+
+const VERB_BASES = new Set([...Object.keys(IRR), ...REG]);
+const PAST_FORMS = new Map();  // pasado -> base
+const PART_FORMS = new Map();  // participio -> base
+for(const [b,[p,pp]] of Object.entries(IRR)){ PAST_FORMS.set(p,b); PART_FORMS.set(pp,b); }
+for(const b of REG){ const p = regPast(b); PAST_FORMS.set(p,b); PART_FORMS.set(p,b); }
+
+function regPast(v){
+  if(v.endsWith("e")) return v+"d";
+  if(/[^aeiou]y$/.test(v)) return v.slice(0,-1)+"ied";
+  return v+"ed";
+}
+function thirdPerson(v){
+  if(/(o|ch|sh|ss|x|z)$/.test(v)) return v+"es";
+  if(/[^aeiou]y$/.test(v)) return v.slice(0,-1)+"ies";
+  return v+"s";
+}
+function pastOf(v){ return IRR[v] ? IRR[v][0] : regPast(v); }
+
+/* Sustantivos en -ing (y similares) que NO son verbos */
+const NOT_VERBS = new Set(["thing","something","anything","everything","nothing","morning",
+  "evening","king","ring","wing","spring","string","sibling","ceiling","clothing","darling","during"]);
+
+function isVerbCandidate(w){
+  if(!w) return false;
+  if(NOT_VERBS.has(w)) return false;
+  if(VERB_BASES.has(w)) return true;
+  if(PAST_FORMS.has(w) || PART_FORMS.has(w)) return true;
+  if(w.length>4 && w.endsWith("ing")) return true;
+  if(w.length>3 && w.endsWith("ed")) return true;
+  if(w.endsWith("s") && VERB_BASES.has(w.slice(0,-1))) return true;
+  if(w.endsWith("es") && VERB_BASES.has(w.slice(0,-2))) return true;
+  if(w.endsWith("ies") && VERB_BASES.has(w.slice(0,-3)+"y")) return true;
+  return false;
+}
+function baseOf(w){
+  if(VERB_BASES.has(w)) return w;
+  if(PAST_FORMS.has(w)) return PAST_FORMS.get(w);
+  if(PART_FORMS.has(w)) return PART_FORMS.get(w);
+  if(w.endsWith("ies") && VERB_BASES.has(w.slice(0,-3)+"y")) return w.slice(0,-3)+"y";
+  if(w.endsWith("es") && VERB_BASES.has(w.slice(0,-2))) return w.slice(0,-2);
+  if(w.endsWith("s") && VERB_BASES.has(w.slice(0,-1))) return w.slice(0,-1);
+  if(w.endsWith("ing")) return w.slice(0,-3);
+  if(w.endsWith("ed")) return w.slice(0,-2);
+  return w;
+}
+
+/* ================================================================
+   PARSER
+================================================================ */
+function analyze(raw){
+  const warnings = [];
+  const notes = [];
+  let q = raw.trim().replace(/[’‘]/g, "'");
+  if(!q) return {ok:false, error:"Escribe una pregunta primero. 😊"};
+  if(!/\?\s*$/.test(q)) warnings.push("Tip: las preguntas en inglés terminan con «?».");
+
+  const tokens = q.replace(/[?.!,;:¿¡]+/g," ").trim().split(/\s+/).filter(Boolean);
+  const lower = tokens.map(t=>t.toLowerCase());
+  const n = tokens.length;
+  if(n < 2) return {ok:false, error:"La pregunta es muy corta — necesita al menos un auxiliar y un sujeto."};
+
+  // 1. Wh-word (1 o 2 palabras)
+  let whLen = 0, whText = "";
+  if(WH1.includes(lower[0])){
+    whLen = 1;
+    if(WH2[lower[0]] && WH2[lower[0]].includes(lower[1])) whLen = 2;
+    whText = tokens.slice(0,whLen).join(" ");
+  }
+  const isOpen = whLen > 0;
+
+  // 2. Auxiliar después de la wh (o al inicio)
+  let auxIdx = whLen;
+  let aux = lower[auxIdx];
+  let negative = false;
+  if(NEG_AUX[aux]){ negative = true; aux = NEG_AUX[aux]; }
+
+  if(!AUXES.includes(aux) && isOpen){
+    // ¿Wh extendida ("How many books DID you buy?") o pregunta de sujeto ("Who painted...?")
+    let sIdx = whLen, extra = [];
+    while(sIdx < n && !isVerbCandidate(lower[sIdx]) && !isAuxTok(lower[sIdx]) && extra.length < 3){
+      extra.push(tokens[sIdx]); sIdx++;
+    }
+    if(sIdx < n && isAuxTok(lower[sIdx]) && extra.length && !PRONOUNS.includes(lower[whLen])){
+      // La wh-word absorbe su sustantivo y el análisis sigue normal desde el auxiliar
+      whText = whText + " " + extra.join(" ");
+      whLen = sIdx; auxIdx = sIdx; aux = lower[auxIdx];
+      if(NEG_AUX[aux]){ negative = true; aux = NEG_AUX[aux]; }
+    } else if(PRONOUNS.includes(lower[whLen])){
+      return {ok:false, error:`Parece que falta el <b>auxiliar</b> 🔵. Después de la wh-word va un auxiliar y luego el sujeto: <i>${whText} <b>do</b> ${tokens.slice(whLen).join(" ")}?</i> — revisa cuál auxiliar corresponde.`};
+    } else if(sIdx < n && isVerbCandidate(lower[sIdx]) && ["who","what","which","whose","how"].includes(lower[0])){
+      return analyzeSubjectQ(tokens, lower, whText, extra, sIdx, warnings);
+    } else {
+      return {ok:false, error:`Encontré la wh-word «${whText}» 🟣 pero no logro identificar el <b>auxiliar</b> 🔵 que debería seguirla. ¿Está bien armada la pregunta?`};
+    }
+  }
+  if(!AUXES.includes(aux)){
+    return {ok:false, error:"Las preguntas <b>cerradas</b> empiezan con un auxiliar (Do, Does, Did, Is, Are, Can, Will…) y las <b>abiertas</b> con una wh-word (What, Where, Who…). No encuentro ninguno al inicio. 🤔"};
+  }
+
+  // 3. Sujeto: desde después del aux hasta el primer verbo candidato
+  let vIdx = -1;
+  for(let i = auxIdx+1; i < n; i++){
+    if(isVerbCandidate(lower[i]) && !DETS.includes(lower[i])){ vIdx = i; break; }
+  }
+
+  // Cláusula relativa escondida: "What is one thing (that) Mia has always loved?"
+  // Un segundo auxiliar o un pronombre DENTRO de la zona del sujeto la delata.
+  if(isOpen && ["am","is","are","was","were"].includes(aux)){
+    const stop = vIdx === -1 ? n : vIdx;
+    let embIdx = -1;
+    for(let i = auxIdx+2; i < stop; i++){
+      if(isAuxTok(lower[i]) || PRONOUNS.includes(lower[i])){ embIdx = i; break; }
+    }
+    if(embIdx !== -1){
+      const subjT = tokens.slice(auxIdx+1).join(" ");
+      const clauseStart = PRONOUNS.includes(lower[embIdx]) ? embIdx : Math.max(embIdx-1, auxIdx+2);
+      const EMB_TENSES = {has:"Presente Perfecto", have:"Presente Perfecto", had:"Pasado Perfecto",
+        did:"Pasado Simple", does:"Presente Simple", "do":"Presente Simple", will:"Futuro (will)",
+        is:"Presente", are:"Presente", am:"Presente", was:"Pasado", were:"Pasado"};
+      let embAux = null;
+      for(let i = clauseStart; i < n; i++){ if(isAuxTok(lower[i])){ embAux = NEG_AUX[lower[i]] || lower[i]; break; } }
+      const embTense = embAux ? EMB_TENSES[embAux] : null;
+      const parts2 = [
+        {role:"wh", text:whText, label:"wh-word"},
+        {role:"verb", text:tokens[auxIdx], label:"verbo to be ⭐"},
+        {role:"subj", text:subjT, label:"sujeto + cláusula relativa"}
+      ];
+      const relNotes = [
+        `Esta pregunta esconde una <b>cláusula relativa</b>: «${tokens.slice(auxIdx+1, clauseStart).join(" ")} <i>(that)</i> ${tokens.slice(clauseStart).join(" ")}». Todo eso junto es el <b>sujeto</b>, y la pregunta principal es simple, con <b>to be</b>: «${whText} ${tokens[auxIdx]} …?».`
+        + (embTense ? ` La cláusula lleva su propio tiempo por dentro (${embTense}), pero eso no cambia la estructura de la pregunta.` : "")
+      ];
+      // you -> I dentro de la cláusula ("something you enjoy" -> "something I enjoy")
+      const flippedSubj = tokens.slice(auxIdx+1)
+        .map(t => ({you:"I", your:"my", yours:"mine"}[t.toLowerCase()] || t)).join(" ");
+      const hint2 = WH_HINTS[whText.toLowerCase()] || "tu información 💬";
+      const relAnswer = {kind:"open", lines:[{icon:"🏓", pieces:[
+        {role:"subj", text:cap(flippedSubj), label:"sujeto + cláusula"},
+        {role:"verb", text:tokens[auxIdx].toLowerCase(), label:"verbo to be ⭐"},
+        {role:"new", text:"+ " + hint2, label:"info nueva"}
+      ], caption:"Estructura de la respuesta"}]};
+      const beTense = (["was","were"].includes(aux) ? "Pasado" : "Presente") + " Simple (verbo to be)";
+      return {ok:true, type:"Abierta (Wh-question) — con cláusula relativa", tense:beTense,
+        parts:parts2, answer:relAnswer, warnings, notes:relNotes};
+    }
+  }
+  let subjTokens, verbTokens = [], compTokens = [];
+  let beMain = false, verbForm = null, mainBase = null, goingTo = false;
+  let semiAuxText = null, usedTo = false, beLike = false, beLikeText = "";
+
+  if(vIdx === auxIdx+1 && ["is","are","am","was","were","do","does","did","have","has","had","will","can","could","would","should","may","might","must"].includes(aux)){
+    // El token justo después del aux parece verbo pero debería ser sujeto (nombres como "work" o error)
+    // Solo lo tratamos como sujeto si NO hay más verbos después; si hay, era sujeto-nombre.
+    let v2 = -1;
+    for(let i = vIdx+1; i < n; i++){ if(isVerbCandidate(lower[i])){ v2 = i; break; } }
+    if(v2 > 0){ vIdx = v2; } // "Does work start at 8?" -> subj = work
+  }
+
+  if(vIdx > auxIdx+1){
+    subjTokens = tokens.slice(auxIdx+1, vIdx);
+    verbTokens = [tokens[vIdx]];
+    compTokens = tokens.slice(vIdx+1);
+    // Adverbios (ever, always…) y "not" no son parte del sujeto
+    const advs = [];
+    while(subjTokens.length > 1){
+      const last = subjTokens[subjTokens.length-1].toLowerCase();
+      if(last === "not"){ negative = true; subjTokens.pop(); }
+      else if(ADVS.includes(last)){ advs.unshift(subjTokens.pop()); }
+      else break;
+    }
+    if(advs.length) verbTokens = [...advs, ...verbTokens];
+  } else if(vIdx === -1 || vIdx === auxIdx+1){
+    // No hay verbo después del sujeto -> be/modal como verbo principal (Is she a doctor?)
+    let sEnd = auxIdx+2;
+    if(DETS.includes(lower[auxIdx+1])) sEnd = auxIdx+3;
+    // Pregunta de identidad ("What is your favorite food?"): todo el resto es el sujeto
+    const whBase0 = whText.toLowerCase().split(" ")[0];
+    if(isOpen && vIdx === -1 && !PRONOUNS.includes(lower[auxIdx+1])
+      && ["what","who","which","whose","where","when"].includes(whBase0)) sEnd = n;
+    subjTokens = tokens.slice(auxIdx+1, Math.min(sEnd, n));
+    compTokens = tokens.slice(Math.min(sEnd, n));
+    if(compTokens.length && compTokens[0].toLowerCase() === "not"){ negative = true; compTokens = compTokens.slice(1); }
+    beMain = true;
+  }
+
+  if(!subjTokens || subjTokens.length === 0){
+    return {ok:false, error:`Encontré el auxiliar «${aux}» 🔵 pero no logro ver el <b>sujeto</b> 🟢 que debería seguirlo.`};
+  }
+  const subjText = subjTokens.join(" ");
+  const subjLower = subjText.toLowerCase();
+
+  // 4. Analizar el verbo principal
+  if(!beMain){
+    const v = lower[vIdx];
+    if(v === "going" && lower[vIdx+1] === "to" && isVerbCandidate(lower[vIdx+2]) && ["am","is","are","was","were"].includes(aux)){
+      // be (aux oficial) + going to (semi-aux) + verbo base
+      goingTo = true;
+      semiAuxText = tokens.slice(vIdx, vIdx+2).join(" ");
+      verbTokens = [tokens[vIdx+2]];
+      mainBase = baseOf(lower[vIdx+2]);
+      compTokens = tokens.slice(vIdx+3);
+    } else if((v === "use" || v === "used") && lower[vIdx+1] === "to" && isVerbCandidate(lower[vIdx+2]) && aux === "did"){
+      // did (aux, se lleva la carga temporal) + use to (semi-aux) + verbo base
+      usedTo = true;
+      semiAuxText = tokens[vIdx] + " to";
+      verbTokens = [tokens[vIdx+2]];
+      mainBase = baseOf(lower[vIdx+2]);
+      compTokens = tokens.slice(vIdx+3);
+    } else if(v === "like" && ["am","is","are","was","were"].includes(aux) && isOpen && whText.toLowerCase() === "what"){
+      // Molde "What + be + sujeto + like?" — like es pareja del what, no el verbo gustar
+      beLike = true; beMain = true;
+      beLikeText = tokens[vIdx];
+      verbTokens = [];
+      compTokens = tokens.slice(vIdx+1);
+    } else if(v === "been" && lower[vIdx+1] && lower[vIdx+1].endsWith("ing")){
+      verbTokens = tokens.slice(vIdx, vIdx+2);
+      mainBase = baseOf(lower[vIdx+1]);
+      verbForm = "perfCont";
+      compTokens = tokens.slice(vIdx+2);
+    } else {
+      mainBase = baseOf(v);
+      if(v.endsWith("ing") && v.length>4) verbForm = "ing";
+      else if(PART_FORMS.has(v) || v.endsWith("ed")) verbForm = "part";
+      else verbForm = "base";
+      // will be + ing (futuro continuo)
+      if(aux === "will" && v === "be" && lower[vIdx+1] && lower[vIdx+1].endsWith("ing")){
+        verbTokens = tokens.slice(vIdx, vIdx+2);
+        mainBase = baseOf(lower[vIdx+1]);
+        verbForm = "willCont";
+        compTokens = tokens.slice(vIdx+2);
+      }
+    }
+  }
+
+  // 5. Tiempo gramatical
+  let tense = "", tenseNote = "";
+  if(aux === "do" || aux === "does"){ tense = "Presente Simple"; }
+  else if(aux === "did"){ tense = usedTo ? "Pasado — hábito con «used to»" : "Pasado Simple"; }
+  else if(["am","is","are"].includes(aux)){
+    if(goingTo) tense = "Futuro con «going to»";
+    else if(verbForm === "ing") tense = "Presente Continuo";
+    else {
+      tense = "Presente Simple (verbo to be)"; beMain = true;
+      if(verbTokens.length){ compTokens = [...verbTokens, ...compTokens]; verbTokens = []; }
+    }
+  }
+  else if(["was","were"].includes(aux)){
+    if(verbForm === "ing") tense = "Pasado Continuo";
+    else {
+      tense = "Pasado Simple (verbo to be)"; beMain = true;
+      if(verbTokens.length){ compTokens = [...verbTokens, ...compTokens]; verbTokens = []; }
+    }
+  }
+  else if(aux === "have" || aux === "has"){
+    if(verbForm === "perfCont") tense = "Presente Perfecto Continuo";
+    else tense = "Presente Perfecto";
+  }
+  else if(aux === "had"){ tense = "Pasado Perfecto"; }
+  else if(aux === "will"){ tense = verbForm === "willCont" ? "Futuro Continuo" : "Futuro Simple (will)"; }
+  else if(MODALS.includes(aux)){
+    tense = `Estructura con modal («${aux}»)`;
+    tenseNote = "Los modales no marcan el tiempo por sí solos — el contexto lo hace.";
+  }
+
+  // 6. Concordancia sujeto-auxiliar (pedagógico)
+  const agr = checkAgreement(aux, subjLower);
+  if(agr) warnings.push(agr);
+
+  // 7. Componentes visuales
+  const parts = [];
+  if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
+  let auxLabel = beMain ? "verbo to be ⭐"
+    : ["do","does","did"].includes(aux) ? "aux prestado 🍦"
+    : "auxiliar";
+  if(negative) auxLabel += " ⛔";
+  // Si el "not" venía separado ("did … not"), lo mostramos junto al auxiliar
+  const auxText = negative && !NEG_AUX[lower[auxIdx]] ? tokens[auxIdx] + " … not" : tokens[auxIdx];
+  // Cuando "be" es el verbo principal (no hay otro verbo), pinta como verbo, no como auxiliar
+  parts.push({role: beMain ? "verb" : "aux", text:auxText, label: auxLabel});
+  parts.push({role:"subj", text:subjText, label:"sujeto"});
+  if(beLike) parts.push({role:"wh", text:beLikeText, label:"pareja del what"});
+  if(!beMain && semiAuxText) parts.push({role:"semiaux", text:semiAuxText, label:"semi-aux"});
+  if(!beMain && verbTokens.length) parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
+  if(compTokens.length) parts.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
+
+  // 8. Respuesta ping pong
+  const answer = buildAnswer({isOpen, whText: whText.toLowerCase(), aux, subjLower, subjText,
+    beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens, notes});
+
+  if(beLike) notes.push("«What + be + sujeto + <b>like</b>?» es un molde fijo para pedir <b>descripciones</b> (¿cómo es/era…?). Ese «like» no es el verbo gustar: hace pareja con el «what», y en la respuesta <b>desaparece</b>: «She was friendly and a bit shy».");
+
+  if(negative && !isOpen) notes.push("Pregunta <b>negativa</b>: expresa sorpresa o busca confirmación («¿No te gusta…?»). En inglés respondes según la <b>realidad</b>, sin importar el «not»: «Yes, I do» = sí me gusta · «No, I don't» = no me gusta.");
+  if(negative && isOpen) notes.push("Pregunta <b>negativa</b>: la respuesta devuelve la negación tal cual. El auxiliar negativo conserva la carga temporal 🍦, así que el verbo se queda en forma base: «He <b>didn't like</b> it because…».");
+
+  if(goingTo) notes.push("Aquí el <b>be</b> es el auxiliar oficial 🔵 (él hace la pregunta y la negación) y «going to» es su <b>ayudante</b> (semi-auxiliar): juntos forman el futuro. El verbo principal queda en forma base.");
+  if(usedTo) notes.push("«used to» = hábitos del pasado que ya no ocurren. Funciona como <b>semi-auxiliar</b>: en la pregunta, «did» se lleva la carga temporal y queda «use to»; al responder en positivo, sueltas el «did» y su carga <b>pasa al semi-auxiliar</b>: «I <b>used to</b> play…».");
+
+  if(beMain) notes.push("El verbo <b>to be</b> es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. No pide bolitas prestadas — él mismo pregunta, niega y responde: «Yes, she <b>is</b>».");
+  if(!isOpen && ["do","does","did"].includes(aux)){
+    const exSubj = aux === "does" ? "she" : "I";
+    const exVerb = aux === "does" ? "likes" : "like";
+    notes.push(`Tiempo simple = helado de una bolita 🍦. Para preguntar pidió una <b>bolita prestada</b> («${aux}»). En la respuesta <b>corta</b> esa bolita se queda («Yes, ${exSubj} <b>${aux}</b>»); pero en la respuesta <b>larga</b> ya no hace falta — sueltas la bolita prestada y el verbo recupera su sabor: «Yes, ${exSubj} <b>${exVerb}</b> coffee a lot».`);
+  }
+  if(!isOpen && !beMain && ["have","has","had","am","is","are","was","were","will"].includes(aux)) notes.push("Tiempo compuesto = dos bolitas de fábrica 🍦🍦: el auxiliar «" + aux + "» ya viene incluido, no pide nada prestado. La respuesta corta siempre devuelve la primera bolita (el auxiliar).");
+  if(tenseNote) notes.push(tenseNote);
+
+  const typeStr = (isOpen ? "Abierta (Wh-question)" : "Cerrada (Yes/No)") + (negative ? " · negativa ⛔" : "");
+  return {ok:true, type: typeStr, tense, parts, answer, warnings, notes};
+}
+
+function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
+  const v = lower[vIdx];
+  const compTokens = tokens.slice(vIdx+1);
+  let tense = "Presente Simple";
+  let auxShort = "does";
+  const auxIsMainVerb = (v === "is" || v === "are");
+  if(PAST_FORMS.has(v) || (v.endsWith("ed") && !VERB_BASES.has(v))){ tense = "Pasado Simple"; auxShort = "did"; }
+  else if(auxIsMainVerb){ tense = "Presente Simple (to be)"; auxShort = v; }
+  const whSubj = whText + (extra.length ? " " + extra.join(" ") : "");
+  const parts = [
+    {role:"wh", text: whSubj, label:"wh = sujeto"},
+    {role:"verb", text: tokens[vIdx], label:"verbo"}
+  ];
+  if(compTokens.length) parts.push({role:"comp", text: compTokens.join(" "), label:"complemento"});
+  const notes = [
+    "<b>Pregunta de sujeto</b>: la wh-word ES el sujeto, por eso <b>no lleva auxiliar</b>. Preguntas por «quién/qué hace la acción».",
+    `Se responde nombrando al sujeto real: corta con auxiliar («Leonardo da Vinci <b>${auxShort}</b>») o larga repitiendo el verbo.`
+  ];
+  const answer = {
+    kind:"subject",
+    lines:[
+      {icon:"🏓", pieces:[
+        {role:"new", text:"[sujeto real]", label:"info nueva"},
+        {role: auxIsMainVerb ? "verb" : "aux", text:auxShort+".", label:"auxiliar"}
+      ], caption:"Respuesta corta"},
+      {icon:"🏓", pieces:[
+        {role:"new", text:"[sujeto real]", label:"info nueva"},
+        {role:"verb", text:tokens[vIdx], label:"verbo"},
+        ...(compTokens.length ? [{role:"comp", text:compTokens.join(" "), label:"complemento"}] : [])
+      ], caption:"Respuesta larga"}
+    ]
+  };
+  return {ok:true, type:"Abierta — de sujeto (¡sin auxiliar!)", tense, parts, answer, warnings, notes};
+}
+
+function checkAgreement(aux, subj){
+  const third = ["he","she","it"];
+  const notThird = ["i","you","we","they"];
+  if(aux==="does" && notThird.includes(subj)) return `Ojo 👀: «does» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «do».`;
+  if(aux==="do" && third.includes(subj)) return `Ojo 👀: «do» se usa con <b>I/you/we/they</b>. Con «${subj}» corresponde «does».`;
+  if(aux==="is" && ["you","we","they"].includes(subj)) return `Ojo 👀: «is» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «are».`;
+  if(aux==="is" && subj==="i") return "Ojo 👀: con «I» corresponde «am».";
+  if(aux==="are" && [...third,"i"].includes(subj)) return `Ojo 👀: «are» se usa con <b>you/we/they</b>.`;
+  if(aux==="am" && subj!=="i") return "Ojo 👀: «am» solo se usa con «I».";
+  if(aux==="was" && ["you","we","they"].includes(subj)) return `Ojo 👀: «was» se usa con <b>I/he/she/it</b>. Con «${subj}» corresponde «were».`;
+  if(aux==="were" && [...third,"i"].includes(subj)) return `Ojo 👀: «were» se usa con <b>you/we/they</b>.`;
+  if(aux==="has" && notThird.includes(subj)) return `Ojo 👀: «has» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «have».`;
+  if(aux==="have" && third.includes(subj)) return `Ojo 👀: como auxiliar, «have» va con <b>I/you/we/they</b>; con «${subj}» corresponde «has».`;
+  return null;
+}
+
+/* ---- Generación de la respuesta ping pong ---- */
+const FLIP_SUBJ = {i:"you", you:"I", we:"we", they:"they", he:"he", she:"she", it:"it"};
+const FLIP_AUX_TO_I = {are:"am", is:"am", were:"was", does:"do", has:"have"};
+const FLIP_AUX_TO_YOU = {am:"are", is:"are", was:"were", does:"do", has:"have"};
+const FLIP_COMP = {your:"my", my:"your", yours:"mine", mine:"yours", you:"me", me:"you"};
+const WH_HINTS = {
+  where:"un lugar 📍", when:"un momento 🕐", who:"una persona 🧑", whom:"una persona 🧑",
+  what:"una cosa / idea 💡", why:"because + una razón 💬", which:"una opción ✅",
+  whose:"un dueño (…'s) 🔑", how:"una manera ✨", "how many":"una cantidad 🔢",
+  "how much":"una cantidad 💰", "how often":"una frecuencia 🔁", "how long":"una duración ⏳",
+  "how old":"una edad 🎂", "how far":"una distancia 🗺️", "how fast":"una velocidad 🚀",
+  "what time":"una hora 🕒", "what kind":"un tipo 🏷️", "what color":"un color 🎨", "what colour":"un color 🎨"
+};
+
+function flipComp(compTokens){
+  return compTokens.map(t=>{
+    const l = t.toLowerCase();
+    return FLIP_COMP[l] ? FLIP_COMP[l] : t;
+  }).join(" ");
+}
+
+function buildAnswer(ctx){
+  const {isOpen, whText, aux, subjLower, subjText, beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens} = ctx;
+
+  // Nuevo sujeto (flip de pronombres)
+  let newSubj, subjNote = "";
+  if(PRONOUNS.includes(subjLower)){
+    newSubj = FLIP_SUBJ[subjLower];
+    if(subjLower === "i") newSubj = "you";
+    if(newSubj === "I" || newSubj === "i") newSubj = "I";
+  } else if(isOpen && beMain){
+    // Identidad con be: el sujeto completo rebota ("your favorite food" -> "my favorite food")
+    newSubj = subjText.split(" ").map(t => ({you:"I", your:"my", yours:"mine"}[t.toLowerCase()] || t)).join(" ");
+  } else {
+    newSubj = "he / she / it / they";
+    subjNote = `Reemplaza «${subjText}» por el pronombre que corresponda.`;
+  }
+  // Ajuste del auxiliar según el nuevo sujeto
+  let newAux = aux;
+  if(newSubj === "I" && FLIP_AUX_TO_I[aux]) newAux = FLIP_AUX_TO_I[aux];
+  if(newSubj === "you" && FLIP_AUX_TO_YOU[aux]) newAux = FLIP_AUX_TO_YOU[aux];
+  let newNeg = AUX_NEG[newAux] || (newAux + " not");
+  const compFlipped = compTokens.length ? flipComp(compTokens) : "";
+
+  if(!isOpen){
+    // ---- CERRADA: Yes/No + Sujeto + Aux ----
+    // Si "be" es el verbo principal, esta pieza pinta y se etiqueta como verbo, no como auxiliar
+    const auxRole = beMain ? "verb" : "aux";
+    const auxPieceLabel = beMain ? "verbo to be ⭐" : "auxiliar";
+    const yesLine = {icon:"✅", pieces:[
+      {role:"new", text:"Yes,", label:"info nueva"},
+      {role:"subj", text:cap(newSubj), label:"sujeto"},
+      {role:auxRole, text:newAux+".", label:auxPieceLabel}
+    ], caption:"Afirmativa"};
+    let noPieces;
+    if(newAux === "am"){
+      noPieces = [{role:"new", text:"No,", label:"info nueva"},
+        {role:"subj", text:"I'm", label:"sujeto"},
+        {role:auxRole, text:"not.", label:auxPieceLabel}];
+    } else {
+      noPieces = [{role:"new", text:"No,", label:"info nueva"},
+        {role:"subj", text:cap(newSubj), label:"sujeto"},
+        {role:auxRole, text:newNeg+".", label:auxPieceLabel}];
+    }
+    const lines = [yesLine, {icon:"❌", pieces:noPieces, caption:"Negativa"}];
+    return {kind:"closed", lines, subjNote};
+  }
+
+  // ---- ABIERTA: Sujeto + verbo(s) + info nueva que responde la WH ----
+  let verbPhrase;
+  // "What do you DO?" — do es verbo principal Y la wh pregunta por la acción misma.
+  // (En "Where are you doing your homework?" el doing sí se devuelve: se pregunta el lugar.)
+  const doMain = !beMain && mainBase === "do" && whText === "what";
+  const notes2 = [];
+  if(negative){
+    // La negación se devuelve tal cual: el aux negativo conserva la carga temporal
+    const negAuxText = newNeg === "'m not" ? "am not" : newNeg;
+    if(beMain){
+      verbPhrase = [{role:"verb", text:negAuxText, label:"be negativo"}];
+    } else {
+      verbPhrase = [
+        {role:"aux", text:negAuxText, label:"aux negativo"},
+        ...(usedTo ? [{role:"semiaux", text:"use to", label:"semi-aux"}] : []),
+        ...(goingTo ? [{role:"semiaux", text:"going to", label:"semi-aux"}] : []),
+        {role:"verb", text: ["do","does","did"].includes(aux) && !usedTo ? mainBase : verbTokens.join(" "), label:"verbo"}
+      ];
+    }
+  } else if(doMain){
+    // Excepción: do como verbo principal NO se devuelve; se reemplaza por la acción real
+    const isThird = !["I","you","we","they"].includes(newSubj);
+    if(usedTo){
+      verbPhrase = [{role:"semiaux", text:"used to", label:"semi-aux"},
+        {role:"new", text:"[la acción: play, watch…]", label:"verbo nuevo"}];
+    } else if(aux === "do" || aux === "does"){
+      verbPhrase = [{role:"new", text: isThird ? "[la acción: works, studies…]" : "[la acción: work, study…]", label:"verbo nuevo"}];
+    } else if(aux === "did"){
+      verbPhrase = [{role:"new", text:"[la acción en pasado: played, went…]", label:"verbo nuevo"}];
+    } else if(goingTo){
+      verbPhrase = [{role:"aux", text:newAux, label:"auxiliar"},
+        {role:"semiaux", text:"going to", label:"semi-aux"},
+        {role:"new", text:"[la acción: travel, study…]", label:"verbo nuevo"}];
+    } else if(verbForm === "ing"){
+      verbPhrase = [{role:"aux", text:newAux, label:"auxiliar"},
+        {role:"new", text:"[la acción-ing: cooking, reading…]", label:"verbo nuevo"}];
+    } else if(["have","has","had"].includes(aux)){
+      verbPhrase = [{role:"aux", text:newAux, label:"auxiliar"},
+        {role:"new", text:"[participio: visited, eaten…]", label:"verbo nuevo"}];
+    } else { // will y modales
+      verbPhrase = [{role:"aux", text:newAux, label:"auxiliar"},
+        {role:"new", text:"[la acción: travel, study…]", label:"verbo nuevo"}];
+    }
+    notes2.push("Excepción del <b>do</b> como verbo principal: no se devuelve la pelota con «do» — se reemplaza por el verbo de la acción que se hizo, hace o hará: «What did you <b>do</b>?» → «I <b>played</b> football».");
+  } else if(beMain){
+    verbPhrase = [{role:"verb", text:newAux, label:"verbo to be ⭐"}];
+  } else if(aux === "do"){
+    verbPhrase = [{role:"verb", text:mainBase, label:"verbo"}];
+  } else if(aux === "does"){
+    const conj = (newSubj==="I"||newSubj==="you"||newSubj==="we"||newSubj==="they") ? mainBase : thirdPerson(mainBase);
+    verbPhrase = [{role:"verb", text:conj, label:"verbo conjugado"}];
+  } else if(aux === "did"){
+    if(usedTo){
+      // did devuelve la carga temporal: use to -> used to
+      verbPhrase = [{role:"semiaux", text:"used to", label:"semi-aux"},
+        {role:"verb", text:mainBase, label:"verbo base"}];
+    } else {
+      verbPhrase = [{role:"verb", text:pastOf(mainBase), label:"verbo en pasado"}];
+    }
+  } else {
+    // be continuo, perfecto, will, modales: aux (+ semi-aux) + verbo tal cual
+    verbPhrase = [
+      {role:"aux", text:newAux, label:"auxiliar"},
+      ...(semiAuxText && goingTo ? [{role:"semiaux", text:"going to", label:"semi-aux"}] : []),
+      {role:"verb", text:verbTokens.join(" "), label:"verbo"}
+    ];
+  }
+  // Base de la wh: "how many books" -> "how many"; "what kind of music" -> "what kind"
+  const whBase = Object.keys(WH_HINTS)
+    .filter(k => whText === k || whText.startsWith(k + " "))
+    .sort((a,b) => b.length - a.length)[0] || whText.split(" ")[0];
+  const hint = beLike ? "una descripción: friendly, shy… ✨" : (WH_HINTS[whBase] || "tu información 💬");
+  // La info nueva va en el "hueco" que dejó la wh-word:
+  //  - wh de argumento (what/who/which/whose/how many…) pregunta por el objeto
+  //    del verbo -> el hueco está justo después del verbo, ANTES del complemento.
+  //  - wh de circunstancia (where/when/why/how…) -> el hueco está al final.
+  //  - complemento que termina en preposición colgada ("live with…?") -> al final.
+  const ARG_WH = ["what","who","whom","which","whose","how many","how much","what kind","what color","what colour"];
+  const STRAND_PREPS = ["about","with","to","for","at","in","on","from","of","by","like"];
+  const lastComp = compTokens.length ? compTokens[compTokens.length-1].toLowerCase() : null;
+  // En "What was Sarah like at school?" el hueco también va tras el be: "She was ___ at school"
+  const gapAfterVerb = !doMain && compFlipped && !STRAND_PREPS.includes(lastComp)
+    && ((!beMain && ARG_WH.includes(whBase)) || beLike);
+
+  const subjPiece = {role:"subj", text:cap(newSubj), label:"sujeto"};
+  const compPiece = compFlipped ? {role:"comp", text:compFlipped, label:"complemento"} : null;
+  const newPiece = {role:"new", text:`+ ${hint}`, label:"info nueva"};
+  let pieces;
+  if(doMain){
+    // el verbo nuevo ya responde la wh: no hace falta más info nueva
+    pieces = [subjPiece, ...verbPhrase, ...(compPiece ? [compPiece] : [])];
+  } else if(gapAfterVerb){
+    pieces = [subjPiece, ...verbPhrase, newPiece, compPiece];
+  } else {
+    pieces = [subjPiece, ...verbPhrase, ...(compPiece ? [compPiece] : []), newPiece];
+  }
+  if(gapAfterVerb && !beLike) notes2.push(`Tu respuesta ocupa el <b>hueco</b> que dejó «${whText}»: como preguntaba por el objeto del verbo, la info nueva va justo después del verbo, antes del complemento.`);
+  if(!doMain && !usedTo && !negative && aux==="did") notes2.push(`Sueltas la bolita prestada 🍦: «did» ya no hace falta, y la carga temporal que llevaba pasa al verbo: «did … ${mainBase}» → «${pastOf(mainBase)}».`);
+  if(!doMain && usedTo && !negative) notes2.push("Sueltas la bolita prestada 🍦: «did» ya no hace falta, y la carga temporal que llevaba pasa al semi-auxiliar: «did … use to» → «used to».");
+  if(!doMain && !negative && aux==="does") notes2.push("Sueltas la bolita prestada 🍦: «does» ya no hace falta, y la «-s» de tercera persona que llevaba pasa al verbo.");
+  if(!doMain && !negative && aux==="do") notes2.push("Sueltas la bolita prestada 🍦: en la respuesta afirmativa el «do» ya no hace falta — queda solo el verbo con su sabor.");
+  return {kind:"open", lines:[{icon:"🏓", pieces, caption:"Estructura de la respuesta"}], subjNote, extraNotes:notes2};
+}
+
+function cap(s){ return s === "I" ? "I" : s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ================================================================
+   RENDER — ANALIZA
+================================================================ */
+const $ = id => document.getElementById(id);
+
+/* Tabs — se registran primero para que siempre funcionen */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    $(t.dataset.panel).classList.add("active");
+  });
+});
+
+const EXAMPLES = ["Where do you live?","Do you like coffee?","Who painted the Mona Lisa?",
+  "What are you doing right now?","Have you ever visited Chiloé?","Is she a doctor?",
+  "What are you going to do this weekend?","Did you use to play football?","Why didn't he like the class?","What was Sarah like at school?","Can you swim?"];
+
+function blockHTML(p){
+  return `<span class="block ${p.role}">${esc(p.text)}<small>${esc(p.label||p.role)}</small></span>`;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderResult(r, container){
+  if(!r.ok){
+    container.innerHTML = `<div class="card"><div class="errbox">${r.error}</div>
+      <p class="hint" style="margin-top:.6rem">Recuerda la receta: <b>(Wh) + Auxiliar + Sujeto + Verbo + Complemento</b> 🧩</p></div>`;
+    return;
+  }
+  let html = `<div class="card">
+    <div class="badges">
+      <span class="badge type">${esc(r.type)}</span>
+      <span class="badge">${esc(r.tense)}</span>
+    </div>
+    <h2>🧩 Piezas de tu pregunta</h2>
+    <div class="blocks">${r.parts.map((p,i)=>blockHTML(p)).join("")}</div>`;
+
+  html += `<div class="pingpong"><h3>🏓 Devuelve la pelota — así se responde:</h3>`;
+  if(r.answer.kind === "open"){
+    html += `<p class="hint">🟣 La wh-word <b>no rebota</b> — es la <b>guía</b> que indica qué tipo de info nueva agregar. Lo que sí rebota: 🟢 sujeto, 🟠 verbo, 🔵 auxiliar (a veces) y ⚪ complemento.</p>`;
+  }
+  for(const line of r.answer.lines){
+    html += `<p class="hint" style="margin-top:.4rem">${esc(line.caption)}:</p>
+      <div class="ansline"><span class="tag">${line.icon}</span>${line.pieces.map(blockHTML).join("")}</div>`;
+  }
+  if(r.answer.subjNote) html += `<p class="hint" style="margin-top:.4rem">💡 ${esc(r.answer.subjNote)}</p>`;
+  html += `</div>`;
+
+  const allNotes = [...(r.notes||[]), ...((r.answer.extraNotes)||[])];
+  for(const w of r.warnings || []) html += `<div class="note">⚠️ ${w}</div>`;
+  for(const nt of allNotes) html += `<div class="note">📌 ${nt}</div>`;
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+$("goBtn").addEventListener("click", ()=> renderResult(analyze($("qin").value), $("result")));
+$("qin").addEventListener("keydown", e=>{ if(e.key==="Enter") renderResult(analyze($("qin").value), $("result")); });
+$("examples").innerHTML = EXAMPLES.map(e=>`<button class="chip">${e}</button>`).join("");
+$("examples").addEventListener("click", e=>{
+  if(e.target.classList.contains("chip")){
+    $("qin").value = e.target.textContent;
+    renderResult(analyze(e.target.textContent), $("result"));
+  }
+});
+
+/* ================================================================
+   MODO CONSTRUYE
+================================================================ */
+const CHALLENGES = [
+  {prompt:"☕ Pregúntale a un compañero si le gusta el café.",
+   blocks:[["Do","aux"],["you","subj"],["like","verb"],["coffee?","comp"]]},
+  {prompt:"📍 Pregúntale dónde vive.",
+   blocks:[["Where","wh"],["do","aux"],["you","subj"],["live?","verb"]]},
+  {prompt:"⏰ Pregúntale qué está haciendo en este momento.",
+   blocks:[["What","wh"],["are","aux"],["you","subj"],["doing","verb"],["right now?","comp"]]},
+  {prompt:"✈️ Pregunta si ella viajó a Perú.",
+   blocks:[["Did","aux"],["she","subj"],["travel","verb"],["to Peru?","comp"]]},
+  {prompt:"🕐 Pregunta cuándo llegaron ellos.",
+   blocks:[["When","wh"],["did","aux"],["they","subj"],["arrive?","verb"]]},
+  {prompt:"🎓 Pregúntale si vendrá a clases mañana.",
+   blocks:[["Will","aux"],["you","subj"],["come","verb"],["to class tomorrow?","comp"]]},
+  {prompt:"📅 Pregúntale qué va a hacer este fin de semana (going to).",
+   blocks:[["What","wh"],["are","aux"],["you","subj"],["going to","semiaux"],["do","verb"],["this weekend?","comp"]]},
+  {prompt:"🏝️ Pregúntale si ha visitado Chiloé.",
+   blocks:[["Have","aux"],["you","subj"],["visited","verb"],["Chiloé?","comp"]]},
+  {prompt:"🏊 Pregúntale si sabe nadar.",
+   blocks:[["Can","aux"],["you","subj"],["swim?","verb"]]},
+  {prompt:"🩺 Pregunta si ella es doctora (¡be es aux y verbo a la vez!).",
+   blocks:[["Is","aux"],["she","subj"],["a doctor?","comp"]]},
+  {prompt:"🎨 Pregunta quién pintó la Mona Lisa (¡ojo: sin auxiliar!).",
+   blocks:[["Who","wh"],["painted","verb"],["the Mona Lisa?","comp"]]},
+  {prompt:"📖 Pregúntale cuánto tiempo ha estudiado inglés.",
+   blocks:[["How long","wh"],["have","aux"],["you","subj"],["studied","verb"],["English?","comp"]]},
+  {prompt:"⚽ Pregúntale si jugaba fútbol cuando era niño (used to).",
+   blocks:[["Did","aux"],["you","subj"],["use to","semiaux"],["play","verb"],["football as a child?","comp"]]}
+];
+
+let bIdx = 0, bPlaced = [], bPool = [], bFailed = false;
+/* localStorage puede estar bloqueado (modo privado, file://) — nunca debe romper la app */
+function loadStreak(){ try{ return parseInt(localStorage.getItem("ql_streak")||"0",10)||0; }catch(e){ return 0; } }
+function saveStreak(v){ try{ localStorage.setItem("ql_streak", v); }catch(e){} }
+let streak = loadStreak();
+
+function shuffle(a){
+  const r = [...a];
+  for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
+  return r;
+}
+function loadChallenge(){
+  const ch = CHALLENGES[bIdx % CHALLENGES.length];
+  bPlaced = []; bFailed = false;
+  do { bPool = shuffle(ch.blocks.map((b,i)=>({text:b[0], role:b[1], id:i}))); }
+  while(bPool.length>2 && bPool.every((b,i)=>b.id===i));
+  $("bPrompt").textContent = ch.prompt;
+  $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
+  $("bResult").innerHTML = "";
+  $("bSlots").className = "slotarea";
+  renderBuild();
+}
+function renderBuild(){
+  $("bSlots").innerHTML = bPlaced.length
+    ? bPlaced.map((b,i)=>`<span class="block ${b.role}" data-slot="${i}">${esc(b.text)}<small>${roleLabel(b.role)}</small></span>`).join("")
+    : `<span class="hint" style="padding:.4rem">Toca las piezas en orden para armar la pregunta…</span>`;
+  $("bPool").innerHTML = bPool.map((b,i)=>`<span class="block ${b.role}" data-pool="${i}">${esc(b.text)}<small>${roleLabel(b.role)}</small></span>`).join("");
+  $("bStreak").textContent = `🔥 Racha: ${streak}`;
+  $("bProg").textContent = `Desafío ${ (bIdx % CHALLENGES.length)+1 } de ${CHALLENGES.length}`;
+}
+function roleLabel(r){ return {wh:"wh-word", aux:"auxiliar", semiaux:"semi-aux", subj:"sujeto", verb:"verbo", comp:"complemento"}[r] || r; }
+
+$("bPool").addEventListener("click", e=>{
+  const el = e.target.closest("[data-pool]"); if(!el) return;
+  const i = +el.dataset.pool;
+  bPlaced.push(bPool[i]); bPool.splice(i,1);
+  renderBuild();
+  if(bPool.length === 0) checkBuild();
+});
+$("bSlots").addEventListener("click", e=>{
+  const el = e.target.closest("[data-slot]"); if(!el) return;
+  const i = +el.dataset.slot;
+  bPool.push(bPlaced[i]); bPlaced.splice(i,1);
+  $("bSlots").className = "slotarea";
+  $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
+  renderBuild();
+});
+function checkBuild(){
+  const ok = bPlaced.every((b,i)=>b.id===i);
+  const msg = $("bMsg");
+  if(ok){
+    $("bSlots").className = "slotarea correct";
+    if(!bFailed){ streak++; }
+    saveStreak(streak);
+    msg.textContent = "🎉 ¡Perfecto! Ahora mira cómo se responde…";
+    msg.className = "buildmsg ok";
+    const q = bPlaced.map(b=>b.text).join(" ");
+    renderResult(analyze(q), $("bResult"));
+    $("bResult").insertAdjacentHTML("beforeend",
+      `<div style="text-align:center; margin-bottom:1rem">
+        <button class="primary" id="bNext">Siguiente desafío →</button></div>`);
+    $("bNext").addEventListener("click", ()=>{ bIdx++; loadChallenge(); });
+    renderBuild();
+  } else {
+    bFailed = true; streak = 0;
+    saveStreak(streak);
+    $("bSlots").className = "slotarea wrong";
+    msg.textContent = "Casi… el orden no es el correcto. Recuerda: (Wh) + Auxiliar + Sujeto + Verbo + Complemento. Toca una pieza para devolverla.";
+    msg.className = "buildmsg bad";
+    renderBuild();
+  }
+}
+$("bReset").addEventListener("click", ()=>{
+  const ch = CHALLENGES[bIdx % CHALLENGES.length];
+  bPool = shuffle([...bPlaced, ...bPool]); bPlaced = [];
+  $("bSlots").className = "slotarea";
+  $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
+  renderBuild();
+});
+$("bSkip").addEventListener("click", ()=>{ bIdx++; loadChallenge(); });
+
+loadChallenge();
+</script>
+</body>
+</html>
