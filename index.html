@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Question Lab 🧩</title>
+<link rel="icon" href="favicon.svg">
 <link rel="stylesheet" href="tokens.css">
+<script src="cefr.generated.js"></script>
 <style>
   :root{
     --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
@@ -28,6 +30,10 @@
   header{text-align:center; padding:1.4rem 0 .6rem;}
   header h1{font-size:1.7rem; letter-spacing:-.02em;}
   header p{color:var(--muted); font-size:.95rem; margin-top:.2rem;}
+  .levelbar{display:flex; align-items:center; justify-content:center; gap:.5rem;
+    margin:.6rem 0 -.2rem; font-size:.88rem; color:var(--muted);}
+  .levelbar select{padding:.32rem .55rem; border-radius:8px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:.88rem; cursor:pointer;}
 
   /* Tabs */
   .tabs{display:flex; gap:.5rem; margin:1.2rem 0 1rem;}
@@ -175,6 +181,11 @@
     <p>Arma preguntas en inglés como legos. Respóndelas como ping pong.</p>
   </header>
 
+  <div class="levelbar" id="levelbar">
+    <span>📊 Nivel</span>
+    <select id="levelSel" aria-label="Nivel CEFR"></select>
+  </div>
+
   <details>
     <summary>🧩 ¿Qué significa cada pieza?</summary>
     <ol class="piecelist">
@@ -271,91 +282,91 @@
     <div class="card">
       <h2>⏱️ Tiempos: cuándo se usa cada uno</h2>
 
-      <div class="tense">
+      <div class="tense" data-tense="simple-present">
         <h3>Presente Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
         <div class="pat"><span class="mini aux">Do / Does</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso">Rutinas, hábitos, hechos generales, gustos.</p>
         <p class="ej">Do you drink coffee every day?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-cefr="basico1">
         <h3>Presente de «to be» 👑 <span class="hint">(el punki: no pide prestado)</span></h3>
         <div class="pat"><span class="mini verb">Am / Is / Are</span><span class="mini subj">sujeto</span><span class="mini comp">…?</span></div>
         <p class="uso">Identidad, estados, descripciones, nacionalidad, profesión.</p>
         <p class="ej">Is she a doctor?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="present-continuous">
         <h3>Presente Continuo 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj">sujeto</span><span class="mini verb">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso">Lo que pasa ahora mismo; también planes ya agendados.</p>
         <p class="ej">What are you doing right now?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="simple-past">
         <h3>Pasado Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso">Acciones terminadas en un momento específico del pasado.</p>
         <p class="ej">Did she travel to Peru last year?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-cefr="basico2">
         <h3>Pasado de «to be» 👑</h3>
         <div class="pat"><span class="mini verb">Was / Were</span><span class="mini subj">sujeto</span><span class="mini comp">…?</span></div>
         <p class="uso">Estados y descripciones en el pasado.</p>
         <p class="ej">Were you tired yesterday?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="past-continuous">
         <h3>Pasado Continuo 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Was / Were</span><span class="mini subj">sujeto</span><span class="mini verb">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso">Acción en progreso en el pasado, a menudo interrumpida por otra.</p>
         <p class="ej">Was he sleeping when you called?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="present-perfect">
         <h3>Presente Perfecto 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Have / Has</span><span class="mini subj">sujeto</span><span class="mini verb">participio</span><span class="mini comp">…?</span></div>
         <p class="uso">Experiencias de vida (sin fecha específica) y acciones pasadas con efecto en el presente.</p>
         <p class="ej">Have you ever visited Chiloé?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="past-perfect">
         <h3>Pasado Perfecto 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Had</span><span class="mini subj">sujeto</span><span class="mini verb">participio</span><span class="mini comp">…?</span></div>
         <p class="uso">Lo que pasó <b>antes</b> de otra acción en el pasado.</p>
         <p class="ej">Had you eaten before the meeting?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="simple-future">
         <h3>Futuro con «will» 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Will</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso">Decisiones espontáneas, promesas, predicciones.</p>
         <p class="ej">Will you come to class tomorrow?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="future-going-to">
         <h3>Futuro con «going to» 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj">sujeto</span><span class="mini semiaux">going to</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso">Planes e intenciones ya decididos. El «be» es el auxiliar oficial; «going to» es su ayudante (semi-aux).</p>
         <p class="ej">What are you going to do this weekend?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-tense="used-to">
         <h3>Hábito pasado con «used to» 🍦</h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj">sujeto</span><span class="mini semiaux">use to</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso">Hábitos o estados del pasado que ya no ocurren. En positivo el semi-aux recupera la carga temporal: I <b>used to</b> play football.</p>
         <p class="ej">Did you use to play football as a child?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-cefr="basico2">
         <h3>Modales 🍦🍦 <span class="hint">(can, could, should, would…)</span></h3>
         <div class="pat"><span class="mini aux">Can / Should…</span><span class="mini subj">sujeto</span><span class="mini verb">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso">Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.</p>
         <p class="ej">Can you swim?</p>
       </div>
 
-      <div class="tense">
+      <div class="tense" data-cefr="intermedio2">
         <h3>Pregunta de sujeto 🕵️ <span class="hint">(la excepción sin auxiliar)</span></h3>
         <div class="pat"><span class="mini wh">Who / What</span><span class="mini verb">verbo conjugado</span><span class="mini comp">…?</span></div>
         <p class="uso">Cuando la wh-word ES el sujeto, no se usa auxiliar y el verbo va conjugado.</p>
@@ -965,9 +976,19 @@ document.querySelectorAll(".tab").forEach(t=>{
   });
 });
 
-const EXAMPLES = ["Where do you live?","Do you like coffee?","Who painted the Mona Lisa?",
-  "What are you doing right now?","Have you ever visited Chiloé?","Is she a doctor?",
-  "What are you going to do this weekend?","Did you use to play football?","Why didn't he like the class?","What was Sarah like at school?","Can you swim?"];
+const EXAMPLES = [
+  {q:"Where do you live?", t:"simple-present"},
+  {q:"Do you like coffee?", t:"simple-present"},
+  {q:"Is she a doctor?", c:"basico1"},
+  {q:"What are you doing right now?", t:"present-continuous"},
+  {q:"Why didn't he like the class?", t:"simple-past"},
+  {q:"What was Sarah like at school?", c:"basico2"},
+  {q:"Can you swim?", c:"basico2"},
+  {q:"What are you going to do this weekend?", t:"future-going-to"},
+  {q:"Have you ever visited Chiloé?", t:"present-perfect"},
+  {q:"Did you use to play football?", t:"used-to"},
+  {q:"Who painted the Mona Lisa?", c:"intermedio2"}
+];
 
 function blockHTML(p){
   return `<span class="block ${p.role}">${esc(p.text)}<small>${esc(p.label||p.role)}</small></span>`;
@@ -1008,7 +1029,6 @@ function renderResult(r, container){
 
 $("goBtn").addEventListener("click", ()=> renderResult(analyze($("qin").value), $("result")));
 $("qin").addEventListener("keydown", e=>{ if(e.key==="Enter") renderResult(analyze($("qin").value), $("result")); });
-$("examples").innerHTML = EXAMPLES.map(e=>`<button class="chip">${e}</button>`).join("");
 $("examples").addEventListener("click", e=>{
   if(e.target.classList.contains("chip")){
     $("qin").value = e.target.textContent;
@@ -1020,35 +1040,35 @@ $("examples").addEventListener("click", e=>{
    MODO CONSTRUYE
 ================================================================ */
 const CHALLENGES = [
-  {prompt:"☕ Pregúntale a un compañero si le gusta el café.",
+  {t:"simple-present", prompt:"☕ Pregúntale a un compañero si le gusta el café.",
    blocks:[["Do","aux"],["you","subj"],["like","verb"],["coffee?","comp"]]},
-  {prompt:"📍 Pregúntale dónde vive.",
+  {t:"simple-present", prompt:"📍 Pregúntale dónde vive.",
    blocks:[["Where","wh"],["do","aux"],["you","subj"],["live?","verb"]]},
-  {prompt:"⏰ Pregúntale qué está haciendo en este momento.",
+  {t:"present-continuous", prompt:"⏰ Pregúntale qué está haciendo en este momento.",
    blocks:[["What","wh"],["are","aux"],["you","subj"],["doing","verb"],["right now?","comp"]]},
-  {prompt:"✈️ Pregunta si ella viajó a Perú.",
+  {t:"simple-past", prompt:"✈️ Pregunta si ella viajó a Perú.",
    blocks:[["Did","aux"],["she","subj"],["travel","verb"],["to Peru?","comp"]]},
-  {prompt:"🕐 Pregunta cuándo llegaron ellos.",
+  {t:"simple-past", prompt:"🕐 Pregunta cuándo llegaron ellos.",
    blocks:[["When","wh"],["did","aux"],["they","subj"],["arrive?","verb"]]},
-  {prompt:"🎓 Pregúntale si vendrá a clases mañana.",
+  {t:"simple-future", prompt:"🎓 Pregúntale si vendrá a clases mañana.",
    blocks:[["Will","aux"],["you","subj"],["come","verb"],["to class tomorrow?","comp"]]},
-  {prompt:"📅 Pregúntale qué va a hacer este fin de semana (going to).",
+  {t:"future-going-to", prompt:"📅 Pregúntale qué va a hacer este fin de semana (going to).",
    blocks:[["What","wh"],["are","aux"],["you","subj"],["going to","semiaux"],["do","verb"],["this weekend?","comp"]]},
-  {prompt:"🏝️ Pregúntale si ha visitado Chiloé.",
+  {t:"present-perfect", prompt:"🏝️ Pregúntale si ha visitado Chiloé.",
    blocks:[["Have","aux"],["you","subj"],["visited","verb"],["Chiloé?","comp"]]},
-  {prompt:"🏊 Pregúntale si sabe nadar.",
+  {c:"basico2", prompt:"🏊 Pregúntale si sabe nadar.",
    blocks:[["Can","aux"],["you","subj"],["swim?","verb"]]},
-  {prompt:"🩺 Pregunta si ella es doctora (¡be es aux y verbo a la vez!).",
+  {c:"basico1", prompt:"🩺 Pregunta si ella es doctora (¡be es aux y verbo a la vez!).",
    blocks:[["Is","aux"],["she","subj"],["a doctor?","comp"]]},
-  {prompt:"🎨 Pregunta quién pintó la Mona Lisa (¡ojo: sin auxiliar!).",
+  {c:"intermedio2", prompt:"🎨 Pregunta quién pintó la Mona Lisa (¡ojo: sin auxiliar!).",
    blocks:[["Who","wh"],["painted","verb"],["the Mona Lisa?","comp"]]},
-  {prompt:"📖 Pregúntale cuánto tiempo ha estudiado inglés.",
+  {t:"present-perfect", prompt:"📖 Pregúntale cuánto tiempo ha estudiado inglés.",
    blocks:[["How long","wh"],["have","aux"],["you","subj"],["studied","verb"],["English?","comp"]]},
-  {prompt:"⚽ Pregúntale si jugaba fútbol cuando era niño (used to).",
+  {t:"used-to", prompt:"⚽ Pregúntale si jugaba fútbol cuando era niño (used to).",
    blocks:[["Did","aux"],["you","subj"],["use to","semiaux"],["play","verb"],["football as a child?","comp"]]}
 ];
 
-let bIdx = 0, bPlaced = [], bPool = [], bFailed = false;
+let bIdx = 0, bPlaced = [], bPool = [], bFailed = false, activeChallenges = CHALLENGES;
 /* localStorage puede estar bloqueado (modo privado, file://) — nunca debe romper la app */
 function loadStreak(){ try{ return parseInt(localStorage.getItem("ql_streak")||"0",10)||0; }catch(e){ return 0; } }
 function saveStreak(v){ try{ localStorage.setItem("ql_streak", v); }catch(e){} }
@@ -1060,7 +1080,7 @@ function shuffle(a){
   return r;
 }
 function loadChallenge(){
-  const ch = CHALLENGES[bIdx % CHALLENGES.length];
+  const ch = activeChallenges[bIdx % activeChallenges.length];
   bPlaced = []; bFailed = false;
   do { bPool = shuffle(ch.blocks.map((b,i)=>({text:b[0], role:b[1], id:i}))); }
   while(bPool.length>2 && bPool.every((b,i)=>b.id===i));
@@ -1076,7 +1096,7 @@ function renderBuild(){
     : `<span class="hint" style="padding:.4rem">Toca las piezas en orden para armar la pregunta…</span>`;
   $("bPool").innerHTML = bPool.map((b,i)=>`<span class="block ${b.role}" data-pool="${i}">${esc(b.text)}<small>${roleLabel(b.role)}</small></span>`).join("");
   $("bStreak").textContent = `🔥 Racha: ${streak}`;
-  $("bProg").textContent = `Desafío ${ (bIdx % CHALLENGES.length)+1 } de ${CHALLENGES.length}`;
+  $("bProg").textContent = `Desafío ${ (bIdx % activeChallenges.length)+1 } de ${activeChallenges.length}`;
 }
 function roleLabel(r){ return {wh:"wh-word", aux:"auxiliar", semiaux:"semi-aux", subj:"sujeto", verb:"verbo", comp:"complemento"}[r] || r; }
 
@@ -1121,7 +1141,7 @@ function checkBuild(){
   }
 }
 $("bReset").addEventListener("click", ()=>{
-  const ch = CHALLENGES[bIdx % CHALLENGES.length];
+  const ch = activeChallenges[bIdx % activeChallenges.length];
   bPool = shuffle([...bPlaced, ...bPool]); bPlaced = [];
   $("bSlots").className = "slotarea";
   $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
@@ -1129,7 +1149,60 @@ $("bReset").addEventListener("click", ()=>{
 });
 $("bSkip").addEventListener("click", ()=>{ bIdx++; loadChallenge(); });
 
-loadChallenge();
+/* ================================================================
+   NIVELES CEFR  (fuente: Grammar HUB/curriculum.json → cefr.generated.js)
+================================================================ */
+const CEFR = window.GRAMMAR_CEFR || {levels:["basico1","basico2","elemental1","elemental2","intermedio1","intermedio2","avanzado"], labels:{}, tenses:{}};
+const LV = CEFR.levels;
+const fromHub = window.self !== window.top;
+const itemCefr = o => o.t ? CEFR.tenses[o.t] : o.c;   // {t} deriva de la fuente común; {c} es literal de QL
+const cefrIdx = c => LV.indexOf(c);
+let curLevel = LV[LV.length-1];                        // standalone: por defecto muestra todo
+try{ const s = localStorage.getItem("ql_level"); if(s && LV.includes(s)) curLevel = s; }catch(e){}
+const visibleAt = c => !c || cefrIdx(c) <= cefrIdx(curLevel);
+
+function renderExamples(){
+  $("examples").innerHTML = EXAMPLES.filter(o=>visibleAt(itemCefr(o)))
+    .map(o=>`<button class="chip">${o.q}</button>`).join("");
+}
+function refilterChallenges(){
+  activeChallenges = CHALLENGES.filter(o=>visibleAt(itemCefr(o)));
+  if(!activeChallenges.length) activeChallenges = CHALLENGES;   // seguridad
+  bIdx = 0; loadChallenge();
+}
+function applyLevel(){
+  document.querySelectorAll("#guide .tense").forEach(el=>{
+    const c = el.dataset.tense ? CEFR.tenses[el.dataset.tense] : el.dataset.cefr;
+    el.style.display = visibleAt(c) ? "" : "none";
+  });
+  renderExamples();
+  refilterChallenges();
+}
+function setLevel(id){
+  if(!LV.includes(id)) return;
+  curLevel = id;
+  try{ localStorage.setItem("ql_level", id); }catch(e){}
+  if($("levelSel")) $("levelSel").value = id;
+  applyLevel();
+}
+/* Selector standalone — se oculta dentro del hub, que controla el nivel */
+(function initLevelUI(){
+  const sel = $("levelSel");
+  if(sel){
+    sel.innerHTML = LV.map(id=>`<option value="${id}">${(CEFR.labels[id]&&CEFR.labels[id].es)||id}</option>`).join("");
+    sel.value = curLevel;
+    sel.addEventListener("change", ()=>setLevel(sel.value));
+  }
+  if(fromHub && $("levelbar")) $("levelbar").style.display = "none";
+})();
+/* El hub manda nivel e idioma por postMessage */
+window.addEventListener("message", e=>{
+  const d = e.data;
+  if(d && d.type === "GRAMMAR_HUB_LEVEL" && LV.includes(d.level)) setLevel(d.level);
+  /* GRAMMAR_HUB_LANG: Question Lab es solo español por ahora — se ignora. */
+});
+
+applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
 </script>
 </body>
 </html>
