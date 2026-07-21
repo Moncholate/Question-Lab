@@ -4,17 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Question Lab 🧩</title>
+<link rel="stylesheet" href="tokens.css">
 <style>
   :root{
     --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
-    --wh:#8b5cf6; --aux:#3b82f6; --subj:#10b981; --verb:#f59e0b; --comp:#94a3b8; --new:#14b8a6;
+    /* Colores de rol gramatical + acento de UI: en tokens.css (fuente: Apps/design-tokens) */
     --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
     --shadow:0 1px 3px rgba(0,0,0,.08);
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --border:#334155;
-      --comp:#64748b; --shadow:0 1px 3px rgba(0,0,0,.4);
+      --shadow:0 1px 3px rgba(0,0,0,.4);
     }
   }
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -35,7 +36,7 @@
     background:var(--card); color:var(--muted); font-size:1rem; font-weight:600;
     cursor:pointer; transition:all .15s;
   }
-  .tab.active{color:var(--text); border-color:var(--aux); box-shadow:0 0 0 2px color-mix(in srgb, var(--aux) 25%, transparent);}
+  .tab.active{color:var(--text); border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);}
   .panel{display:none;}
   .panel.active{display:block; animation:fadein .25s;}
   @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
@@ -46,6 +47,7 @@
   }
   .card h2{font-size:1.02rem; margin-bottom:.6rem;}
   .hint{color:var(--muted); font-size:.88rem;}
+  .cdot{display:inline-block; width:.72em; height:.72em; border-radius:50%; vertical-align:-.05em; margin:0 .06em; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
 
   /* Analyze input */
   .qinput{display:flex; gap:.5rem; margin-bottom:.6rem;}
@@ -53,10 +55,10 @@
     flex:1; padding:.85rem 1rem; font-size:1.05rem; border:1.5px solid var(--border);
     border-radius:12px; background:var(--bg); color:var(--text); outline:none;
   }
-  .qinput input:focus{border-color:var(--aux);}
+  .qinput input:focus{border-color:var(--accent);}
   button.primary{
     padding:.85rem 1.2rem; font-size:1rem; font-weight:700; border:none; border-radius:12px;
-    background:var(--aux); color:#fff; cursor:pointer; transition:transform .1s;
+    background:var(--accent); color:#fff; cursor:pointer; transition:transform .1s;
   }
   button.primary:active{transform:scale(.96);}
   .examples{display:flex; flex-wrap:wrap; gap:.4rem;}
@@ -81,7 +83,7 @@
   }
   .block small{display:block; font-size:.62rem; font-weight:600; opacity:.85; margin-top:.05rem; text-transform:uppercase; letter-spacing:.04em;}
   .block.wh{background:var(--wh);} .block.aux{background:var(--aux);}
-  .block.semiaux{background:#60a5fa;}
+  .block.semiaux{background:var(--aux);}
   .block.subj{background:var(--subj);} .block.verb{background:var(--verb);}
   .block.comp{background:var(--comp);} .block.new{background:transparent; color:var(--new); border:2px dashed var(--new);}
   .block.new::before{display:none;}
@@ -90,8 +92,8 @@
   .badges{display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.8rem;}
   .badge{
     padding:.35rem .8rem; border-radius:999px; font-size:.85rem; font-weight:700;
-    background:color-mix(in srgb, var(--aux) 14%, transparent); color:var(--aux);
-    border:1px solid color-mix(in srgb, var(--aux) 35%, transparent);
+    background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent);
+    border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   }
   .badge.type{background:color-mix(in srgb, var(--wh) 14%, transparent); color:var(--wh);
     border-color:color-mix(in srgb, var(--wh) 35%, transparent);}
@@ -160,7 +162,7 @@
   .pat{display:flex; flex-wrap:wrap; gap:.25rem; margin:.3rem 0;}
   .mini{padding:.12rem .5rem; border-radius:6px; color:#fff; font-size:.76rem; font-weight:700;}
   .mini.wh{background:var(--wh);} .mini.aux{background:var(--aux);}
-  .mini.semiaux{background:#60a5fa;}
+  .mini.semiaux{background:var(--aux);}
   .mini.subj{background:var(--subj);} .mini.verb{background:var(--verb);}
   .mini.comp{background:var(--comp);}
   footer{text-align:center; color:var(--muted); font-size:.8rem; padding:1rem; }
@@ -190,8 +192,8 @@
     <summary>🏓 La analogía del ping pong: ¿qué se devuelve?</summary>
     <div class="explain">
       <p>Hablar es como jugar <b>ping pong</b>: alguien te lanza la pelota (la pregunta) y tú la devuelves, pero no igual — le agregas algo tuyo.</p>
-      <p>Lo que <b>rebota</b> de la pregunta a la respuesta es: el <b>sujeto</b> 🟢 (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> 🟠, el <b>auxiliar</b> 🔵 (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> ⚪.</p>
-      <p>La <b>wh-word</b> 🟣 <b>no rebota</b>: nunca aparece en la respuesta. Es solo la <b>guía</b> que te dice qué tipo de información nueva 🆕 debes agregar — un lugar si preguntó «where», una persona si preguntó «who», etc.</p>
+      <p>Lo que <b>rebota</b> de la pregunta a la respuesta es: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.</p>
+      <p>La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no rebota</b>: nunca aparece en la respuesta. Es solo la <b>guía</b> que te dice qué tipo de información nueva 🆕 debes agregar — un lugar si preguntó «where», una persona si preguntó «who», etc.</p>
       <p>Y esa información nueva es la única pieza que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.</p>
     </div>
   </details>
@@ -247,7 +249,7 @@
   <!-- ============ GUÍA ============ -->
   <div class="panel" id="guide">
     <div class="card">
-      <h2>🟣 Wh-words: la pieza que pregunta</h2>
+      <h2><span class="cdot" style="background:var(--wh)"></span> Wh-words: la pieza que pregunta</h2>
       <table class="gtable">
         <tr><td>What</td><td>cosas, ideas, acciones</td><td>What do you do?</td></tr>
         <tr><td>Where</td><td>lugares</td><td>Where do you live?</td></tr>
@@ -502,11 +504,11 @@ function analyze(raw){
       whLen = sIdx; auxIdx = sIdx; aux = lower[auxIdx];
       if(NEG_AUX[aux]){ negative = true; aux = NEG_AUX[aux]; }
     } else if(PRONOUNS.includes(lower[whLen])){
-      return {ok:false, error:`Parece que falta el <b>auxiliar</b> 🔵. Después de la wh-word va un auxiliar y luego el sujeto: <i>${whText} <b>do</b> ${tokens.slice(whLen).join(" ")}?</i> — revisa cuál auxiliar corresponde.`};
+      return {ok:false, error:`Parece que falta el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span>. Después de la wh-word va un auxiliar y luego el sujeto: <i>${whText} <b>do</b> ${tokens.slice(whLen).join(" ")}?</i> — revisa cuál auxiliar corresponde.`};
     } else if(sIdx < n && isVerbCandidate(lower[sIdx]) && ["who","what","which","whose","how"].includes(lower[0])){
       return analyzeSubjectQ(tokens, lower, whText, extra, sIdx, warnings);
     } else {
-      return {ok:false, error:`Encontré la wh-word «${whText}» 🟣 pero no logro identificar el <b>auxiliar</b> 🔵 que debería seguirla. ¿Está bien armada la pregunta?`};
+      return {ok:false, error:`Encontré la wh-word «${whText}» <span class="cdot" style="background:var(--wh)"></span> pero no logro identificar el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> que debería seguirla. ¿Está bien armada la pregunta?`};
     }
   }
   if(!AUXES.includes(aux)){
@@ -599,7 +601,7 @@ function analyze(raw){
   }
 
   if(!subjTokens || subjTokens.length === 0){
-    return {ok:false, error:`Encontré el auxiliar «${aux}» 🔵 pero no logro ver el <b>sujeto</b> 🟢 que debería seguirlo.`};
+    return {ok:false, error:`Encontré el auxiliar «${aux}» <span class="cdot" style="background:var(--aux)"></span> pero no logro ver el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> que debería seguirlo.`};
   }
   const subjText = subjTokens.join(" ");
   const subjLower = subjText.toLowerCase();
@@ -707,7 +709,7 @@ function analyze(raw){
   if(negative && !isOpen) notes.push("Pregunta <b>negativa</b>: expresa sorpresa o busca confirmación («¿No te gusta…?»). En inglés respondes según la <b>realidad</b>, sin importar el «not»: «Yes, I do» = sí me gusta · «No, I don't» = no me gusta.");
   if(negative && isOpen) notes.push("Pregunta <b>negativa</b>: la respuesta devuelve la negación tal cual. El auxiliar negativo conserva la carga temporal 🍦, así que el verbo se queda en forma base: «He <b>didn't like</b> it because…».");
 
-  if(goingTo) notes.push("Aquí el <b>be</b> es el auxiliar oficial 🔵 (él hace la pregunta y la negación) y «going to» es su <b>ayudante</b> (semi-auxiliar): juntos forman el futuro. El verbo principal queda en forma base.");
+  if(goingTo) notes.push("Aquí el <b>be</b> es el auxiliar oficial <span class=\"cdot\" style=\"background:var(--aux)\"></span> (él hace la pregunta y la negación) y «going to» es su <b>ayudante</b> (semi-auxiliar): juntos forman el futuro. El verbo principal queda en forma base.");
   if(usedTo) notes.push("«used to» = hábitos del pasado que ya no ocurren. Funciona como <b>semi-auxiliar</b>: en la pregunta, «did» se lleva la carga temporal y queda «use to»; al responder en positivo, sueltas el «did» y su carga <b>pasa al semi-auxiliar</b>: «I <b>used to</b> play…».");
 
   if(beMain) notes.push("El verbo <b>to be</b> es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. No pide bolitas prestadas — él mismo pregunta, niega y responde: «Yes, she <b>is</b>».");
@@ -988,7 +990,7 @@ function renderResult(r, container){
 
   html += `<div class="pingpong"><h3>🏓 Devuelve la pelota — así se responde:</h3>`;
   if(r.answer.kind === "open"){
-    html += `<p class="hint">🟣 La wh-word <b>no rebota</b> — es la <b>guía</b> que indica qué tipo de info nueva agregar. Lo que sí rebota: 🟢 sujeto, 🟠 verbo, 🔵 auxiliar (a veces) y ⚪ complemento.</p>`;
+    html += `<p class="hint"><span class="cdot" style="background:var(--wh)"></span> La wh-word <b>no rebota</b> — es la <b>guía</b> que indica qué tipo de info nueva agregar. Lo que sí rebota: <span class="cdot" style="background:var(--subj)"></span> sujeto, <span class="cdot" style="background:var(--verb)"></span> verbo, <span class="cdot" style="background:var(--aux)"></span> auxiliar (a veces) y <span class="cdot" style="background:var(--comp)"></span> complemento.</p>`;
   }
   for(const line of r.answer.lines){
     html += `<p class="hint" style="margin-top:.4rem">${esc(line.caption)}:</p>
