@@ -95,7 +95,7 @@
   .block.wh{background:var(--wh);} .block.aux{background:var(--aux);}
   .block.semiaux{background:var(--aux);}
   .block.subj{background:var(--subj);} .block.verb{background:var(--verb);}
-  .block.comp{background:var(--comp);} .block.new{background:transparent; color:var(--new); border:2px dashed var(--new);}
+  .block.comp{background:var(--comp);} .block.adv{background:var(--adv);} .block.new{background:transparent; color:var(--new); border:2px dashed var(--new);}
   .block.new::before{display:none;}
   @keyframes pop{from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);}}
 
@@ -174,7 +174,7 @@
   .mini.wh{background:var(--wh);} .mini.aux{background:var(--aux);}
   .mini.semiaux{background:var(--aux);}
   .mini.subj{background:var(--subj);} .mini.verb{background:var(--verb);}
-  .mini.comp{background:var(--comp);}
+  .mini.comp{background:var(--comp);} .mini.adv{background:var(--adv);}
   footer{text-align:center; color:var(--muted); font-size:.8rem; padding:1rem; }
 </style>
 </head>
@@ -200,6 +200,7 @@
       <li><span class="block subj" data-i18n="pSubj">Sujeto</span><span class="pdesc" data-i18n="pSubjD">De quién se habla, o quién hace la acción.</span></li>
       <li><span class="block verb" data-i18n="pVerb">Verbo principal</span><span class="pdesc" data-i18n="pVerbD">Acción o estado que se realiza.</span></li>
       <li><span class="block comp" data-i18n="pComp">Complemento</span><span class="pdesc" data-i18n="pCompD">Información adicional de la oración.</span></li>
+      <li><span class="block adv" data-i18n="pAdv">Adverbio</span><span class="pdesc" data-i18n="pAdvD">Modifica al verbo (ever, never, always, often…).</span></li>
       <li><span class="block new" data-i18n="pNew">+ Info nueva</span><span class="pdesc" data-i18n="pNewD">Lo que tú agregas al responder — no viene de la pregunta.</span></li>
     </ol>
   </details>
@@ -484,6 +485,7 @@ function baseOf(w){
 function analyze(raw){
   const warnings = [];
   const notes = [];
+  let advTokens = [];
   let q = raw.trim().replace(/[’‘]/g, "'");
   if(!q) return {ok:false, error: lang==="en" ? "Type a question first. 😊" : "Escribe una pregunta primero. 😊"};
   if(!/\?\s*$/.test(q)) warnings.push(lang==="en" ? "Tip: questions in English end with \"?\"." : "Tip: las preguntas en inglés terminan con «?».");
@@ -607,7 +609,7 @@ function analyze(raw){
       else if(ADVS.includes(last)){ advs.unshift(subjTokens.pop()); }
       else break;
     }
-    if(advs.length) verbTokens = [...advs, ...verbTokens];
+    if(advs.length) advTokens = advs;   // el adverbio es su propia pieza, no parte del verbo
   } else if(vIdx === -1 || vIdx === auxIdx+1){
     // No hay verbo después del sujeto -> be/modal como verbo principal (Is she a doctor?)
     let sEnd = auxIdx+2;
@@ -721,6 +723,7 @@ function analyze(raw){
   parts.push({role:"subj", text:subjText, label:"sujeto"});
   if(beLike) parts.push({role:"wh", text:beLikeText, label:"pareja del what"});
   if(!beMain && semiAuxText) parts.push({role:"semiaux", text:semiAuxText, label:"semi-aux"});
+  if(advTokens.length) parts.push({role:"adv", text:advTokens.join(" "), label:"adverbio"});
   if(!beMain && verbTokens.length) parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
   if(compTokens.length) parts.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
 
@@ -1233,6 +1236,7 @@ const I18N = {
     pSubj:"Sujeto", pSubjD:"De quién se habla, o quién hace la acción.",
     pVerb:"Verbo principal", pVerbD:"Acción o estado que se realiza.",
     pComp:"Complemento", pCompD:"Información adicional de la oración.",
+    pAdv:"Adverbio", pAdvD:"Modifica al verbo (ever, never, always, often…).",
     pNew:"+ Info nueva", pNewD:"Lo que tú agregas al responder — no viene de la pregunta.",
     analyzeTitle:"Escribe una pregunta en inglés",
     btnAnalyze:"Analizar", btnReset:"Borrar", btnSkip:"Saltar →",
@@ -1291,6 +1295,7 @@ const I18N = {
     pSubj:"Subject", pSubjD:"Who is being talked about, or who does the action.",
     pVerb:"Main verb", pVerbD:"The action or state taking place.",
     pComp:"Complement", pCompD:"Additional information in the sentence.",
+    pAdv:"Adverb", pAdvD:"Modifies the verb (ever, never, always, often…).",
     pNew:"+ New info", pNewD:"What you add when answering — it doesn't come from the question.",
     analyzeTitle:"Write a question in English",
     btnAnalyze:"Analyze", btnReset:"Clear", btnSkip:"Skip →",
@@ -1349,7 +1354,7 @@ const LBL = { "wh-word":"wh-word", "wh = sujeto":"wh = subject", "auxiliar":"aux
   "aux prestado 🍦":"borrowed aux 🍦", "verbo to be ⭐":"'to be' verb ⭐", "semi-aux":"semi-aux",
   "verbo":"verb", "verbo conjugado":"conjugated verb", "verbo base":"base verb",
   "verbo en pasado":"past verb", "sujeto":"subject", "sujeto + cláusula relativa":"subject + relative clause",
-  "sujeto + cláusula":"subject + clause", "complemento":"complement", "info nueva":"new info",
+  "sujeto + cláusula":"subject + clause", "complemento":"complement", "adverbio":"adverb", "info nueva":"new info",
   "pareja del what":"pair of 'what'", "be negativo":"negative be", "aux negativo":"negative aux",
   "verbo nuevo":"new verb" };
 const CAP = { "Afirmativa":"Affirmative", "Negativa":"Negative", "Respuesta corta":"Short answer",
