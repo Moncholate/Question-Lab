@@ -351,6 +351,9 @@
     <div class="card">
       <div class="prompt" id="rQuestion"></div>
       <p class="rhint" id="rHint" data-i18n="rHint">Devuelve la pelota: escribe la respuesta corta (Yes / No).</p>
+      <div class="idask" id="rTypeRow" style="display:none">
+        <div class="idrow"><span data-i18n="rTypeQ">¿Qué tipo de información pide?</span><div class="idopts" id="rTypeOpts"></div></div>
+      </div>
       <input id="rInput" class="rinput" type="text" autocomplete="off" autocapitalize="sentences" placeholder="Yes, I do." />
       <div class="buildmsg" id="rMsg"></div>
       <div class="buildbar">
@@ -1411,7 +1414,10 @@ const I18N = {
     rHint:"Devuelve la pelota: escribe la respuesta corta (Yes / No).",
     rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien devuelta!",
     rTry:"Casi… mira la respuesta correcta abajo.",
-    rEmpty:"No hay preguntas cerradas en este nivel todavía."
+    rEmpty:"No hay preguntas en este nivel todavía.",
+    rTypeQ:"¿Qué tipo de información pide?",
+    rHintOpen:"Escribe la respuesta: empieza con el sujeto + verbo correctos (el resto es libre).",
+    rPickType:"Elige el tipo de información."
   },
   en: {
     subtitle:"Build questions in English like lego blocks. Answer them like ping-pong.",
@@ -1482,7 +1488,10 @@ const I18N = {
     rHint:"Return the ball: type the short answer (Yes / No).",
     rWrite:"Type your answer.", rGood:"🎉 Nice return!",
     rTry:"Almost… see the correct answer below.",
-    rEmpty:"No yes/no questions at this level yet."
+    rEmpty:"No questions at this level yet.",
+    rTypeQ:"What type of information does it ask for?",
+    rHintOpen:"Type the answer: start with the correct subject + verb (the rest is free).",
+    rPickType:"Pick the type of information."
   }
 };
 let lang = "es";
@@ -1732,7 +1741,7 @@ $("idNext").addEventListener("click", () => renderId(true));
 /* ================================================================
    RESPONDE — devuelve la pelota (respuesta corta a preguntas cerradas)
 ================================================================ */
-let rPool = [], rShown = {}, rCurrent = null, rChecked = false, rStreak = 0;
+let rPool = [], rShown = {}, rCurrent = null, rChecked = false, rStreak = 0, rTypePick = null, rCorrectType = null;
 try{ rStreak = parseInt(localStorage.getItem("ql_r_streak")||"0",10)||0; }catch(e){}
 function buildRPool(){
   rPool = []; rShown = {};
@@ -1741,18 +1750,19 @@ function buildRPool(){
     if(!visibleAt(lvl)) continue;
     for(const q of (bank[lvl]||[])){
       const r = analyze(q);
-      if(!r.ok || r.type.includes("Abierta")) continue;   // solo cerradas
-      rPool.push({ q, tid: tenseIdOf(r.tense) });
+      if(!r.ok) continue;
+      rPool.push({ q, tid: tenseIdOf(r.tense), type: r.type.includes("Abierta") ? "open" : "closed" });
     }
   }
 }
 function pickR(){
   if(!rPool.length) return null;
   const pool = rPool.length > 1 && rCurrent ? rPool.filter(p => p.q !== rCurrent.q) : rPool;
-  const min = Math.min(...pool.map(p => rShown[p.tid] || 0));
-  const cand = pool.filter(p => (rShown[p.tid] || 0) === min);
+  const key = p => p.tid + "|" + p.type;   // balancea tiempo Y tipo (abierta/cerrada)
+  const min = Math.min(...pool.map(p => rShown[key(p)] || 0));
+  const cand = pool.filter(p => (rShown[key(p)] || 0) === min);
   const pick = cand[Math.floor(Math.random() * cand.length)];
-  rShown[pick.tid] = (rShown[pick.tid] || 0) + 1;
+  rShown[key(pick)] = (rShown[key(pick)] || 0) + 1;
   return pick;
 }
 const R_CONTRACT = {"don't":"do not","doesn't":"does not","didn't":"did not","isn't":"is not","aren't":"are not","wasn't":"was not","weren't":"were not","won't":"will not","haven't":"have not","hasn't":"has not","hadn't":"had not","can't":"cannot","couldn't":"could not","wouldn't":"would not","shouldn't":"should not","i'm":"i am"};
@@ -1765,9 +1775,22 @@ function expectedAnswers(r){
   if(!r.ok || !r.answer || r.answer.kind !== "closed") return [];
   return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" "));
 }
+/* wh-base de la pregunta (la más larga que matchee: "how many", "what time"…) */
+function whBaseOf(q){
+  const s = q.toLowerCase().replace(/[¿?]/g, "").trim();
+  const keys = Object.keys(WH_HINTS).sort((a, b) => b.length - a.length);
+  for(const k of keys){ if(s === k || s.startsWith(k + " ")) return k; }
+  return s.split(/\s+/)[0];
+}
+/* inicio esperado de la respuesta abierta = sujeto + verbo(s) que rebotan (sin el hueco libre) */
+function openExpected(r){
+  if(!r.ok || !r.answer || r.answer.kind !== "open") return null;
+  const pieces = (r.answer.lines[0] && r.answer.lines[0].pieces) || [];
+  return pieces.filter(p => ["subj","aux","semiaux","verb"].includes(p.role)).map(p => p.text).join(" ");
+}
 function renderR(pickNew){
   if(pickNew || !rCurrent) rCurrent = pickR();
-  rChecked = false;
+  rChecked = false; rTypePick = null; rCorrectType = null;
   $("rMsg").textContent = ""; $("rMsg").className = "buildmsg";
   $("rReveal").innerHTML = "";
   $("rInput").value = ""; $("rInput").disabled = false;
@@ -1775,20 +1798,45 @@ function renderR(pickNew){
   setStreak($("rStreak"), rStreak);
   if(!rCurrent){
     $("rQuestion").textContent = t("rEmpty");
-    $("rInput").style.display = "none"; $("rCheck").style.display = "none";
+    $("rInput").style.display = "none"; $("rCheck").style.display = "none"; $("rTypeRow").style.display = "none";
     return;
   }
   $("rInput").style.display = "";
   $("rQuestion").textContent = rCurrent.q;
+  if(rCurrent.type === "open"){
+    $("rHint").textContent = t("rHintOpen");
+    $("rInput").placeholder = "I live in…";
+    $("rTypeRow").style.display = "";
+    const langHints = lang === "en" ? WH_HINTS_EN : WH_HINTS;
+    rCorrectType = whHint(whBaseOf(rCurrent.q));
+    const distract = [...new Set(Object.values(langHints))].filter(x => x !== rCorrectType).sort(() => Math.random() - .5).slice(0, 3);
+    const opts = [rCorrectType, ...distract].sort(() => Math.random() - .5);
+    $("rTypeOpts").innerHTML = opts.map(o => `<button class="idopt" type="button">${esc(o)}</button>`).join("");
+  } else {
+    $("rHint").textContent = t("rHint");
+    $("rInput").placeholder = "Yes, I do.";
+    $("rTypeRow").style.display = "none"; $("rTypeOpts").innerHTML = "";
+  }
 }
 function checkR(){
   if(rChecked || !rCurrent) return;
   const val = $("rInput").value.trim();
-  if(!val){ $("rMsg").textContent = t("rWrite"); $("rMsg").className = "buildmsg bad"; return; }
-  rChecked = true; $("rInput").disabled = true;
   const r = analyze(rCurrent.q);
-  const exp = expectedAnswers(r).map(normAns);
-  const ok = exp.includes(normAns(val));
+  let ok;
+  if(rCurrent.type === "closed"){
+    if(!val){ $("rMsg").textContent = t("rWrite"); $("rMsg").className = "buildmsg bad"; return; }
+    ok = expectedAnswers(r).map(normAns).includes(normAns(val));
+  } else {
+    if(!rTypePick){ $("rMsg").textContent = t("rPickType"); $("rMsg").className = "buildmsg bad"; return; }
+    if(!val){ $("rMsg").textContent = t("rWrite"); $("rMsg").className = "buildmsg bad"; return; }
+    const expOpen = openExpected(r);
+    ok = (rTypePick === rCorrectType) && (!expOpen || normAns(val).startsWith(normAns(expOpen)));
+    [...$("rTypeOpts").children].forEach(b => {
+      if(b.textContent === rCorrectType) b.classList.add("correct");
+      else if(b.textContent === rTypePick) b.classList.add("wrong");
+    });
+  }
+  rChecked = true; $("rInput").disabled = true;
   if(ok){ rStreak++; $("rMsg").textContent = t("rGood"); $("rMsg").className = "buildmsg ok"; }
   else { rStreak = 0; $("rMsg").textContent = t("rTry"); $("rMsg").className = "buildmsg bad"; }
   try{ localStorage.setItem("ql_r_streak", rStreak); }catch(e){}
@@ -1806,6 +1854,11 @@ function checkR(){
 $("rCheck").addEventListener("click", checkR);
 $("rNext").addEventListener("click", () => renderR(true));
 $("rInput").addEventListener("keydown", e => { if(e.key === "Enter" && !rChecked) checkR(); });
+$("rTypeOpts").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b || rChecked) return;
+  rTypePick = b.textContent;
+  [...$("rTypeOpts").children].forEach(x => x.classList.toggle("sel", x === b));
+});
 
 applyI18n();
 applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
