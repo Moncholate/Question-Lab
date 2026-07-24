@@ -243,12 +243,16 @@
   .gfam > .tense{padding-left:.9rem; padding-right:.9rem; margin:0 .5rem;}
   .gcollapse[hidden]{display:none;}
   /* Guía — tabla Wh-words colapsable (mismo patrón que el acordeón) */
-  .gwh > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:.4rem; min-height:var(--tap-min,44px);}
+  .gwh{border:1px solid var(--border); border-radius:12px; background:var(--card);}
+  .gwh > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:.5rem;
+    padding:.35rem .7rem; min-height:var(--tap-min,44px); box-sizing:border-box; border-radius:12px;}
+  .gwh > summary:hover{background:color-mix(in srgb, var(--accent) 8%, transparent);}
   .gwh > summary::-webkit-details-marker{display:none;}
   .gwh > summary h2{margin:0;}
-  .gwh > summary .gcaret{margin-left:auto; color:var(--muted); transition:transform .18s;}
+  .gwh > summary .gcaret{margin-left:auto; color:var(--text); font-weight:800; transition:transform .18s;}
+  .gwh[open] > summary{border-bottom:1px dashed var(--border); border-radius:12px 12px 0 0;}
   .gwh[open] > summary .gcaret{transform:rotate(90deg);}
-  .gwh[open] > .gtable{margin-top:.7rem;}
+  .gwh[open] > .gtable{margin:.7rem; width:auto;}
   /* Gamificación — toast de logro (acento cálido --play) */
   .gtoasts{position:fixed; left:0; right:0; bottom:1rem; display:flex; flex-direction:column; align-items:center; gap:.5rem; pointer-events:none; z-index:60; padding:0 1rem;}
   .gtoast{pointer-events:auto; display:flex; align-items:center; gap:.7rem; max-width:23rem;
@@ -1387,13 +1391,11 @@ function buildGuideAccordion(){
   const card = h2 ? h2.closest(".card") : null;
   if(!card || card.querySelector(".gfam")) return;   // ya construido
   const tenses = [...card.querySelectorAll(".tense")];
-  let first = true;
   guideGroups().forEach(fam => {
     const items = tenses.filter(el => (el.dataset.fam || "special") === fam);
     if(!items.length) return;
     const det = document.createElement("details");
-    det.className = "gfam"; det.dataset.fam = fam;
-    if(first){ det.open = true; first = false; }
+    det.className = "gfam"; det.dataset.fam = fam;   // todas colapsadas al inicio
     det.innerHTML = `<summary><span class="gdot"></span><span class="glabel"></span><span class="gcount"></span><span class="gcaret">▸</span></summary>`;
     items.forEach(el => det.appendChild(el));
     card.appendChild(det);
