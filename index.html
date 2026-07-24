@@ -34,7 +34,7 @@
   }
   .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem; flex:1;}
   /* Contenido en inglés que se lee con atención → Atkinson Hyperlegible (DUA) */
-  .prompt, .ej, .sentence, #idQuestion, #rQuestion{font-family:var(--font-read);}
+  .prompt, .ej, .sentence, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
   header{text-align:center; padding:1.4rem 0 .6rem;}
   header h1{font-size:1.7rem; letter-spacing:-.02em;}
   header p{color:var(--muted); font-size:.95rem; margin-top:.2rem;}
@@ -1267,6 +1267,7 @@ function checkBuild(){
         <button class="primary" id="bNext">${t('nextChallenge')}</button></div>`);
     $("bNext").addEventListener("click", ()=>{ bIdx++; loadChallenge(); });
     renderBuild();
+    scrollReveal($("bResult"));
   } else {
     bFailed = true; streak = 0;
     saveStreak(streak);
@@ -1609,6 +1610,12 @@ function famInline(tid){ const {fam,asp}=famOf(tid); const lvl=Math.min(asp+1,3)
 function aspIcon(tid){ return ASP_ICON[famOf(tid).asp]; }
 /* Racha vibrante: pill con acento cálido --play cuando hay racha (>0) */
 function setStreak(el, n){ if(!el) return; el.textContent = t("streak") + n; el.classList.toggle("hot", n > 0); }
+/* Trae la revelación a la vista al comprobar (útil en móvil); respeta reduce-motion */
+function scrollReveal(el){
+  if(!el || !el.scrollIntoView) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  try{ el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" }); }catch(e){}
+}
 /* Gamificación (suite): progreso compartido + toast de logro */
 let ghProgress = null;
 function showBadgeToast(key){
@@ -1724,6 +1731,7 @@ function checkId(){
       + `<div class="note">📌 ${idDiagnostic(r)}</div></div>`;
   }
   $("idCheck").style.display = "none"; $("idNext").style.display = "";
+  scrollReveal($("idReveal"));
 }
 $("idTypeOpts").addEventListener("click", e => {
   const b = e.target.closest("[data-type]"); if(!b || idChecked) return;
@@ -1850,6 +1858,7 @@ function checkR(){
     G.saveProgress(localStorage, ghProgress);
   }
   $("rCheck").style.display = "none"; $("rNext").style.display = "";
+  scrollReveal($("rReveal"));
 }
 $("rCheck").addEventListener("click", checkR);
 $("rNext").addEventListener("click", () => renderR(true));
