@@ -164,6 +164,11 @@
   .idrow{display:flex; flex-direction:column; gap:.4rem;}
   .idrow > span{font-size:.92rem; font-weight:600;}
   .idopts{display:flex; flex-wrap:wrap; gap:.4rem;}
+  /* Identifica en dos pasos: familia → tiempo */
+  .idsteps{display:flex; flex-direction:column; gap:.5rem;}
+  .idtenses{padding-top:.5rem; border-top:1px dashed var(--border);}
+  .idtenses:empty{border-top:none; padding-top:0;}
+  .idtenses .idhint{color:var(--muted); font-size:.85rem; align-self:center; padding:.2rem 0;}
   .idopt{padding:.45rem .8rem; border-radius:10px; border:1px solid var(--border);
     background:var(--fbg, var(--card)); color:var(--fink, var(--text)); font-size:.9rem; cursor:pointer; transition:all .12s;
     display:inline-flex; align-items:center; gap:.4rem; min-height:var(--tap-min,44px);}
@@ -222,6 +227,21 @@
   .tense[data-asp="1"] h3::before{content:"◐";}
   .tense[data-asp="2"] h3::before{content:"◆";}
   .tense[data-asp="3"] h3::before{content:"◈";}
+  /* Guía — acordeón por familia */
+  .gfam{border:1px solid var(--border); border-radius:12px; margin-bottom:.6rem; overflow:hidden; background:var(--card);}
+  .gfam[data-fam="present"]{--gf:var(--t-present);} .gfam[data-fam="past"]{--gf:var(--t-past);}
+  .gfam[data-fam="future"]{--gf:var(--t-future);} .gfam[data-fam="modal"]{--gf:var(--t-modal);}
+  .gfam[data-fam="special"]{--gf:var(--muted);}
+  .gfam > summary{list-style:none; cursor:pointer; padding:.75rem .9rem; display:flex; align-items:center; gap:.55rem;
+    font-weight:700; font-size:.98rem; min-height:var(--tap-min,44px); box-sizing:border-box;}
+  .gfam > summary::-webkit-details-marker{display:none;}
+  .gfam > summary .gdot{width:.85rem; height:.85rem; border-radius:50%; background:var(--gf); flex-shrink:0;}
+  .gfam > summary .gcount{margin-left:auto; color:var(--muted); font-weight:600; font-size:.82rem;}
+  .gfam > summary .gcaret{color:var(--muted); transition:transform .18s; margin-left:.15rem;}
+  .gfam[open] > summary .gcaret{transform:rotate(90deg);}
+  .gfam[open] > summary{border-bottom:1px dashed var(--border);}
+  .gfam > .tense{padding-left:.9rem; padding-right:.9rem; margin:0 .5rem;}
+  .gcollapse[hidden]{display:none;}
   /* Gamificación — toast de logro (acento cálido --play) */
   .gtoasts{position:fixed; left:0; right:0; bottom:1rem; display:flex; flex-direction:column; align-items:center; gap:.5rem; pointer-events:none; z-index:60; padding:0 1rem;}
   .gtoast{pointer-events:auto; display:flex; align-items:center; gap:.7rem; max-width:23rem;
@@ -336,7 +356,12 @@
       <div class="prompt" id="idQuestion"></div>
       <div class="idask">
         <div class="idrow"><span data-i18n="idTypeQ">¿Abierta o cerrada?</span><div class="idopts" id="idTypeOpts"></div></div>
-        <div class="idrow"><span data-i18n="idTenseQ">¿Qué tiempo?</span><div class="idopts" id="idTenseOpts"></div></div>
+        <div class="idrow"><span data-i18n="idTenseQ">¿Qué tiempo?</span>
+          <div class="idsteps">
+            <div class="idopts idfams" id="idFamOpts"></div>
+            <div class="idopts idtenses" id="idTenseOpts"></div>
+          </div>
+        </div>
       </div>
       <div class="buildmsg" id="idMsg"></div>
       <div class="buildbar">
@@ -1327,11 +1352,47 @@ function refilterChallenges(){
   if(!activeChallenges.length) activeChallenges = CHALLENGES;   // seguridad
   bIdx = 0; loadChallenge();
 }
+/* Guía — agrupa las tarjetas de tiempo en secciones colapsables por familia.
+   Etiquetas perezosas: FAM_ORDER/FAM_LABEL se definen más abajo, así que se
+   leen dentro de las funciones (llamadas en init), no como const de nivel raíz. */
+function guideGroups(){ return [...FAM_ORDER, "special"]; }
+function guideLabel(fam){
+  const L = { ...FAM_LABEL, special:{es:"Casos especiales", en:"Special cases"} };
+  return lang === "en" ? L[fam].en : L[fam].es;
+}
+function buildGuideAccordion(){
+  const h2 = document.querySelector('#guide [data-i18n="tensesH2"]');
+  const card = h2 ? h2.closest(".card") : null;
+  if(!card || card.querySelector(".gfam")) return;   // ya construido
+  const tenses = [...card.querySelectorAll(".tense")];
+  let first = true;
+  guideGroups().forEach(fam => {
+    const items = tenses.filter(el => (el.dataset.fam || "special") === fam);
+    if(!items.length) return;
+    const det = document.createElement("details");
+    det.className = "gfam"; det.dataset.fam = fam;
+    if(first){ det.open = true; first = false; }
+    det.innerHTML = `<summary><span class="gdot"></span><span class="glabel"></span><span class="gcount"></span><span class="gcaret">▸</span></summary>`;
+    items.forEach(el => det.appendChild(el));
+    card.appendChild(det);
+  });
+  updateGuideAccordion();
+}
+/* Actualiza etiqueta (idioma) + conteo visible por familia y oculta las vacías */
+function updateGuideAccordion(){
+  document.querySelectorAll("#guide .gfam").forEach(det => {
+    const vis = [...det.querySelectorAll(".tense")].filter(el => el.style.display !== "none");
+    det.hidden = vis.length === 0;
+    const lab = det.querySelector(".glabel"); if(lab) lab.textContent = guideLabel(det.dataset.fam);
+    const cnt = det.querySelector(".gcount"); if(cnt) cnt.textContent = vis.length;
+  });
+}
 function applyLevel(){
   document.querySelectorAll("#guide .tense").forEach(el=>{
     const c = el.dataset.tense ? CEFR.tenses[el.dataset.tense] : el.dataset.cefr;
     el.style.display = visibleAt(c) ? "" : "none";
   });
+  updateGuideAccordion();
   renderExamples();
   refilterChallenges();
   buildIdPool(); renderId(true);
@@ -1426,7 +1487,7 @@ const I18N = {
     streak:"🔥 Racha: ", progA:"Desafío ", progOf:" de ", nextChallenge:"Siguiente desafío →",
     tabIdentify:"🔍 Identifica",
     idTypeQ:"¿Abierta o cerrada?", idTenseQ:"¿Qué tiempo?", idOpen:"Abierta", idClosed:"Cerrada",
-    idCheck:"Comprobar", idNext:"Siguiente →",
+    idPickFam:"Elige primero una familia ↑", idCheck:"Comprobar", idNext:"Siguiente →",
     idPickBoth:"Marca las dos: tipo y tiempo.", idCorrect:"🎉 ¡Correcto!", idWrong:"Casi… mira la corrección abajo.",
     idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
     idEmpty:"No hay preguntas en este nivel todavía.",
@@ -1500,6 +1561,7 @@ const I18N = {
     streak:"🔥 Streak: ", progA:"Challenge ", progOf:" of ", nextChallenge:"Next challenge →",
     tabIdentify:"🔍 Identify",
     idTypeQ:"Open or closed?", idTenseQ:"Which tense?", idOpen:"Open", idClosed:"Closed",
+    idPickFam:"Pick a family first ↑",
     idCheck:"Check", idNext:"Next →",
     idPickBoth:"Pick both: type and tense.", idCorrect:"🎉 Correct!", idWrong:"Almost… see the breakdown below.",
     idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
@@ -1575,6 +1637,7 @@ function setLang(l){
   const q = $("qin") && $("qin").value.trim();
   if(q) renderResult(analyze(q), $("result"));
   renderId(false); renderR(false);
+  updateGuideAccordion();   // etiquetas del acordeón de la Guía en el idioma nuevo
 }
 document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("click", ()=> setLang(b.dataset.lang)));
 
@@ -1628,6 +1691,18 @@ function famOf(tid){ return ID_FAM[tid] || {fam:"modal",asp:0}; }
 function famInline(tid){ const {fam,asp}=famOf(tid); const lvl=Math.min(asp+1,3);
   return `--f:var(--t-${fam}); --fbg:var(--t-${fam}-${lvl}); --fink:var(--t-${fam}-ink)`; }
 function aspIcon(tid){ return ASP_ICON[famOf(tid).asp]; }
+/* Familias para el selector en dos pasos de Identifica */
+const FAM_ORDER = ["present","past","future","modal"];
+const FAM_LABEL = {
+  present:{es:"Presente",en:"Present"}, past:{es:"Pasado",en:"Past"},
+  future:{es:"Futuro",en:"Future"}, modal:{es:"Modales",en:"Modals"}
+};
+function famChipInline(fam){ return `--f:var(--t-${fam}); --fbg:var(--t-${fam}-1); --fink:var(--t-${fam}-ink)`; }
+/* familias que tienen ≥1 tiempo visible en el nivel actual */
+function visibleFams(){
+  const set = new Set(ID_TENSES.filter(o => visibleAt(o.cefr)).map(o => famOf(o.id).fam));
+  return FAM_ORDER.filter(f => set.has(f));
+}
 /* Racha vibrante: pill con acento cálido --play cuando hay racha (>0) */
 function setStreak(el, n){ if(!el) return; el.textContent = t("streak") + n; el.classList.toggle("hot", n > 0); }
 /* Trae la revelación a la vista al comprobar (útil en móvil); respeta reduce-motion */
@@ -1667,7 +1742,7 @@ function tenseIdOf(s){
   return "simple-present";
 }
 let idPool = [], idShown = {tense:{}, type:{}}, idCurrent = null;
-let idType = null, idTense = null, idChecked = false;
+let idType = null, idTense = null, idFam = null, idChecked = false;
 let idStreak = 0;
 try{ idStreak = parseInt(localStorage.getItem("ql_id_streak")||"0",10)||0; }catch(e){}
 function saveIdStreak(){ try{ localStorage.setItem("ql_id_streak", idStreak); }catch(e){} }
@@ -1697,23 +1772,35 @@ function pickId(){
   idShown.type[pick.type] = (idShown.type[pick.type] || 0) + 1;
   return pick;
 }
+/* Paso 1: botones de familia (solo las visibles en el nivel) */
+function renderIdFams(){
+  $("idFamOpts").innerHTML = visibleFams()
+    .map(f => `<button class="idopt fam" data-fam="${f}" style="${famChipInline(f)}"><span class="asp">●</span>${lang === "en" ? FAM_LABEL[f].en : FAM_LABEL[f].es}</button>`).join("");
+}
+/* Paso 2: tiempos de la familia elegida (visibles en el nivel) */
+function renderIdTenses(){
+  const box = $("idTenseOpts");
+  if(!idFam){ box.innerHTML = `<span class="idhint">${t("idPickFam")}</span>`; return; }
+  box.innerHTML = ID_TENSES.filter(o => visibleAt(o.cefr) && famOf(o.id).fam === idFam)
+    .map(o => `<button class="idopt fam" data-tense="${o.id}" style="${famInline(o.id)}"><span class="asp">${aspIcon(o.id)}</span>${lang === "en" ? o.en : o.es}</button>`).join("");
+}
 function renderId(pickNew){
   if(pickNew || !idCurrent) idCurrent = pickId();
-  idType = null; idTense = null; idChecked = false;
+  idType = null; idTense = null; idFam = null; idChecked = false;
   $("idMsg").textContent = ""; $("idMsg").className = "buildmsg";
   $("idReveal").innerHTML = "";
   $("idNext").style.display = "none"; $("idCheck").style.display = "";
   setStreak($("idStreak"), idStreak);
   if(!idCurrent){
     $("idQuestion").textContent = t("idEmpty");
-    $("idTypeOpts").innerHTML = ""; $("idTenseOpts").innerHTML = ""; $("idCheck").style.display = "none";
+    $("idTypeOpts").innerHTML = ""; $("idFamOpts").innerHTML = ""; $("idTenseOpts").innerHTML = ""; $("idCheck").style.display = "none";
     return;
   }
   $("idQuestion").textContent = idCurrent.q;
   $("idTypeOpts").innerHTML = [["open", t("idOpen")], ["closed", t("idClosed")]]
     .map(([v, l]) => `<button class="idopt" data-type="${v}">${l}</button>`).join("");
-  $("idTenseOpts").innerHTML = ID_TENSES.filter(o => visibleAt(o.cefr))
-    .map(o => `<button class="idopt fam" data-tense="${o.id}" style="${famInline(o.id)}"><span class="asp">${aspIcon(o.id)}</span>${lang === "en" ? o.en : o.es}</button>`).join("");
+  renderIdFams();
+  renderIdTenses();
 }
 function idDiagnostic(r){
   const why = r.type.includes("Abierta") ? t("idWhyOpen") : t("idWhyClosed");
@@ -1728,6 +1815,14 @@ function checkId(){
     if(x.dataset.type === idCurrent.type) x.classList.add("correct");
     else if(x.dataset.type === idType) x.classList.add("wrong");
   });
+  // Paso 1 — familia: marca la correcta y, si difiere, la elegida
+  const correctFam = famOf(idCurrent.tid).fam, userFam = famOf(idTense).fam;
+  [...$("idFamOpts").children].forEach(x => {
+    if(x.dataset.fam === correctFam) x.classList.add("correct");
+    else if(x.dataset.fam === userFam) x.classList.add("wrong");
+  });
+  // Paso 2 — abre la familia correcta para mostrar el tiempo correcto marcado
+  idFam = correctFam; renderIdTenses();
   [...$("idTenseOpts").children].forEach(x => {
     if(x.dataset.tense === idCurrent.tid) x.classList.add("correct");
     else if(x.dataset.tense === idTense) x.classList.add("wrong");
@@ -1758,6 +1853,12 @@ $("idTypeOpts").addEventListener("click", e => {
   const b = e.target.closest("[data-type]"); if(!b || idChecked) return;
   idType = b.dataset.type;
   [...$("idTypeOpts").children].forEach(x => x.classList.toggle("sel", x === b));
+});
+$("idFamOpts").addEventListener("click", e => {
+  const b = e.target.closest("[data-fam]"); if(!b || idChecked) return;
+  idFam = b.dataset.fam; idTense = null;
+  [...$("idFamOpts").children].forEach(x => x.classList.toggle("sel", x === b));
+  renderIdTenses();
 });
 $("idTenseOpts").addEventListener("click", e => {
   const b = e.target.closest("[data-tense]"); if(!b || idChecked) return;
@@ -1891,6 +1992,7 @@ $("rTypeOpts").addEventListener("click", e => {
 });
 
 applyI18n();
+buildGuideAccordion();   // agrupa los tiempos de la Guía en acordeones por familia
 applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
 </script>
 </body>
