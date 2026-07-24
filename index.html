@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Question Lab 🧩</title>
 <link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <script src="cefr.generated.js"></script>
 <script src="bank.js"></script>
@@ -15,6 +18,8 @@
        Los --n-* adaptan solos por tema, así que aquí solo los referenciamos. */
     --bg:var(--n-bg); --card:var(--n-surface); --text:var(--n-text); --muted:var(--n-muted); --border:var(--n-border);
     --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
+    --font-ui:'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-read:'Atkinson Hyperlegible', system-ui, 'Segoe UI', sans-serif;
     --shadow:0 1px 3px rgba(0,0,0,.08);
   }
   @media (prefers-color-scheme: dark){
@@ -22,11 +27,13 @@
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
-    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-family:var(--font-ui);
     background:var(--bg); color:var(--text); line-height:1.55;
     min-height:100vh; display:flex; flex-direction:column;
   }
   .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem; flex:1;}
+  /* Contenido en inglés que se lee con atención → Atkinson Hyperlegible (DUA) */
+  .prompt, .ej, .sentence, #idQuestion, #rQuestion{font-family:var(--font-read);}
   header{text-align:center; padding:1.4rem 0 .6rem;}
   header h1{font-size:1.7rem; letter-spacing:-.02em;}
   header p{color:var(--muted); font-size:.95rem; margin-top:.2rem;}
