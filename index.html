@@ -1159,7 +1159,7 @@ const CHALLENGES = [
    blocks:[["Did","aux"],["you","subj"],["use to","semiaux"],["play","verb"],["football as a child?","comp"]]}
 ];
 
-let bIdx = 0, bPlaced = [], bPool = [], bFailed = false, activeChallenges = CHALLENGES, curCh = null;
+let bIdx = 0, bPlaced = [], bPool = [], bFailed = false, bScored = false, activeChallenges = CHALLENGES, curCh = null;
 /* localStorage puede estar bloqueado (modo privado, file://) — nunca debe romper la app */
 function loadStreak(){ try{ return parseInt(localStorage.getItem("ql_streak")||"0",10)||0; }catch(e){ return 0; } }
 function saveStreak(v){ try{ localStorage.setItem("ql_streak", v); }catch(e){} }
@@ -1173,7 +1173,7 @@ function shuffle(a){
 function loadChallenge(){
   const ch = activeChallenges[bIdx % activeChallenges.length];
   curCh = ch;
-  bPlaced = []; bFailed = false;
+  bPlaced = []; bFailed = false; bScored = false;
   do { bPool = shuffle(ch.blocks.map((b,i)=>({text:b[0], role:b[1], id:i}))); }
   while(bPool.length>2 && bPool.every((b,i)=>b.id===i));
   $("bPrompt").textContent = (lang === "en" && ch.pe) ? ch.pe : ch.prompt;
@@ -1218,6 +1218,15 @@ function checkBuild(){
     msg.className = "buildmsg ok";
     const q = bPlaced.map(b=>b.text).join(" ");
     renderResult(analyze(q), $("bResult"));
+    const G = window.GH_GAME;
+    if(G && !bScored){
+      bScored = true;
+      const rr = analyze(q); const btid = rr.ok ? tenseIdOf(rr.tense) : null;
+      if(!ghProgress) ghProgress = G.loadProgress(localStorage);
+      G.recordAttempt(ghProgress, { app:"questionlab", tenseId: btid, correct: !bFailed, answerStreak: streak });
+      G.evaluateBadges(ghProgress, G.BADGES, btid ? [btid] : []).newly.forEach(showBadgeToast);
+      G.saveProgress(localStorage, ghProgress);
+    }
     $("bResult").insertAdjacentHTML("beforeend",
       `<div style="text-align:center; margin-bottom:1rem">
         <button class="primary" id="bNext">${t('nextChallenge')}</button></div>`);
