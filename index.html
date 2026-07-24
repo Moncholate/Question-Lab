@@ -7,6 +7,7 @@
 <link rel="icon" href="favicon.svg">
 <link rel="stylesheet" href="tokens.css">
 <script src="cefr.generated.js"></script>
+<script src="bank.js"></script>
 <style>
   :root{
     --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
@@ -147,6 +148,19 @@
   button.ghost:hover{color:var(--text);}
   .progress{font-size:.85rem; color:var(--muted);}
 
+  /* Identify mode */
+  .idask{display:flex; flex-direction:column; gap:.9rem; margin:.5rem 0 .8rem;}
+  .idrow{display:flex; flex-direction:column; gap:.4rem;}
+  .idrow > span{font-size:.92rem; font-weight:600;}
+  .idopts{display:flex; flex-wrap:wrap; gap:.4rem;}
+  .idopt{padding:.45rem .8rem; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:.9rem; cursor:pointer; transition:all .12s;}
+  .idopt:hover{border-color:var(--accent);}
+  .idopt.sel{border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);}
+  .idopt.correct{border-color:var(--ok); background:color-mix(in srgb, var(--ok) 14%, transparent); color:var(--ok); font-weight:700;}
+  .idopt.wrong{border-color:var(--err); background:color-mix(in srgb, var(--err) 12%, transparent); color:var(--err);}
+  #idQuestion{font-size:1.25rem; font-weight:700; text-align:center; padding:.4rem 0 .2rem;}
+
   /* Legend */
   details{margin-bottom:1rem;}
   summary{cursor:pointer; color:var(--muted); font-size:.92rem; padding:.3rem 0;}
@@ -228,6 +242,7 @@
   <div class="tabs">
     <button class="tab active" data-panel="analyze" data-i18n="tabAnalyze">🔍 Analiza</button>
     <button class="tab" data-panel="build" data-i18n="tabBuild">🧱 Construye</button>
+    <button class="tab" data-panel="identify" data-i18n="tabIdentify">🔍 Identifica</button>
     <button class="tab" data-panel="guide" data-i18n="tabGuide">📖 Guía</button>
   </div>
 
@@ -261,6 +276,26 @@
       </div>
     </div>
     <div id="bResult"></div>
+  </div>
+
+  <!-- ============ IDENTIFY ============ -->
+  <div class="panel" id="identify">
+    <div class="card">
+      <div class="prompt" id="idQuestion"></div>
+      <div class="idask">
+        <div class="idrow"><span data-i18n="idTypeQ">¿Abierta o cerrada?</span><div class="idopts" id="idTypeOpts"></div></div>
+        <div class="idrow"><span data-i18n="idTenseQ">¿Qué tiempo?</span><div class="idopts" id="idTenseOpts"></div></div>
+      </div>
+      <div class="buildmsg" id="idMsg"></div>
+      <div class="buildbar">
+        <span class="streak" id="idStreak"></span>
+        <span>
+          <button class="primary" id="idCheck" data-i18n="idCheck">Comprobar</button>
+          <button class="ghost" id="idNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+        </span>
+      </div>
+    </div>
+    <div id="idReveal"></div>
   </div>
 
   <!-- ============ GUÍA ============ -->
@@ -487,6 +522,7 @@ function analyze(raw){
   const notes = [];
   let advTokens = [];
   let q = raw.trim().replace(/[’‘]/g, "'");
+  q = q.replace(/\b(what|where|who|when|why|which|how)'s\b/gi, "$1 is");   // What's / Where's / How's… → is
   if(!q) return {ok:false, error: lang==="en" ? "Type a question first. 😊" : "Escribe una pregunta primero. 😊"};
   if(!/\?\s*$/.test(q)) warnings.push(lang==="en" ? "Tip: questions in English end with \"?\"." : "Tip: las preguntas en inglés terminan con «?».");
 
@@ -580,7 +616,7 @@ function analyze(raw){
         {role:"verb", text:tokens[auxIdx].toLowerCase(), label:"verbo to be ⭐"},
         {role:"new", text:"+ " + hint2, label:"info nueva"}
       ], caption:"Estructura de la respuesta"}]};
-      const beTense = (["was","were"].includes(aux) ? "Pasado" : "Presente") + " Simple (verbo to be)";
+      const beTense = (["was","were"].includes(aux) ? "Pasado" : "Presente") + " Simple (to be)";
       return {ok:true, type:"Abierta (Wh-question) — con cláusula relativa", tense:beTense,
         parts:parts2, answer:relAnswer, warnings, notes:relNotes};
     }
@@ -683,14 +719,14 @@ function analyze(raw){
     if(goingTo) tense = "Futuro con «going to»";
     else if(verbForm === "ing") tense = "Presente Continuo";
     else {
-      tense = "Presente Simple (verbo to be)"; beMain = true;
+      tense = "Presente Simple (to be)"; beMain = true;
       if(verbTokens.length){ compTokens = [...verbTokens, ...compTokens]; verbTokens = []; }
     }
   }
   else if(["was","were"].includes(aux)){
     if(verbForm === "ing") tense = "Pasado Continuo";
     else {
-      tense = "Pasado Simple (verbo to be)"; beMain = true;
+      tense = "Pasado Simple (to be)"; beMain = true;
       if(verbTokens.length){ compTokens = [...verbTokens, ...compTokens]; verbTokens = []; }
     }
   }
@@ -701,7 +737,7 @@ function analyze(raw){
   else if(aux === "had"){ tense = "Pasado Perfecto"; }
   else if(aux === "will"){ tense = verbForm === "willCont" ? "Futuro Continuo" : "Futuro Simple (will)"; }
   else if(MODALS.includes(aux)){
-    tense = `Estructura con modal («${aux}»)`;
+    tense = `Verbo modal («${aux}»)`;
     tenseNote = "Los modales no marcan el tiempo por sí solos — el contexto lo hace.";
   }
 
@@ -1195,6 +1231,7 @@ function applyLevel(){
   });
   renderExamples();
   refilterChallenges();
+  buildIdPool(); renderId(true);
 }
 function setLevel(id){
   if(!LV.includes(id)) return;
@@ -1282,7 +1319,13 @@ const I18N = {
     buildOk:"🎉 ¡Perfecto! Ahora mira cómo se responde…",
     buildBad:"Casi… el orden no es el correcto. Recuerda: (Wh) + Auxiliar + Sujeto + Verbo + Complemento. Toca una pieza para devolverla.",
     emptyBuild:"Toca las piezas en orden para armar la pregunta…",
-    streak:"🔥 Racha: ", progA:"Desafío ", progOf:" de ", nextChallenge:"Siguiente desafío →"
+    streak:"🔥 Racha: ", progA:"Desafío ", progOf:" de ", nextChallenge:"Siguiente desafío →",
+    tabIdentify:"🔍 Identifica",
+    idTypeQ:"¿Abierta o cerrada?", idTenseQ:"¿Qué tiempo?", idOpen:"Abierta", idClosed:"Cerrada",
+    idCheck:"Comprobar", idNext:"Siguiente →",
+    idPickBoth:"Marca las dos: tipo y tiempo.", idCorrect:"🎉 ¡Correcto!", idWrong:"Casi… mira la corrección abajo.",
+    idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
+    idEmpty:"No hay preguntas en este nivel todavía."
   },
   en: {
     subtitle:"Build questions in English like lego blocks. Answer them like ping-pong.",
@@ -1341,7 +1384,13 @@ const I18N = {
     buildOk:"🎉 Perfect! Now see how it's answered…",
     buildBad:"Almost… the order isn't right. Remember: (Wh) + Auxiliary + Subject + Verb + Complement. Tap a piece to send it back.",
     emptyBuild:"Tap the pieces in order to build the question…",
-    streak:"🔥 Streak: ", progA:"Challenge ", progOf:" of ", nextChallenge:"Next challenge →"
+    streak:"🔥 Streak: ", progA:"Challenge ", progOf:" of ", nextChallenge:"Next challenge →",
+    tabIdentify:"🔍 Identify",
+    idTypeQ:"Open or closed?", idTenseQ:"Which tense?", idOpen:"Open", idClosed:"Closed",
+    idCheck:"Check", idNext:"Next →",
+    idPickBoth:"Pick both: type and tense.", idCorrect:"🎉 Correct!", idWrong:"Almost… see the breakdown below.",
+    idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
+    idEmpty:"No questions at this level yet."
   }
 };
 let lang = "es";
@@ -1361,8 +1410,8 @@ const CAP = { "Afirmativa":"Affirmative", "Negativa":"Negative", "Respuesta cort
   "Respuesta larga":"Long answer", "Estructura de la respuesta":"Answer structure" };
 const TENSE_TR = { "Presente Simple":"Simple Present", "Pasado Simple":"Simple Past",
   "Pasado — hábito con «used to»":"Past — 'used to' habit", "Presente Continuo":"Present Continuous",
-  "Presente Simple (verbo to be)":"Simple Present ('to be' verb)", "Pasado Continuo":"Past Continuous",
-  "Pasado Simple (verbo to be)":"Simple Past ('to be' verb)", "Presente Perfecto":"Present Perfect",
+  "Presente Simple (to be)":"Simple Present (to be)", "Pasado Continuo":"Past Continuous",
+  "Pasado Simple (to be)":"Simple Past (to be)", "Presente Perfecto":"Present Perfect",
   "Presente Perfecto Continuo":"Present Perfect Continuous", "Pasado Perfecto":"Past Perfect",
   "Futuro Simple (will)":"Simple Future (will)", "Futuro Continuo":"Future Continuous",
   "Futuro con «going to»":"Future with 'going to'" };
@@ -1373,7 +1422,7 @@ const WH_HINTS_EN = { where:"a place 📍", when:"a time 🕐", who:"a person �
   "what time":"a time 🕒", "what kind":"a kind 🏷️", "what color":"a color 🎨", "what colour":"a colour 🎨" };
 function trLabel(s){ if(lang==="es") return s; let suf=""; if(s.endsWith(" ⛔")){ suf=" ⛔"; s=s.slice(0,-2); } return (LBL[s]||s)+suf; }
 function trCap(s){ return lang==="es" ? s : (CAP[s]||s); }
-function trTense(s){ if(lang==="es") return s; const m=s.match(/^Estructura con modal \(«(.+)»\)$/); if(m) return `Modal structure ("${m[1]}")`; return TENSE_TR[s]||s; }
+function trTense(s){ if(lang==="es") return s; const m=s.match(/^Verbo modal \(«(.+)»\)$/); if(m) return `Modal verb ("${m[1]}")`; return TENSE_TR[s]||s; }
 function trType(s){ if(lang==="es") return s;
   return s.replace("Abierta (Wh-question) — con cláusula relativa","Open (Wh-question) — with relative clause")
           .replace("Abierta — de sujeto (¡sin auxiliar!)","Open — subject question (no auxiliary!)")
@@ -1402,8 +1451,149 @@ function setLang(l){
   if(curCh) $("bPrompt").textContent = (lang === "en" && curCh.pe) ? curCh.pe : curCh.prompt;
   const q = $("qin") && $("qin").value.trim();
   if(q) renderResult(analyze(q), $("result"));
+  renderId(false);
 }
 document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("click", ()=> setLang(b.dataset.lang)));
+
+/* ================================================================
+   IDENTIFICA — identificar tipo (abierta/cerrada) + tiempo
+================================================================ */
+const ID_TENSES = [
+  { id:"to-be-pres",    cefr:"basico1",     es:"Presente Simple (to be)",en:"Simple Present (to be)" },
+  { id:"simple-present",cefr:"basico1",     es:"Presente Simple",       en:"Simple Present" },
+  { id:"present-continuous",cefr:"basico2", es:"Presente Continuo",     en:"Present Continuous" },
+  { id:"simple-past",   cefr:"basico2",     es:"Pasado Simple",         en:"Simple Past" },
+  { id:"to-be-past",    cefr:"basico2",     es:"Pasado Simple (to be)", en:"Simple Past (to be)" },
+  { id:"modal",         cefr:"basico2",     es:"Verbo modal (can, could…)",en:"Modal verb (can, could…)" },
+  { id:"future-going-to",cefr:"elemental2", es:"Futuro (going to)",     en:"Future (going to)" },
+  { id:"present-perfect",cefr:"elemental2", es:"Presente Perfecto",     en:"Present Perfect" },
+  { id:"past-continuous",cefr:"intermedio1",es:"Pasado Continuo",       en:"Past Continuous" },
+  { id:"simple-future", cefr:"intermedio1", es:"Futuro (will)",         en:"Future (will)" },
+  { id:"past-perfect",  cefr:"intermedio2", es:"Pasado Perfecto",       en:"Past Perfect" },
+  { id:"used-to",       cefr:"intermedio2", es:"Used to",               en:"Used to" },
+  { id:"present-perfect-continuous",cefr:"avanzado",es:"Pres. Perf. Continuo",en:"Present Perfect Continuous" }
+];
+const ID_HINT = {
+  "to-be-pres":{es:"El verbo to be hace el trabajo solo (am/is/are).",en:"The verb to be does it alone (am/is/are)."},
+  "to-be-past":{es:"to be en pasado (was/were).",en:"to be in the past (was/were)."},
+  "simple-present":{es:"do/does + verbo base.",en:"do/does + base verb."},
+  "simple-past":{es:"did + verbo base.",en:"did + base verb."},
+  "present-continuous":{es:"am/is/are + verbo-ing.",en:"am/is/are + verb-ing."},
+  "past-continuous":{es:"was/were + verbo-ing.",en:"was/were + verb-ing."},
+  "present-perfect":{es:"have/has + participio.",en:"have/has + past participle."},
+  "past-perfect":{es:"had + participio.",en:"had + past participle."},
+  "present-perfect-continuous":{es:"have/has been + verbo-ing.",en:"have/has been + verb-ing."},
+  "future-going-to":{es:"am/is/are + going to + verbo base.",en:"am/is/are + going to + base verb."},
+  "simple-future":{es:"will + verbo base.",en:"will + base verb."},
+  "used-to":{es:"did + use to + verbo base.",en:"did + use to + base verb."},
+  "modal":{es:"Modal (can, should…) + verbo base.",en:"Modal (can, should…) + base verb."}
+};
+function tenseIdOf(s){
+  if(/\(to be\)/.test(s)) return /Pasado/.test(s) ? "to-be-past" : "to-be-pres";
+  if(/Perfecto Continuo/.test(s)) return "present-perfect-continuous";
+  if(/Presente Perfecto/.test(s)) return "present-perfect";
+  if(/Pasado Perfecto/.test(s)) return "past-perfect";
+  if(/Presente Continuo/.test(s)) return "present-continuous";
+  if(/Pasado Continuo/.test(s)) return "past-continuous";
+  if(/Presente Simple/.test(s)) return "simple-present";
+  if(/Pasado Simple/.test(s)) return "simple-past";
+  if(/going to/.test(s)) return "future-going-to";
+  if(/Futuro/.test(s)) return "simple-future";
+  if(/used to/.test(s)) return "used-to";
+  if(/modal/.test(s)) return "modal";
+  return "simple-present";
+}
+let idPool = [], idShown = {tense:{}, type:{}}, idCurrent = null;
+let idType = null, idTense = null, idChecked = false;
+let idStreak = 0;
+try{ idStreak = parseInt(localStorage.getItem("ql_id_streak")||"0",10)||0; }catch(e){}
+function saveIdStreak(){ try{ localStorage.setItem("ql_id_streak", idStreak); }catch(e){} }
+
+function buildIdPool(){
+  idPool = []; idShown = {tense:{}, type:{}};
+  const bank = window.QUESTION_BANK || {};
+  for(const lvl of LV){
+    if(!visibleAt(lvl)) continue;                 // acumulativo: niveles <= nivel actual
+    for(const q of (bank[lvl] || [])){
+      const r = analyze(q);
+      if(!r.ok) continue;
+      idPool.push({ q, type: r.type.includes("Abierta") ? "open" : "closed", tid: tenseIdOf(r.tense) });
+    }
+  }
+}
+/* Selector con azar controlado: equilibra tiempos y tipos (abierta/cerrada) */
+function pickId(){
+  if(!idPool.length) return null;
+  const pool = idPool.length > 1 && idCurrent ? idPool.filter(p => p.q !== idCurrent.q) : idPool;
+  const minT = Math.min(...pool.map(p => idShown.tense[p.tid] || 0));
+  let cand = pool.filter(p => (idShown.tense[p.tid] || 0) === minT);
+  const minTy = Math.min(...cand.map(p => idShown.type[p.type] || 0));
+  cand = cand.filter(p => (idShown.type[p.type] || 0) === minTy);
+  const pick = cand[Math.floor(Math.random() * cand.length)];
+  idShown.tense[pick.tid] = (idShown.tense[pick.tid] || 0) + 1;
+  idShown.type[pick.type] = (idShown.type[pick.type] || 0) + 1;
+  return pick;
+}
+function renderId(pickNew){
+  if(pickNew || !idCurrent) idCurrent = pickId();
+  idType = null; idTense = null; idChecked = false;
+  $("idMsg").textContent = ""; $("idMsg").className = "buildmsg";
+  $("idReveal").innerHTML = "";
+  $("idNext").style.display = "none"; $("idCheck").style.display = "";
+  $("idStreak").textContent = t("streak") + idStreak;
+  if(!idCurrent){
+    $("idQuestion").textContent = t("idEmpty");
+    $("idTypeOpts").innerHTML = ""; $("idTenseOpts").innerHTML = ""; $("idCheck").style.display = "none";
+    return;
+  }
+  $("idQuestion").textContent = idCurrent.q;
+  $("idTypeOpts").innerHTML = [["open", t("idOpen")], ["closed", t("idClosed")]]
+    .map(([v, l]) => `<button class="idopt" data-type="${v}">${l}</button>`).join("");
+  $("idTenseOpts").innerHTML = ID_TENSES.filter(o => visibleAt(o.cefr))
+    .map(o => `<button class="idopt" data-tense="${o.id}">${lang === "en" ? o.en : o.es}</button>`).join("");
+}
+function idDiagnostic(r){
+  const why = r.type.includes("Abierta") ? t("idWhyOpen") : t("idWhyClosed");
+  const h = ID_HINT[tenseIdOf(r.tense)];
+  return why + (h ? " · " + (lang === "en" ? h.en : h.es) : "");
+}
+function checkId(){
+  if(idChecked || !idCurrent) return;
+  if(!idType || !idTense){ $("idMsg").textContent = t("idPickBoth"); $("idMsg").className = "buildmsg bad"; return; }
+  idChecked = true;
+  [...$("idTypeOpts").children].forEach(x => {
+    if(x.dataset.type === idCurrent.type) x.classList.add("correct");
+    else if(x.dataset.type === idType) x.classList.add("wrong");
+  });
+  [...$("idTenseOpts").children].forEach(x => {
+    if(x.dataset.tense === idCurrent.tid) x.classList.add("correct");
+    else if(x.dataset.tense === idTense) x.classList.add("wrong");
+  });
+  const ok = idType === idCurrent.type && idTense === idCurrent.tid;
+  if(ok){ idStreak++; $("idMsg").textContent = t("idCorrect"); $("idMsg").className = "buildmsg ok"; }
+  else { idStreak = 0; $("idMsg").textContent = t("idWrong"); $("idMsg").className = "buildmsg bad"; }
+  saveIdStreak();
+  $("idStreak").textContent = t("streak") + idStreak;
+  const r = analyze(idCurrent.q);
+  if(r.ok){
+    $("idReveal").innerHTML = `<div class="card"><div class="badges"><span class="badge type">${esc(trType(r.type))}</span><span class="badge">${esc(trTense(r.tense))}</span></div>`
+      + `<div class="blocks">${r.parts.map(blockHTML).join("")}</div>`
+      + `<div class="note">📌 ${idDiagnostic(r)}</div></div>`;
+  }
+  $("idCheck").style.display = "none"; $("idNext").style.display = "";
+}
+$("idTypeOpts").addEventListener("click", e => {
+  const b = e.target.closest("[data-type]"); if(!b || idChecked) return;
+  idType = b.dataset.type;
+  [...$("idTypeOpts").children].forEach(x => x.classList.toggle("sel", x === b));
+});
+$("idTenseOpts").addEventListener("click", e => {
+  const b = e.target.closest("[data-tense]"); if(!b || idChecked) return;
+  idTense = b.dataset.tense;
+  [...$("idTenseOpts").children].forEach(x => x.classList.toggle("sel", x === b));
+});
+$("idCheck").addEventListener("click", checkId);
+$("idNext").addEventListener("click", () => renderId(true));
 
 applyI18n();
 applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
