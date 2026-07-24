@@ -242,14 +242,15 @@
   .gfam[open] > summary{border-bottom:1px dashed var(--border);}
   .gfam > .tense{padding-left:.9rem; padding-right:.9rem; margin:0 .5rem;}
   .gcollapse[hidden]{display:none;}
-  /* Guía — tabla Wh-words colapsable (mismo patrón que el acordeón) */
-  .gwh{border:1px solid var(--border); border-radius:12px; background:var(--card);}
-  .gwh > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:.5rem;
-    padding:.35rem .7rem; min-height:var(--tap-min,44px); box-sizing:border-box; border-radius:12px;}
+  /* Guía — tabla Wh-words colapsable: fila con el mismo aspecto que una familia */
+  .gwh{border:1px solid var(--border); border-radius:12px; background:var(--card); margin-top:.7rem;}
+  .gwh > summary{list-style:none; cursor:pointer; padding:.75rem .9rem; display:flex; align-items:center; gap:.55rem;
+    font-weight:700; font-size:.98rem; min-height:var(--tap-min,44px); box-sizing:border-box; border-radius:12px;}
   .gwh > summary:hover{background:color-mix(in srgb, var(--accent) 8%, transparent);}
   .gwh > summary::-webkit-details-marker{display:none;}
-  .gwh > summary h2{margin:0;}
-  .gwh > summary .gcaret{margin-left:auto; color:var(--text); font-weight:800; transition:transform .18s;}
+  .gwh > summary .gdot{width:.85rem; height:.85rem; border-radius:50%; flex-shrink:0;}
+  .gwh > summary .gcount{margin-left:auto; color:var(--muted); font-weight:600; font-size:.82rem;}
+  .gwh > summary .gcaret{color:var(--muted); transition:transform .18s; margin-left:.15rem;}
   .gwh[open] > summary{border-bottom:1px dashed var(--border); border-radius:12px 12px 0 0;}
   .gwh[open] > summary .gcaret{transform:rotate(90deg);}
   .gwh[open] > .gtable{margin:.7rem; width:auto;}
@@ -1371,20 +1372,24 @@ function guideLabel(fam){
   const L = { ...FAM_LABEL, special:{es:"Casos especiales", en:"Special cases"} };
   return lang === "en" ? L[fam].en : L[fam].es;
 }
-/* Guía — hace colapsable la tarjeta de la tabla Wh-words (referencia) */
+/* Guía — hace colapsable la tabla Wh-words (referencia). Conserva el h2 como
+   título de la tarjeta (como la de Tiempos) y deja la tabla en una fila
+   desplegable con el mismo aspecto que una familia. */
 function buildGuideWh(){
   const table = document.querySelector("#guide .gtable");
   const card = table ? table.closest(".card") : null;
   if(!card || card.querySelector(".gwh")) return;   // ya construido
-  const h2 = card.querySelector("h2");
+  const rows = table.querySelectorAll("tr").length;
   const det = document.createElement("details");
   det.className = "gwh";   // colapsada por defecto (material de referencia)
-  const sum = document.createElement("summary");
-  if(h2) sum.appendChild(h2);
-  sum.insertAdjacentHTML("beforeend", `<span class="gcaret">▸</span>`);
-  det.appendChild(sum);
+  det.innerHTML = `<summary><span class="gdot" style="background:var(--wh)"></span><span class="gwhlabel"></span><span class="gcount">${rows}</span><span class="gcaret">▸</span></summary>`;
   det.appendChild(table);
-  card.appendChild(det);
+  card.appendChild(det);   // el h2 sigue arriba como título de la tarjeta
+  updateGuideWh();
+}
+function updateGuideWh(){
+  const lab = document.querySelector("#guide .gwhlabel");
+  if(lab) lab.textContent = lang === "en" ? "Reference table" : "Tabla de referencia";
 }
 function buildGuideAccordion(){
   const h2 = document.querySelector('#guide [data-i18n="tensesH2"]');
@@ -1662,6 +1667,7 @@ function setLang(l){
   if(q) renderResult(analyze(q), $("result"));
   renderId(false); renderR(false);
   updateGuideAccordion();   // etiquetas del acordeón de la Guía en el idioma nuevo
+  updateGuideWh();
 }
 document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("click", ()=> setLang(b.dataset.lang)));
 
