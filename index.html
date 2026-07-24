@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Question Lab 🧩</title>
 <link rel="icon" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="tokens.css">
 <script src="cefr.generated.js"></script>
 <script src="bank.js"></script>
 <script src="gamification.generated.js"></script>
 <style>
+  /* Tipografía DUA self-hosted (subset latin, cubre inglés + español) */
+  @font-face{font-family:'Lexend';font-style:normal;font-weight:400 700;font-display:swap;src:url('fonts/Lexend.woff2') format('woff2');}
+  @font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/AtkinsonHyperlegible-Regular.woff2') format('woff2');}
+  @font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/AtkinsonHyperlegible-Bold.woff2') format('woff2');}
   :root{
     /* Neutros, roles, familias y acento: en tokens.css (fuente: Apps/design-tokens).
        Los --n-* adaptan solos por tema, así que aquí solo los referenciamos. */
