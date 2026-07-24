@@ -48,7 +48,7 @@
   .langtog button.on{background:var(--accent); color:#fff;}
 
   /* Tabs */
-  .tabs{display:flex; gap:.5rem; margin:1.2rem 0 1rem;}
+  .tabs{display:flex; flex-wrap:wrap; gap:.5rem; margin:1.2rem 0 1rem;}
   .tab{
     flex:1; padding:.7rem; border:1px solid var(--border); border-radius:12px;
     background:var(--card); color:var(--muted); font-size:1rem; font-weight:600;
@@ -302,9 +302,9 @@
         <input type="text" id="qin" placeholder="Where do you live?" autocomplete="off" autocapitalize="off">
         <button class="primary" id="goBtn" data-i18n="btnAnalyze">Analizar</button>
       </div>
+      <div id="result"></div>
       <div class="examples" id="examples"></div>
     </div>
-    <div id="result"></div>
   </div>
 
   <!-- ============ BUILD ============ -->
@@ -1153,12 +1153,12 @@ function renderResult(r, container){
   container.innerHTML = html;
 }
 
-$("goBtn").addEventListener("click", ()=> renderResult(analyze($("qin").value), $("result")));
-$("qin").addEventListener("keydown", e=>{ if(e.key==="Enter") renderResult(analyze($("qin").value), $("result")); });
+$("goBtn").addEventListener("click", ()=> goAnalyze($("qin").value));
+$("qin").addEventListener("keydown", e=>{ if(e.key==="Enter") goAnalyze($("qin").value); });
 $("examples").addEventListener("click", e=>{
   if(e.target.classList.contains("chip")){
     $("qin").value = e.target.textContent;
-    renderResult(analyze(e.target.textContent), $("result"));
+    goAnalyze(e.target.textContent);
   }
 });
 
@@ -1616,6 +1616,7 @@ function scrollReveal(el){
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   try{ el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" }); }catch(e){}
 }
+function goAnalyze(text){ renderResult(analyze(text), $("result")); scrollReveal($("result")); }
 /* Gamificación (suite): progreso compartido + toast de logro */
 let ghProgress = null;
 function showBadgeToast(key){
