@@ -70,7 +70,7 @@
   /* Analyze input */
   .qinput{display:flex; gap:.5rem; margin-bottom:.6rem;}
   .qinput input{
-    flex:1; padding:.85rem 1rem; font-size:1.05rem; border:1.5px solid var(--border);
+    flex:1; min-width:0; padding:.85rem 1rem; font-size:1.05rem; border:1.5px solid var(--border);
     border-radius:12px; background:var(--bg); color:var(--text); outline:none;
   }
   .qinput input:focus{border-color:var(--accent);}
@@ -80,6 +80,7 @@
   }
   button.primary:active{transform:scale(.96);}
   .examples{display:flex; flex-wrap:wrap; gap:.4rem;}
+  .exhint{font-size:.82rem; color:var(--muted); margin:.5rem 0 .3rem;}
   .chip{
     font-size:.82rem; padding:.3rem .7rem; border-radius:999px; border:1px solid var(--border);
     background:transparent; color:var(--muted); cursor:pointer;
@@ -303,7 +304,10 @@
         <button class="primary" id="goBtn" data-i18n="btnAnalyze">Analizar</button>
       </div>
       <div id="result"></div>
-      <div class="examples" id="examples"></div>
+      <div id="exWrap">
+        <p class="exhint" data-i18n="exHint">💡 O prueba con una de estas:</p>
+        <div class="examples" id="examples"></div>
+      </div>
     </div>
   </div>
 
@@ -1301,6 +1305,7 @@ const visibleAt = c => !c || cefrIdx(c) <= cefrIdx(curLevel);
 function renderExamples(){
   $("examples").innerHTML = EXAMPLES.filter(o=>visibleAt(itemCefr(o)))
     .map(o=>`<button class="chip">${o.q}</button>`).join("");
+  const w=$("exWrap"); if(w) w.style.display="";
 }
 function refilterChallenges(){
   activeChallenges = CHALLENGES.filter(o=>visibleAt(itemCefr(o)));
@@ -1411,7 +1416,7 @@ const I18N = {
     idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
     idEmpty:"No hay preguntas en este nivel todavía.",
     achievement:"¡Logro!",
-    tabRespond:"🏓 Responde",
+    tabRespond:"🏓 Responde", exHint:"💡 O prueba con una de estas:",
     rHint:"Devuelve la pelota: escribe la respuesta corta (Yes / No).",
     rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien devuelta!",
     rTry:"Casi… mira la respuesta correcta abajo.",
@@ -1485,7 +1490,7 @@ const I18N = {
     idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
     idEmpty:"No questions at this level yet.",
     achievement:"Achievement!",
-    tabRespond:"🏓 Respond",
+    tabRespond:"🏓 Respond", exHint:"💡 Or try one of these:",
     rHint:"Return the ball: type the short answer (Yes / No).",
     rWrite:"Type your answer.", rGood:"🎉 Nice return!",
     rTry:"Almost… see the correct answer below.",
@@ -1616,7 +1621,7 @@ function scrollReveal(el){
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   try{ el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" }); }catch(e){}
 }
-function goAnalyze(text){ renderResult(analyze(text), $("result")); scrollReveal($("result")); }
+function goAnalyze(text){ renderResult(analyze(text), $("result")); scrollReveal($("result")); const w=$("exWrap"); if(w) w.style.display="none"; }
 /* Gamificación (suite): progreso compartido + toast de logro */
 let ghProgress = null;
 function showBadgeToast(key){
