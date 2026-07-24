@@ -1106,18 +1106,33 @@ document.querySelectorAll(".tab").forEach(t=>{
   });
 });
 
+// Ejemplos REPRESENTATIVOS del nivel (no acumulativos): 2-3 por nivel.
+// La app igual analiza gramática de niveles anteriores; aquí mostramos lo nuevo del nivel.
 const EXAMPLES = [
-  {q:"Where do you live?", t:"simple-present"},
-  {q:"Do you like coffee?", t:"simple-present"},
+  // Básico I — verbo to be + presente simple
+  {q:"Where do you live?", c:"basico1"},
+  {q:"Do you like coffee?", c:"basico1"},
   {q:"Is she a doctor?", c:"basico1"},
-  {q:"What are you doing right now?", t:"present-continuous"},
-  {q:"Why didn't he like the class?", t:"simple-past"},
-  {q:"What was Sarah like at school?", c:"basico2"},
+  // Básico II — presente continuo, pasado simple, to be pasado, can
+  {q:"What are you doing right now?", c:"basico2"},
+  {q:"Why didn't he like the class?", c:"basico2"},
   {q:"Can you swim?", c:"basico2"},
-  {q:"What are you going to do this weekend?", t:"future-going-to"},
-  {q:"Have you ever visited Chiloé?", t:"present-perfect"},
-  {q:"Did you use to play football?", t:"used-to"},
-  {q:"Who painted the Mona Lisa?", c:"intermedio2"}
+  // Elemental I — comparativos, have to, would
+  {q:"Is English more difficult than Spanish?", c:"elemental1"},
+  {q:"Do you have to wear a uniform?", c:"elemental1"},
+  {q:"Would you like a coffee?", c:"elemental1"},
+  // Elemental II — going to, presente perfecto
+  {q:"What are you going to do this weekend?", c:"elemental2"},
+  {q:"Have you ever visited Chiloé?", c:"elemental2"},
+  // Intermedio I — pasado continuo, will
+  {q:"What were you doing at eight?", c:"intermedio1"},
+  {q:"Will you help me?", c:"intermedio1"},
+  // Intermedio II — pasado perfecto, used to, pregunta de sujeto
+  {q:"Did you use to play football?", c:"intermedio2"},
+  {q:"Who painted the Mona Lisa?", c:"intermedio2"},
+  // Intermedio Alto — presente perfecto continuo
+  {q:"How long have you been working here?", c:"avanzado"},
+  {q:"Have you been waiting long?", c:"avanzado"}
 ];
 
 function blockHTML(p){
@@ -1303,7 +1318,7 @@ try{ const s = localStorage.getItem("ql_level"); if(s && LV.includes(s)) curLeve
 const visibleAt = c => !c || cefrIdx(c) <= cefrIdx(curLevel);
 
 function renderExamples(){
-  $("examples").innerHTML = EXAMPLES.filter(o=>visibleAt(itemCefr(o)))
+  $("examples").innerHTML = EXAMPLES.filter(o=>itemCefr(o) === curLevel)
     .map(o=>`<button class="chip">${o.q}</button>`).join("");
   const w=$("exWrap"); if(w) w.style.display="";
 }
