@@ -103,7 +103,17 @@ window.QUESTION_BANK = {
     // Pasado simple (repaso)
     "Did you enjoy the concert?",
     "Where did you spend your holidays?",
-    "How much did the tickets cost?"
+    "How much did the tickets cost?",
+    // Would (ofrecimientos / invitaciones — Practical English) — cerradas
+    "Would you like a coffee?",
+    "Would you like to dance?",
+    "Would she like a dessert?",
+    "Would you travel the world if you were rich?",
+    // Would — abiertas
+    "What would you like to drink?",
+    "What would you like to order?",
+    "Where would you like to sit?",
+    "What would you do with a million dollars?"
   ],
   elemental2: [
     // Futuro con «going to» — cerradas

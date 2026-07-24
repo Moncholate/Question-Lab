@@ -736,6 +736,10 @@ function analyze(raw){
   }
   else if(aux === "had"){ tense = "Pasado Perfecto"; }
   else if(aux === "will"){ tense = verbForm === "willCont" ? "Futuro Continuo" : "Futuro Simple (will)"; }
+  else if(aux === "would"){
+    tense = "Would (ofrecimientos / condicional)";
+    tenseNote = "«Would» para ofrecer/invitar (Would you like…?) y para el 2º condicional.";
+  }
   else if(MODALS.includes(aux)){
     tense = `Verbo modal («${aux}»)`;
     tenseNote = "Los modales no marcan el tiempo por sí solos — el contexto lo hace.";
@@ -1414,7 +1418,8 @@ const TENSE_TR = { "Presente Simple":"Simple Present", "Pasado Simple":"Simple P
   "Pasado Simple (to be)":"Simple Past (to be)", "Presente Perfecto":"Present Perfect",
   "Presente Perfecto Continuo":"Present Perfect Continuous", "Pasado Perfecto":"Past Perfect",
   "Futuro Simple (will)":"Simple Future (will)", "Futuro Continuo":"Future Continuous",
-  "Futuro con «going to»":"Future with 'going to'" };
+  "Futuro con «going to»":"Future with 'going to'",
+  "Would (ofrecimientos / condicional)":"Would (offers / conditional)" };
 const WH_HINTS_EN = { where:"a place 📍", when:"a time 🕐", who:"a person 🧑", whom:"a person 🧑",
   what:"a thing / idea 💡", why:"because + a reason 💬", which:"an option ✅", whose:"an owner (…'s) 🔑",
   how:"a way ✨", "how many":"a quantity 🔢", "how much":"an amount 💰", "how often":"a frequency 🔁",
@@ -1465,6 +1470,7 @@ const ID_TENSES = [
   { id:"simple-past",   cefr:"basico2",     es:"Pasado Simple",         en:"Simple Past" },
   { id:"to-be-past",    cefr:"basico2",     es:"Pasado Simple (to be)", en:"Simple Past (to be)" },
   { id:"modal",         cefr:"basico2",     es:"Verbo modal (can, could…)",en:"Modal verb (can, could…)" },
+  { id:"would",         cefr:"elemental1",  es:"Would (ofrecimientos / condicional)",en:"Would (offers / conditional)" },
   { id:"future-going-to",cefr:"elemental2", es:"Futuro (going to)",     en:"Future (going to)" },
   { id:"present-perfect",cefr:"elemental2", es:"Presente Perfecto",     en:"Present Perfect" },
   { id:"past-continuous",cefr:"intermedio1",es:"Pasado Continuo",       en:"Past Continuous" },
@@ -1486,10 +1492,12 @@ const ID_HINT = {
   "future-going-to":{es:"am/is/are + going to + verbo base.",en:"am/is/are + going to + base verb."},
   "simple-future":{es:"will + verbo base.",en:"will + base verb."},
   "used-to":{es:"did + use to + verbo base.",en:"did + use to + base verb."},
-  "modal":{es:"Modal (can, should…) + verbo base.",en:"Modal (can, should…) + base verb."}
+  "modal":{es:"Modal (can, should…) + verbo base.",en:"Modal (can, should…) + base verb."},
+  "would":{es:"would + verbo base (ofrecer, invitar, hipótesis).",en:"would + base verb (offer, invite, hypothesis)."}
 };
 function tenseIdOf(s){
   if(/\(to be\)/.test(s)) return /Pasado/.test(s) ? "to-be-past" : "to-be-pres";
+  if(/^Would/.test(s)) return "would";
   if(/Perfecto Continuo/.test(s)) return "present-perfect-continuous";
   if(/Presente Perfecto/.test(s)) return "present-perfect";
   if(/Pasado Perfecto/.test(s)) return "past-perfect";
