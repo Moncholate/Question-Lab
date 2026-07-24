@@ -166,6 +166,11 @@
   .idopt.wrong{border-color:var(--err); background:color-mix(in srgb, var(--err) 12%, transparent); color:var(--err); box-shadow:none;}
   .badge.fam{background:var(--fbg); color:var(--fink); border-color:color-mix(in srgb, var(--f) 40%, transparent);}
   .badge.fam .asp{margin-right:.15rem;}
+  /* Responde */
+  .rhint{font-size:.9rem; color:var(--muted); margin:.15rem 0 .5rem;}
+  .rinput{width:100%; padding:.7rem .9rem; border-radius:12px; border:1.5px solid var(--border);
+    background:var(--card); color:var(--text); font-size:1.05rem; margin:.1rem 0 .5rem; min-height:var(--tap-min,44px);}
+  .rinput:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);}
   #idQuestion{font-size:1.25rem; font-weight:700; text-align:center; padding:.4rem 0 .2rem;}
 
   /* Legend */
@@ -277,6 +282,7 @@
     <button class="tab active" data-panel="analyze" data-i18n="tabAnalyze">🔍 Analiza</button>
     <button class="tab" data-panel="build" data-i18n="tabBuild">🧱 Construye</button>
     <button class="tab" data-panel="identify" data-i18n="tabIdentify">🔍 Identifica</button>
+    <button class="tab" data-panel="respond" data-i18n="tabRespond">🏓 Responde</button>
     <button class="tab" data-panel="guide" data-i18n="tabGuide">📖 Guía</button>
   </div>
 
@@ -330,6 +336,24 @@
       </div>
     </div>
     <div id="idReveal"></div>
+  </div>
+
+  <!-- ============ RESPONDE ============ -->
+  <div class="panel" id="respond">
+    <div class="card">
+      <div class="prompt" id="rQuestion"></div>
+      <p class="rhint" id="rHint" data-i18n="rHint">Devuelve la pelota: escribe la respuesta corta (Yes / No).</p>
+      <input id="rInput" class="rinput" type="text" autocomplete="off" autocapitalize="sentences" placeholder="Yes, I do." />
+      <div class="buildmsg" id="rMsg"></div>
+      <div class="buildbar">
+        <span class="streak" id="rStreak"></span>
+        <span>
+          <button class="primary" id="rCheck" data-i18n="idCheck">Comprobar</button>
+          <button class="ghost" id="rNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+        </span>
+      </div>
+    </div>
+    <div id="rReveal"></div>
   </div>
 
   <!-- ============ GUÍA ============ -->
@@ -1279,6 +1303,7 @@ function applyLevel(){
   renderExamples();
   refilterChallenges();
   buildIdPool(); renderId(true);
+  buildRPool(); renderR(true);
 }
 function setLevel(id){
   if(!LV.includes(id)) return;
@@ -1373,7 +1398,12 @@ const I18N = {
     idPickBoth:"Marca las dos: tipo y tiempo.", idCorrect:"🎉 ¡Correcto!", idWrong:"Casi… mira la corrección abajo.",
     idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
     idEmpty:"No hay preguntas en este nivel todavía.",
-    achievement:"¡Logro!"
+    achievement:"¡Logro!",
+    tabRespond:"🏓 Responde",
+    rHint:"Devuelve la pelota: escribe la respuesta corta (Yes / No).",
+    rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien devuelta!",
+    rTry:"Casi… mira la respuesta correcta abajo.",
+    rEmpty:"No hay preguntas cerradas en este nivel todavía."
   },
   en: {
     subtitle:"Build questions in English like lego blocks. Answer them like ping-pong.",
@@ -1439,7 +1469,12 @@ const I18N = {
     idPickBoth:"Pick both: type and tense.", idCorrect:"🎉 Correct!", idWrong:"Almost… see the breakdown below.",
     idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
     idEmpty:"No questions at this level yet.",
-    achievement:"Achievement!"
+    achievement:"Achievement!",
+    tabRespond:"🏓 Respond",
+    rHint:"Return the ball: type the short answer (Yes / No).",
+    rWrite:"Type your answer.", rGood:"🎉 Nice return!",
+    rTry:"Almost… see the correct answer below.",
+    rEmpty:"No yes/no questions at this level yet."
   }
 };
 let lang = "es";
@@ -1501,7 +1536,7 @@ function setLang(l){
   if(curCh) $("bPrompt").textContent = (lang === "en" && curCh.pe) ? curCh.pe : curCh.prompt;
   const q = $("qin") && $("qin").value.trim();
   if(q) renderResult(analyze(q), $("result"));
-  renderId(false);
+  renderId(false); renderR(false);
 }
 document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("click", ()=> setLang(b.dataset.lang)));
 
@@ -1685,6 +1720,84 @@ $("idTenseOpts").addEventListener("click", e => {
 });
 $("idCheck").addEventListener("click", checkId);
 $("idNext").addEventListener("click", () => renderId(true));
+
+/* ================================================================
+   RESPONDE — devuelve la pelota (respuesta corta a preguntas cerradas)
+================================================================ */
+let rPool = [], rShown = {}, rCurrent = null, rChecked = false, rStreak = 0;
+try{ rStreak = parseInt(localStorage.getItem("ql_r_streak")||"0",10)||0; }catch(e){}
+function buildRPool(){
+  rPool = []; rShown = {};
+  const bank = window.QUESTION_BANK || {};
+  for(const lvl of LV){
+    if(!visibleAt(lvl)) continue;
+    for(const q of (bank[lvl]||[])){
+      const r = analyze(q);
+      if(!r.ok || r.type.includes("Abierta")) continue;   // solo cerradas
+      rPool.push({ q, tid: tenseIdOf(r.tense) });
+    }
+  }
+}
+function pickR(){
+  if(!rPool.length) return null;
+  const pool = rPool.length > 1 && rCurrent ? rPool.filter(p => p.q !== rCurrent.q) : rPool;
+  const min = Math.min(...pool.map(p => rShown[p.tid] || 0));
+  const cand = pool.filter(p => (rShown[p.tid] || 0) === min);
+  const pick = cand[Math.floor(Math.random() * cand.length)];
+  rShown[pick.tid] = (rShown[pick.tid] || 0) + 1;
+  return pick;
+}
+const R_CONTRACT = {"don't":"do not","doesn't":"does not","didn't":"did not","isn't":"is not","aren't":"are not","wasn't":"was not","weren't":"were not","won't":"will not","haven't":"have not","hasn't":"has not","hadn't":"had not","can't":"cannot","couldn't":"could not","wouldn't":"would not","shouldn't":"should not","i'm":"i am"};
+function normAns(s){
+  s = " " + s.toLowerCase().replace(/[.,!¡?¿]/g," ") + " ";
+  for(const k in R_CONTRACT) s = s.split(k).join(R_CONTRACT[k]);
+  return s.replace(/\s+/g," ").trim();
+}
+function expectedAnswers(r){
+  if(!r.ok || !r.answer || r.answer.kind !== "closed") return [];
+  return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" "));
+}
+function renderR(pickNew){
+  if(pickNew || !rCurrent) rCurrent = pickR();
+  rChecked = false;
+  $("rMsg").textContent = ""; $("rMsg").className = "buildmsg";
+  $("rReveal").innerHTML = "";
+  $("rInput").value = ""; $("rInput").disabled = false;
+  $("rNext").style.display = "none"; $("rCheck").style.display = "";
+  setStreak($("rStreak"), rStreak);
+  if(!rCurrent){
+    $("rQuestion").textContent = t("rEmpty");
+    $("rInput").style.display = "none"; $("rCheck").style.display = "none";
+    return;
+  }
+  $("rInput").style.display = "";
+  $("rQuestion").textContent = rCurrent.q;
+}
+function checkR(){
+  if(rChecked || !rCurrent) return;
+  const val = $("rInput").value.trim();
+  if(!val){ $("rMsg").textContent = t("rWrite"); $("rMsg").className = "buildmsg bad"; return; }
+  rChecked = true; $("rInput").disabled = true;
+  const r = analyze(rCurrent.q);
+  const exp = expectedAnswers(r).map(normAns);
+  const ok = exp.includes(normAns(val));
+  if(ok){ rStreak++; $("rMsg").textContent = t("rGood"); $("rMsg").className = "buildmsg ok"; }
+  else { rStreak = 0; $("rMsg").textContent = t("rTry"); $("rMsg").className = "buildmsg bad"; }
+  try{ localStorage.setItem("ql_r_streak", rStreak); }catch(e){}
+  setStreak($("rStreak"), rStreak);
+  renderResult(r, $("rReveal"));
+  const G = window.GH_GAME;
+  if(G){
+    if(!ghProgress) ghProgress = G.loadProgress(localStorage);
+    G.recordAttempt(ghProgress, { app:"questionlab", tenseId: rCurrent.tid, correct: ok, answerStreak: rStreak });
+    G.evaluateBadges(ghProgress, G.BADGES, [rCurrent.tid]).newly.forEach(showBadgeToast);
+    G.saveProgress(localStorage, ghProgress);
+  }
+  $("rCheck").style.display = "none"; $("rNext").style.display = "";
+}
+$("rCheck").addEventListener("click", checkR);
+$("rNext").addEventListener("click", () => renderR(true));
+$("rInput").addEventListener("keydown", e => { if(e.key === "Enter" && !rChecked) checkR(); });
 
 applyI18n();
 applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
