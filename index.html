@@ -10,16 +10,14 @@
 <script src="bank.js"></script>
 <style>
   :root{
-    --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
-    /* Colores de rol gramatical + acento de UI: en tokens.css (fuente: Apps/design-tokens) */
+    /* Neutros, roles, familias y acento: en tokens.css (fuente: Apps/design-tokens).
+       Los --n-* adaptan solos por tema, así que aquí solo los referenciamos. */
+    --bg:var(--n-bg); --card:var(--n-surface); --text:var(--n-text); --muted:var(--n-muted); --border:var(--n-border);
     --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
     --shadow:0 1px 3px rgba(0,0,0,.08);
   }
   @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --border:#334155;
-      --shadow:0 1px 3px rgba(0,0,0,.4);
-    }
+    :root{ --shadow:0 1px 3px rgba(0,0,0,.4); }
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
