@@ -194,6 +194,18 @@
   .mini.semiaux{background:var(--aux);}
   .mini.subj{background:var(--subj);} .mini.verb{background:var(--verb);}
   .mini.comp{background:var(--comp);} .mini.adv{background:var(--adv);}
+  /* Guía — familias de tiempos (tono = tiempo, ícono = aspecto) */
+  .tense[data-fam="present"]{--f:var(--t-present); --fbg:var(--t-present-1);}
+  .tense[data-fam="past"]{--f:var(--t-past); --fbg:var(--t-past-1);}
+  .tense[data-fam="future"]{--f:var(--t-future); --fbg:var(--t-future-1);}
+  .tense[data-fam="modal"]{--f:var(--t-modal); --fbg:var(--t-modal-1);}
+  .tense[data-fam]{border-left:4px solid var(--f); padding-left:.7rem; border-radius:0 8px 8px 0;
+    background:linear-gradient(90deg, var(--fbg), transparent 72%);}
+  .tense[data-fam] h3::before{color:var(--f); font-weight:700; margin-right:.35em; font-size:.92em;}
+  .tense[data-asp="0"] h3::before{content:"●";}
+  .tense[data-asp="1"] h3::before{content:"◐";}
+  .tense[data-asp="2"] h3::before{content:"◆";}
+  .tense[data-asp="3"] h3::before{content:"◈";}
   footer{text-align:center; color:var(--muted); font-size:.8rem; padding:1rem; }
 </style>
 </head>
@@ -328,84 +340,84 @@
     <div class="card">
       <h2 data-i18n="tensesH2">⏱️ Tiempos: cuándo se usa cada uno</h2>
 
-      <div class="tense" data-tense="simple-present">
+      <div class="tense" data-tense="simple-present" data-fam="present" data-asp="0">
         <h3 data-i18n-html="tSimplePresent">Presente Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
         <div class="pat"><span class="mini aux">Do / Does</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uSimplePresent">Rutinas, hábitos, hechos generales, gustos.</p>
         <p class="ej">Do you drink coffee every day?</p>
       </div>
 
-      <div class="tense" data-cefr="basico1">
+      <div class="tense" data-cefr="basico1" data-fam="present" data-asp="0">
         <h3 data-i18n-html="tToBePresent">Presente de «to be» 👑 <span class="hint">(el punki: no pide prestado)</span></h3>
         <div class="pat"><span class="mini verb">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uToBePresent">Identidad, estados, descripciones, nacionalidad, profesión.</p>
         <p class="ej">Is she a doctor?</p>
       </div>
 
-      <div class="tense" data-tense="present-continuous">
+      <div class="tense" data-tense="present-continuous" data-fam="present" data-asp="1">
         <h3 data-i18n-html="tPresentCont">Presente Continuo 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mIng">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPresentCont">Lo que pasa ahora mismo; también planes ya agendados.</p>
         <p class="ej">What are you doing right now?</p>
       </div>
 
-      <div class="tense" data-tense="simple-past">
+      <div class="tense" data-tense="simple-past" data-fam="past" data-asp="0">
         <h3 data-i18n-html="tSimplePast">Pasado Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uSimplePast">Acciones terminadas en un momento específico del pasado.</p>
         <p class="ej">Did she travel to Peru last year?</p>
       </div>
 
-      <div class="tense" data-cefr="basico2">
+      <div class="tense" data-cefr="basico2" data-fam="past" data-asp="0">
         <h3 data-i18n-html="tToBePast">Pasado de «to be» 👑</h3>
         <div class="pat"><span class="mini verb">Was / Were</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uToBePast">Estados y descripciones en el pasado.</p>
         <p class="ej">Were you tired yesterday?</p>
       </div>
 
-      <div class="tense" data-tense="past-continuous">
+      <div class="tense" data-tense="past-continuous" data-fam="past" data-asp="1">
         <h3 data-i18n-html="tPastCont">Pasado Continuo 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Was / Were</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mIng">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPastCont">Acción en progreso en el pasado, a menudo interrumpida por otra.</p>
         <p class="ej">Was he sleeping when you called?</p>
       </div>
 
-      <div class="tense" data-tense="present-perfect">
+      <div class="tense" data-tense="present-perfect" data-fam="present" data-asp="2">
         <h3 data-i18n-html="tPresentPerfect">Presente Perfecto 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Have / Has</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mPart">participio</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPresentPerfect">Experiencias de vida (sin fecha específica) y acciones pasadas con efecto en el presente.</p>
         <p class="ej">Have you ever visited Chiloé?</p>
       </div>
 
-      <div class="tense" data-tense="past-perfect">
+      <div class="tense" data-tense="past-perfect" data-fam="past" data-asp="2">
         <h3 data-i18n-html="tPastPerfect">Pasado Perfecto 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Had</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mPart">participio</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPastPerfect">Lo que pasó <b>antes</b> de otra acción en el pasado.</p>
         <p class="ej">Had you eaten before the meeting?</p>
       </div>
 
-      <div class="tense" data-tense="simple-future">
+      <div class="tense" data-tense="simple-future" data-fam="future" data-asp="0">
         <h3 data-i18n-html="tFutureWill">Futuro con «will» 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Will</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uFutureWill">Decisiones espontáneas, promesas, predicciones.</p>
         <p class="ej">Will you come to class tomorrow?</p>
       </div>
 
-      <div class="tense" data-tense="future-going-to">
+      <div class="tense" data-tense="future-going-to" data-fam="future" data-asp="0">
         <h3 data-i18n-html="tFutureGoing">Futuro con «going to» 🍦🍦</h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini semiaux">going to</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uFutureGoing">Planes e intenciones ya decididos. El «be» es el auxiliar oficial; «going to» es su ayudante (semi-aux).</p>
         <p class="ej">What are you going to do this weekend?</p>
       </div>
 
-      <div class="tense" data-tense="used-to">
+      <div class="tense" data-tense="used-to" data-fam="past" data-asp="0">
         <h3 data-i18n-html="tUsedTo">Hábito pasado con «used to» 🍦</h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini semiaux">use to</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uUsedTo">Hábitos o estados del pasado que ya no ocurren. En positivo el semi-aux recupera la carga temporal: I <b>used to</b> play football.</p>
         <p class="ej">Did you use to play football as a child?</p>
       </div>
 
-      <div class="tense" data-cefr="basico2">
+      <div class="tense" data-cefr="basico2" data-fam="modal" data-asp="0">
         <h3 data-i18n-html="tModals">Modales 🍦🍦 <span class="hint">(can, could, should, would…)</span></h3>
         <div class="pat"><span class="mini aux">Can / Should…</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uModals">Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.</p>
