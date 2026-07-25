@@ -75,8 +75,9 @@
 
   /* Tabs */
   /* Barra de secciones inferior (fija, estilo app) */
-  .tabbar{flex-shrink:0; display:flex; background:var(--card); border-top:1px solid var(--border);
+  .tabbar{flex-shrink:0; background:var(--card); border-top:1px solid var(--border);
     box-shadow:0 -1px 10px -4px rgba(0,0,0,.18); padding-bottom:env(safe-area-inset-bottom, 0);}
+  .tabbar-inner{display:flex; align-items:stretch; max-width:30rem; margin:0 auto;}
   .tabbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.12rem;
     padding:.5rem .2rem; border:none; background:none; color:var(--muted); cursor:pointer;
     min-height:var(--tap-min,44px); transition:color .15s; position:relative;}
@@ -619,10 +620,12 @@
 </div>
 
 <nav class="tabbar" id="tabbar" aria-label="Secciones">
-  <button class="tabbtn active" data-nav="analyze" data-panel="analyze"><span class="ti" aria-hidden="true">🔍</span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
-  <button class="tabbtn" data-nav="guide" data-panel="guide"><span class="ti" aria-hidden="true">📖</span><span class="tl" data-i18n="navGuide">Guía</span></button>
-  <button class="tabbtn" data-nav="practice" data-panel="practice"><span class="ti" aria-hidden="true">🎯</span><span class="tl" data-i18n="navPractice">Práctica</span></button>
-  <button class="tabbtn" data-nav="progress" data-panel="progress"><span class="ti" aria-hidden="true">📊</span><span class="tl" data-i18n="navProgress">Progreso</span></button>
+  <div class="tabbar-inner">
+    <button class="tabbtn active" data-nav="analyze" data-panel="analyze"><span class="ti" aria-hidden="true">🔍</span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
+    <button class="tabbtn" data-nav="guide" data-panel="guide"><span class="ti" aria-hidden="true">📖</span><span class="tl" data-i18n="navGuide">Guía</span></button>
+    <button class="tabbtn" data-nav="practice" data-panel="practice"><span class="ti" aria-hidden="true">🎯</span><span class="tl" data-i18n="navPractice">Práctica</span></button>
+    <button class="tabbtn" data-nav="progress" data-panel="progress"><span class="ti" aria-hidden="true">📊</span><span class="tl" data-i18n="navProgress">Progreso</span></button>
+  </div>
 </nav>
 
 <script>
