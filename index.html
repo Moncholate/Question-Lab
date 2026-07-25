@@ -571,6 +571,9 @@ const MODALS = ["will","would","can","could","should","shall","may","might","mus
 const PRONOUNS = ["i","you","he","she","it","we","they"];
 const DETS = ["the","a","an","my","your","his","her","its","our","their","this","that","these","those","some","any"];
 const ADVS = ["ever","never","always","usually","often","already","just","still","also","really","sometimes","generally","recently"];
+/* Adverbios de tiempo/lugar que NO pueden ser sujeto (para detectar "Where were yesterday?") */
+const TIME_PLACE_ADV = new Set(["yesterday","today","tomorrow","tonight","now","then","here","there",
+  "soon","later","early","late","again","home","abroad","outside","inside","away","everywhere","somewhere","anywhere","nowhere"]);
 
 /* Verbos irregulares: base -> [pasado, participio] */
 const IRR = {
@@ -826,6 +829,22 @@ function analyze(raw){
   }
   const subjText = subjTokens.join(" ");
   const subjLower = subjText.toLowerCase();
+
+  // Falta el sujeto con "be": "Where were yesterday?" — con where/when, si lo que
+  // sigue al be es solo un adverbio de tiempo/lugar (no un sujeto), falta el sujeto.
+  // (No aplica a "How was yesterday?", donde "yesterday" SÍ es el sujeto.)
+  if(beMain && isOpen && ["where","when"].includes(whText.toLowerCase().split(" ")[0])
+     && subjTokens.every(w => TIME_PLACE_ADV.has(w.toLowerCase()))){
+    const auxW = tokens[auxIdx];
+    const parts = [{role:"wh", text:whText, label:"wh-word"},
+      {role:"verb", text:auxW, label:"verbo to be ⭐"},
+      gapPart("subj","sujeto","subject"),
+      {role:"comp", text:[...subjTokens, ...compTokens].join(" "), label:"adverbial"}];
+    const note = lang==="en"
+      ? `With «be» you still need a <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> (who/what): «${subjText}» is an adverbial, not a subject. <i>${whText} ${auxW} <b>[subject]</b> ${subjText}?</i>`
+      : `Con «be» igual necesitas un <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (quién/qué): «${subjText}» es un adverbial, no un sujeto. <i>${whText} ${auxW} <b>[sujeto]</b> ${subjText}?</i>`;
+    return incompleteResult(parts, [note]);
+  }
 
   // 4. Analizar el verbo principal
   if(!beMain){
