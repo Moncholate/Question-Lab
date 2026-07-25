@@ -74,13 +74,18 @@
   .themebtn:hover{background:var(--card);}
 
   /* Tabs */
-  .tabs{display:flex; flex-wrap:wrap; gap:.5rem; margin:1.2rem 0 1rem;}
-  .tab{
-    flex:1; padding:.7rem; border:1px solid var(--border); border-radius:12px;
-    background:var(--card); color:var(--muted); font-size:1rem; font-weight:600;
-    cursor:pointer; transition:all .15s;
-  }
-  .tab.active{color:var(--text); border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);}
+  /* Barra de secciones inferior (fija, estilo app) */
+  .tabbar{flex-shrink:0; display:flex; background:var(--card); border-top:1px solid var(--border);
+    box-shadow:0 -1px 10px -4px rgba(0,0,0,.18); padding-bottom:env(safe-area-inset-bottom, 0);}
+  .tabbtn{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.12rem;
+    padding:.5rem .2rem; border:none; background:none; color:var(--muted); cursor:pointer;
+    min-height:var(--tap-min,44px); transition:color .15s; position:relative;}
+  .tabbtn .ti{font-size:1.25rem; line-height:1;}
+  .tabbtn .tl{font-size:.66rem; font-weight:700; letter-spacing:.01em;}
+  .tabbtn.active{color:var(--accent);}
+  .tabbtn.active::before{content:""; position:absolute; top:0; left:22%; right:22%; height:2.5px;
+    background:var(--accent); border-radius:0 0 3px 3px;}
+  .tabbtn:not(.active):hover{color:var(--text);}
   .panel{display:none;}
   .panel.active{display:block; animation:fadein .25s;}
   @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
@@ -358,14 +363,6 @@
     </div>
   </details>
 
-  <div class="tabs">
-    <button class="tab active" data-panel="analyze" data-i18n="tabAnalyze">🔍 Analiza</button>
-    <button class="tab" data-panel="build" data-i18n="tabBuild">🧱 Construye</button>
-    <button class="tab" data-panel="identify" data-i18n="tabIdentify">🔍 Identifica</button>
-    <button class="tab" data-panel="respond" data-i18n="tabRespond">🏓 Responde</button>
-    <button class="tab" data-panel="guide" data-i18n="tabGuide">📖 Guía</button>
-  </div>
-
   <!-- ============ ANALYZE ============ -->
   <div class="panel active" id="analyze">
     <div class="card">
@@ -569,6 +566,14 @@
 
 <footer data-i18n="footer">Herramienta pedagógica de análisis por reglas — puede equivocarse con preguntas muy complejas. 🇨🇱</footer>
 </div>
+
+<nav class="tabbar" id="tabbar" aria-label="Secciones">
+  <button class="tabbtn active" data-panel="analyze"><span class="ti" aria-hidden="true">🔍</span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
+  <button class="tabbtn" data-panel="build"><span class="ti" aria-hidden="true">🧱</span><span class="tl" data-i18n="navBuild">Construye</span></button>
+  <button class="tabbtn" data-panel="identify"><span class="ti" aria-hidden="true">🎯</span><span class="tl" data-i18n="navIdentify">Identifica</span></button>
+  <button class="tabbtn" data-panel="respond"><span class="ti" aria-hidden="true">🏓</span><span class="tl" data-i18n="navRespond">Responde</span></button>
+  <button class="tabbtn" data-panel="guide"><span class="ti" aria-hidden="true">📖</span><span class="tl" data-i18n="navGuide">Guía</span></button>
+</nav>
 
 <script>
 /* ================================================================
@@ -1289,12 +1294,13 @@ function cap(s){ return s === "I" ? "I" : s.charAt(0).toUpperCase()+s.slice(1); 
 const $ = id => document.getElementById(id);
 
 /* Tabs — se registran primero para que siempre funcionen */
-document.querySelectorAll(".tab").forEach(t=>{
+document.querySelectorAll(".tabbtn").forEach(t=>{
   t.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".tabbtn").forEach(x=>x.classList.remove("active"));
     document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
     t.classList.add("active");
     $(t.dataset.panel).classList.add("active");
+    const sa = document.querySelector(".scrollarea"); if(sa) sa.scrollTop = 0;   // arriba al cambiar de sección
   });
 });
 
@@ -1649,6 +1655,7 @@ const I18N = {
     subtitle:"Arma preguntas en inglés como legos. Respóndelas como ping pong.",
     lvl:"📊 Nivel",
     tabAnalyze:"🔍 Analiza", tabBuild:"🧱 Construye", tabGuide:"📖 Guía",
+    navAnalyze:"Analiza", navBuild:"Construye", navIdentify:"Identifica", navRespond:"Responde", navGuide:"Guía",
     legendSummary:"🧩 ¿Qué significa cada pieza?",
     pWh:"Wh-word", pWhD:"Lo que se pregunta (el tipo de pregunta).",
     pAux:"Auxiliar", pAuxD:"Verbo ayudante — lleva la información de tiempo.",
@@ -1723,6 +1730,7 @@ const I18N = {
     subtitle:"Build questions in English like lego blocks. Answer them like ping-pong.",
     lvl:"📊 Level",
     tabAnalyze:"🔍 Analyze", tabBuild:"🧱 Build", tabGuide:"📖 Guide",
+    navAnalyze:"Analyze", navBuild:"Build", navIdentify:"Identify", navRespond:"Respond", navGuide:"Guide",
     legendSummary:"🧩 What does each piece mean?",
     pWh:"Wh-word", pWhD:"What is being asked (the type of question).",
     pAux:"Auxiliary", pAuxD:"Helper verb — it carries the tense information.",
