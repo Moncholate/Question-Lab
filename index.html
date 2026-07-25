@@ -3,6 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* Tema de la suite (compartido same-origin): fija data-theme antes de pintar.
+   gh_theme = auto | light | dark. window.ghTheme = control para el toggle. */
+(function(){try{var K='gh_theme',order=['auto','light','dark'];
+  var apply=function(){var m=localStorage.getItem(K)||'auto';
+    var dark=m==='dark'||(m==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.setAttribute('data-theme',dark?'dark':'light');};
+  window.ghTheme={get:function(){return localStorage.getItem(K)||'auto';},
+    set:function(v){localStorage.setItem(K,v);apply();},
+    cycle:function(){var n=order[(order.indexOf(this.get())+1)%3];this.set(n);return n;},apply:apply};
+  apply();addEventListener('storage',function(e){if(e.key===K)apply();});
+  var mq=matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener?mq.addEventListener('change',apply):mq.addListener(apply);
+}catch(e){}})();
+</script>
 <title>Question Lab 🧩</title>
 <link rel="icon" href="favicon.svg">
 <link rel="stylesheet" href="tokens.css">
@@ -23,9 +38,7 @@
     --font-read:'Atkinson Hyperlegible', system-ui, 'Segoe UI', sans-serif;
     --shadow:0 1px 3px rgba(0,0,0,.08);
   }
-  @media (prefers-color-scheme: dark){
-    :root{ --shadow:0 1px 3px rgba(0,0,0,.4); }
-  }
+  :root[data-theme="dark"]{ --shadow:0 1px 3px rgba(0,0,0,.4); }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:var(--font-ui);
@@ -46,6 +59,9 @@
   .langtog button{border:none; background:var(--card); color:var(--muted); font-size:.78rem;
     font-weight:700; padding:.28rem .5rem; cursor:pointer;}
   .langtog button.on{background:var(--accent); color:#fff;}
+  .themebtn{border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text);
+    font-size:1rem; line-height:1; padding:.3rem .5rem; cursor:pointer; min-height:var(--tap-min,44px);}
+  .themebtn:hover{border-color:var(--accent);}
 
   /* Tabs */
   .tabs{display:flex; flex-wrap:wrap; gap:.5rem; margin:1.2rem 0 1rem;}
@@ -283,6 +299,7 @@
     <span data-i18n="lvl">📊 Nivel</span>
     <select id="levelSel" aria-label="Nivel CEFR"></select>
     <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
+    <button type="button" class="themebtn" id="themeTog" aria-label="Tema">🌗</button>
   </div>
 
   <details>
@@ -1668,8 +1685,18 @@ function setLang(l){
   renderId(false); renderR(false);
   updateGuideAccordion();   // etiquetas del acordeón de la Guía en el idioma nuevo
   updateGuideWh();
+  updateThemeBtn();
 }
 document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("click", ()=> setLang(b.dataset.lang)));
+/* Toggle de tema de la suite (auto → claro → oscuro), compartido vía window.ghTheme */
+function updateThemeBtn(){
+  const el = $("themeTog"); if(!el || !window.ghTheme) return;
+  const m = window.ghTheme.get();
+  el.textContent = m === "light" ? "☀️" : (m === "dark" ? "🌙" : "🌗");
+  el.title = (lang === "en" ? "Theme: " : "Tema: ") + m;
+}
+if($("themeTog")) $("themeTog").addEventListener("click", () => { if(window.ghTheme){ window.ghTheme.cycle(); updateThemeBtn(); } });
+addEventListener("storage", e => { if(e.key === "gh_theme") updateThemeBtn(); });
 
 /* ================================================================
    IDENTIFICA — identificar tipo (abierta/cerrada) + tiempo
@@ -2024,6 +2051,7 @@ $("rTypeOpts").addEventListener("click", e => {
 applyI18n();
 buildGuideWh();          // tabla Wh-words colapsable
 buildGuideAccordion();   // agrupa los tiempos de la Guía en acordeones por familia
+updateThemeBtn();        // ícono inicial del toggle de tema
 applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
 </script>
 </body>
