@@ -816,6 +816,30 @@ function analyze(raw){
     return incompleteResult(parts, [note]);
   }
 
+  // Falta el verbo principal: do/does/did y los modales exigen un verbo base.
+  // Si no se encontró ningún verbo (vIdx===-1), el verbo falta. («be» sí va solo.)
+  if(vIdx === -1 && (["do","does","did"].includes(aux) || MODALS.includes(aux))){
+    const auxW = tokens[auxIdx];
+    const after = tokens.slice(auxIdx+1);
+    const parts = [];
+    if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
+    parts.push({role:"aux", text:auxW, label:"auxiliar"});
+    let subjTxt = "", compAfter = [];
+    if(after.length){
+      if(PRONOUNS.includes(lower[auxIdx+1])){ subjTxt = tokens[auxIdx+1]; compAfter = after.slice(1); }
+      else { subjTxt = after.join(" "); }
+    }
+    if(subjTxt) parts.push({role:"subj", text:subjTxt, label:"sujeto"});
+    else parts.push(gapPart("subj","sujeto","subject"));
+    parts.push(gapPart("verb","verbo","verb"));
+    if(compAfter.length) parts.push({role:"comp", text:compAfter.join(" "), label:"complemento"});
+    const shown = subjTxt || (lang==="en" ? "[subject]" : "[sujeto]");
+    const note = lang==="en"
+      ? `«${auxW}» needs a <b>main verb</b> <span class="cdot" style="background:var(--verb)"></span> after the subject: <i>${isOpen ? whText+" " : ""}${auxW} ${shown} <b>[verb]</b> …?</i>`
+      : `«${auxW}» necesita un <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span> después del sujeto: <i>${isOpen ? whText+" " : ""}${auxW} ${shown} <b>[verbo]</b> …?</i>`;
+    return incompleteResult(parts, [note]);
+  }
+
   if(vIdx > auxIdx+1){
     subjTokens = tokens.slice(auxIdx+1, vIdx);
     verbTokens = [tokens[vIdx]];
