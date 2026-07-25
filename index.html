@@ -613,14 +613,35 @@ const IRR = {
   buy:["bought","bought"], wear:["wore","worn"], choose:["chose","chosen"], eat:["ate","eaten"],
   drink:["drank","drunk"], sleep:["slept","slept"], swim:["swam","swum"], sing:["sang","sung"],
   teach:["taught","taught"], catch:["caught","caught"], fly:["flew","flown"], win:["won","won"],
-  forget:["forgot","forgotten"], say:["said","said"], sell:["sold","sold"], wake:["woke","woken"]
+  forget:["forgot","forgotten"], say:["said","said"], sell:["sold","sold"], wake:["woke","woken"],
+  // ── ampliación: irregulares comunes ──
+  bite:["bit","bitten"], blow:["blew","blown"], ride:["rode","ridden"], shoot:["shot","shot"],
+  hide:["hid","hidden"], feed:["fed","fed"], fight:["fought","fought"], throw:["threw","thrown"],
+  lend:["lent","lent"], shake:["shook","shaken"], steal:["stole","stolen"], stick:["stuck","stuck"],
+  sweep:["swept","swept"], swing:["swung","swung"], tear:["tore","torn"], quit:["quit","quit"],
+  beat:["beat","beaten"], bend:["bent","bent"], dig:["dug","dug"], freeze:["froze","frozen"],
+  hang:["hung","hung"], hit:["hit","hit"], hurt:["hurt","hurt"], lie:["lay","lain"],
+  shine:["shone","shone"], shut:["shut","shut"], sink:["sank","sunk"], slide:["slid","slid"],
+  spread:["spread","spread"], strike:["struck","struck"], seek:["sought","sought"], light:["lit","lit"]
 };
 const REG = ["like","live","work","play","study","travel","visit","cook","dance","listen","watch",
   "learn","want","need","love","hate","use","try","ask","call","talk","walk","open","close",
   "start","finish","help","clean","arrive","stay","enjoy","practice","wash","rain","happen",
   "look","move","plan","hope","wait","cost","change","believe","paint","invent","discover",
   "create","design","teach","order","prefer","remember","celebrate","graduate","exercise",
-  "answer","explain","recommend","suggest","email","text","download","upload","program"];
+  "answer","explain","recommend","suggest","email","text","download","upload","program",
+  // ── ampliación de léxico (verbos predominantemente verbales, bajo riesgo de homónimo-sustantivo) ──
+  "smoke","communicate","decide","describe","prepare","imagine","invite","agree","jump","climb",
+  "laugh","promise","relax","repeat","shout","smile","touch","wonder","allow","appear","apply",
+  "attend","borrow","brush","collect","compare","complete","connect","continue","deliver","discuss",
+  "earn","enter","escape","expect","explore","fail","follow","gather","ignore","improve","include",
+  "increase","introduce","knock","lift","mention","notice","pour","prevent","produce","protect",
+  "provide","raise","realize","receive","refuse","remain","remind","remove","repair","replace",
+  "reply","rescue","respect","respond","scream","search","select","serve","solve","spell","stretch",
+  "succeed","suffer","supply","support","suppose","surprise","survive","thank","treat","trust",
+  "unlock","wander","warn","welcome","whisper","wipe","worry","wrap","yell","bark","belong","breathe",
+  "chat","cheer","decorate","defend","depend","deserve","destroy","disappear","encourage","examine",
+  "manage","marry","obey","organize","perform","pretend","punish","recognize","regret","ruin"];
 
 const VERB_BASES = new Set([...Object.keys(IRR), ...REG]);
 const PAST_FORMS = new Map();  // pasado -> base
@@ -642,7 +663,10 @@ function pastOf(v){ return IRR[v] ? IRR[v][0] : regPast(v); }
 
 /* Sustantivos en -ing (y similares) que NO son verbos */
 const NOT_VERBS = new Set(["thing","something","anything","everything","nothing","morning",
-  "evening","king","ring","wing","spring","string","sibling","ceiling","clothing","darling","during"]);
+  "evening","king","ring","wing","spring","string","sibling","ceiling","clothing","darling","during",
+  // sustantivos en -ing SIN uso común como gerundio (los ambiguos como building/meeting/painting
+  // se dejan fuera: romperían el presente continuo «Are you building a house?»)
+  "lightning","wedding","pudding","earring"]);
 
 function isVerbCandidate(w){
   if(!w) return false;
