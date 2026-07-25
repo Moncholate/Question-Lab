@@ -65,9 +65,10 @@
   .langtog button{border:none; background:var(--card); color:var(--muted); font-size:.78rem;
     font-weight:700; padding:.28rem .5rem; cursor:pointer;}
   .langtog button.on{background:var(--accent); color:#fff;}
-  .themebtn{border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text);
-    font-size:.82rem; font-weight:700; line-height:1; padding:.3rem .55rem; cursor:pointer; min-height:var(--tap-min,44px); white-space:nowrap;}
-  .themebtn:hover{border-color:var(--accent);}
+  .themebtn{display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .6rem; border-radius:8px;
+    border:1px solid var(--border); background:color-mix(in srgb, var(--text) 6%, var(--card)); color:var(--text);
+    font-size:.85rem; font-weight:700; line-height:1.2; cursor:pointer; transition:all .12s; white-space:nowrap;}
+  .themebtn:hover{background:var(--card);}
 
   /* Tabs */
   .tabs{display:flex; flex-wrap:wrap; gap:.5rem; margin:1.2rem 0 1rem;}
@@ -1811,7 +1812,7 @@ function updateThemeBtn(){
   const el = $("themeTog"); if(!el || !window.ghTheme) return;
   const target = window.ghTheme.effective() === "dark" ? "light" : "dark";   // modo al que puedes cambiar
   const name = lang === "en" ? (target === "dark" ? "Dark" : "Light") : (target === "dark" ? "Oscuro" : "Claro");
-  el.textContent = (target === "dark" ? "🌙 " : "☀️ ") + name;
+  el.innerHTML = `<span style="font-size:1rem; line-height:1">${target === "dark" ? "🌙" : "☀️"}</span>${esc(name)}`;
   el.title = (lang === "en" ? "Switch to " : "Cambiar a modo ") + name.toLowerCase();
 }
 if($("themeTog")) $("themeTog").addEventListener("click", () => { if(window.ghTheme){ window.ghTheme.toggle(); updateThemeBtn(); } });
