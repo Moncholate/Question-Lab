@@ -123,6 +123,8 @@
   .block.subj{background:var(--subj);} .block.verb{background:var(--verb);}
   .block.comp{background:var(--comp);} .block.adv{background:var(--adv);} .block.new{background:transparent; color:var(--new); border:2px dashed var(--new);}
   .block.new::before{display:none;}
+  .block.gap{background:transparent; border:2px dashed currentColor; opacity:.92;}
+  .block.gap::before{display:none;}
   @keyframes pop{from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);}}
 
   .badges{display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.8rem;}
@@ -686,9 +688,21 @@ function analyze(raw){
       whLen = sIdx; auxIdx = sIdx; aux = lower[auxIdx];
       if(NEG_AUX[aux]){ negative = true; aux = NEG_AUX[aux]; }
     } else if(PRONOUNS.includes(lower[whLen])){
-      return {ok:false, error: lang==="en"
-        ? `The <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span> seems to be missing. After the wh-word comes an auxiliary and then the subject: <i>${whText} <b>do</b> ${tokens.slice(whLen).join(" ")}?</i> — check which auxiliary fits.`
-        : `Parece que falta el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span>. Después de la wh-word va un auxiliar y luego el sujeto: <i>${whText} <b>do</b> ${tokens.slice(whLen).join(" ")}?</i> — revisa cuál auxiliar corresponde.`};
+      // Falta el auxiliar tras la wh: "Where you live?" → wh | ⟦falta aux⟧ | sujeto | verbo
+      let vj = -1;
+      for(let i = whLen+1; i < n; i++){ if(isVerbCandidate(lower[i])){ vj = i; break; } }
+      const parts = [{role:"wh", text:whText, label:"wh-word"}, gapPart("aux","auxiliar","auxiliary")];
+      if(vj > 0){
+        parts.push({role:"subj", text:tokens.slice(whLen, vj).join(" "), label:"sujeto"});
+        parts.push({role:"verb", text:tokens[vj], label:"verbo"});
+        if(n > vj+1) parts.push({role:"comp", text:tokens.slice(vj+1).join(" "), label:"complemento"});
+      } else {
+        parts.push({role:"subj", text:tokens.slice(whLen).join(" "), label:"sujeto"});
+      }
+      const note = lang==="en"
+        ? `After the wh-word comes the <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span>, then the subject: <i>${whText} <b>do/does/did</b> ${tokens.slice(whLen).join(" ")}?</i> — check which one fits.`
+        : `Después de la wh-word va el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> y luego el sujeto: <i>${whText} <b>do/does/did</b> ${tokens.slice(whLen).join(" ")}?</i> — revisa cuál corresponde.`;
+      return incompleteResult(parts, [note]);
     } else if(sIdx < n && isVerbCandidate(lower[sIdx]) && ["who","what","which","whose","how"].includes(lower[0])){
       return analyzeSubjectQ(tokens, lower, whText, extra, sIdx, warnings);
     } else {
@@ -765,10 +779,17 @@ function analyze(raw){
   // sin sujeto en medio y sin otro verbo después → la pregunta perdió el sujeto.
   // (Las preguntas bien armadas siempre llevan el sujeto entre el aux y el verbo.)
   if(vIdx === auxIdx+1 && ["do","does","did","have","has","had"].includes(aux)){
-    const vW = tokens[vIdx], auxW = tokens[auxIdx];
-    return {ok:false, error: lang==="en"
-      ? `I found the auxiliary "${auxW}" <span class="cdot" style="background:var(--aux)"></span> and the verb "${vW}" <span class="cdot" style="background:var(--verb)"></span> right after it — the <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> in between seems to be missing: <i>${auxW} <b>[subject]</b> ${tokens.slice(vIdx).join(" ")}?</i>`
-      : `Encontré el auxiliar «${auxW}» <span class="cdot" style="background:var(--aux)"></span> y el verbo «${vW}» <span class="cdot" style="background:var(--verb)"></span> justo después — parece que falta el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> en medio: <i>${auxW} <b>[sujeto]</b> ${tokens.slice(vIdx).join(" ")}?</i>`};
+    const auxW = tokens[auxIdx], vW = tokens[vIdx];
+    const parts = [];
+    if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
+    parts.push({role:"aux", text:auxW, label:"auxiliar"});
+    parts.push(gapPart("subj","sujeto","subject"));
+    parts.push({role:"verb", text:vW, label:"verbo"});
+    if(n > vIdx+1) parts.push({role:"comp", text:tokens.slice(vIdx+1).join(" "), label:"complemento"});
+    const note = lang==="en"
+      ? `Every question needs a <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> between the auxiliary «${auxW}» and the verb «${vW}»: <i>${auxW} <b>[subject]</b> ${tokens.slice(vIdx).join(" ")}?</i>`
+      : `Toda pregunta necesita un <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> entre el auxiliar «${auxW}» y el verbo «${vW}»: <i>${auxW} <b>[sujeto]</b> ${tokens.slice(vIdx).join(" ")}?</i>`;
+    return incompleteResult(parts, [note]);
   }
 
   if(vIdx > auxIdx+1){
@@ -1219,7 +1240,21 @@ const EXAMPLES = [
 ];
 
 function blockHTML(p){
+  if(p.role === "gap"){
+    // Chip de hueco: borde/texto punteado con el color del rol que falta
+    return `<span class="block gap" style="color:var(--${p.gapRole})">${esc(p.text)}<small>${esc(p.label)}</small></span>`;
+  }
   return `<span class="block ${p.role}">${esc(p.text)}<small>${esc(trLabel(p.label||p.role))}</small></span>`;
+}
+/* Pieza "hueco" para un elemento faltante + resultado incompleto (chip + aviso) */
+function gapPart(gapRole, es, en){
+  return {role:"gap", gapRole, text: lang==="en" ? `⟦ missing ⟧` : `⟦ falta ⟧`,
+    label: lang==="en" ? `missing ${en}` : `falta: ${es}`};
+}
+function incompleteResult(parts, notes){
+  return {ok:true, incomplete:true,
+    type: lang==="en" ? "Incomplete question" : "Pregunta incompleta",
+    tense:"—", parts, answer:null, warnings:[], notes:notes||[]};
 }
 function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -1236,6 +1271,13 @@ function renderResult(r, container){
     </div>
     <h2>${t('piecesTitle')}</h2>
     <div class="blocks">${r.parts.map((p,i)=>blockHTML(p)).join("")}</div>`;
+
+  if(r.incomplete || !r.answer){
+    for(const nt of (r.notes||[])) html += `<div class="note">📌 ${nt}</div>`;
+    html += `</div>`;
+    container.innerHTML = html;
+    return;
+  }
 
   html += `<div class="pingpong"><h3>${t('pingpongHeading')}</h3>`;
   if(r.answer.kind === "open"){
