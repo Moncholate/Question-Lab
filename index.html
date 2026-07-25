@@ -761,6 +761,16 @@ function analyze(raw){
     if(v2 > 0){ vIdx = v2; } // "Does work start at 8?" -> subj = work
   }
 
+  // Falta el sujeto: tras un aux "prestado" (do/have/did) viene el verbo pegado,
+  // sin sujeto en medio y sin otro verbo después → la pregunta perdió el sujeto.
+  // (Las preguntas bien armadas siempre llevan el sujeto entre el aux y el verbo.)
+  if(vIdx === auxIdx+1 && ["do","does","did","have","has","had"].includes(aux)){
+    const vW = tokens[vIdx], auxW = tokens[auxIdx];
+    return {ok:false, error: lang==="en"
+      ? `I found the auxiliary "${auxW}" <span class="cdot" style="background:var(--aux)"></span> and the verb "${vW}" <span class="cdot" style="background:var(--verb)"></span> right after it — the <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> in between seems to be missing: <i>${auxW} <b>[subject]</b> ${tokens.slice(vIdx).join(" ")}?</i>`
+      : `Encontré el auxiliar «${auxW}» <span class="cdot" style="background:var(--aux)"></span> y el verbo «${vW}» <span class="cdot" style="background:var(--verb)"></span> justo después — parece que falta el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> en medio: <i>${auxW} <b>[sujeto]</b> ${tokens.slice(vIdx).join(" ")}?</i>`};
+  }
+
   if(vIdx > auxIdx+1){
     subjTokens = tokens.slice(auxIdx+1, vIdx);
     verbTokens = [tokens[vIdx]];
@@ -892,7 +902,15 @@ function analyze(raw){
   if(beLike) parts.push({role:"wh", text:beLikeText, label:"pareja del what"});
   if(!beMain && semiAuxText) parts.push({role:"semiaux", text:semiAuxText, label:"semi-aux"});
   if(advTokens.length) parts.push({role:"adv", text:advTokens.join(" "), label:"adverbio"});
-  if(!beMain && verbTokens.length) parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
+  if(!beMain && verbTokens.length){
+    if(verbForm === "perfCont" && verbTokens.length >= 2){
+      // Perfecto continuo: "been" es parte del auxiliar (have/has/had been), no del verbo
+      parts.push({role:"aux", text:verbTokens[0], label:"auxiliar (be) 🍦"});
+      parts.push({role:"verb", text:verbTokens.slice(1).join(" "), label:"verbo -ing"});
+    } else {
+      parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
+    }
+  }
   if(compTokens.length) parts.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
 
   // 8. Respuesta ping pong
@@ -1052,11 +1070,14 @@ function buildAnswer(ctx){
     if(beMain){
       verbPhrase = [{role:"verb", text:negAuxText, label:"be negativo"}];
     } else {
+      const perfC = verbForm === "perfCont" && verbTokens.length >= 2;
       verbPhrase = [
         {role:"aux", text:negAuxText, label:"aux negativo"},
         ...(usedTo ? [{role:"semiaux", text:"use to", label:"semi-aux"}] : []),
         ...(goingTo ? [{role:"semiaux", text:"going to", label:"semi-aux"}] : []),
-        {role:"verb", text: ["do","does","did"].includes(aux) && !usedTo ? mainBase : verbTokens.join(" "), label:"verbo"}
+        ...(perfC ? [{role:"aux", text:verbTokens[0].toLowerCase(), label:"auxiliar (be)"}] : []),
+        {role:"verb", text: perfC ? verbTokens.slice(1).join(" ")
+          : (["do","does","did"].includes(aux) && !usedTo ? mainBase : verbTokens.join(" ")), label:"verbo"}
       ];
     }
   } else if(doMain){
@@ -1099,6 +1120,13 @@ function buildAnswer(ctx){
     } else {
       verbPhrase = [{role:"verb", text:pastOf(mainBase), label:"verbo en pasado"}];
     }
+  } else if(verbForm === "perfCont" && verbTokens.length >= 2){
+    // Perfecto continuo: aux (have/has) + "been" (aux be) + verbo -ing
+    verbPhrase = [
+      {role:"aux", text:newAux, label:"auxiliar"},
+      {role:"aux", text:verbTokens[0].toLowerCase(), label:"auxiliar (be)"},
+      {role:"verb", text:verbTokens.slice(1).join(" "), label:"verbo -ing"}
+    ];
   } else {
     // be continuo, perfecto, will, modales: aux (+ semi-aux) + verbo tal cual
     verbPhrase = [
