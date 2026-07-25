@@ -49,13 +49,18 @@
   .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem; flex:1;}
   /* Contenido en inglés que se lee con atención → Atkinson Hyperlegible (DUA) */
   .prompt, .ej, .sentence, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
-  header{text-align:center; padding:1.4rem 0 .6rem;}
-  header h1{font-size:1.7rem; letter-spacing:-.02em;}
-  header p{color:var(--muted); font-size:.95rem; margin-top:.2rem;}
-  .levelbar{display:flex; align-items:center; justify-content:center; gap:.5rem;
-    margin:.6rem 0 -.2rem; font-size:.88rem; color:var(--muted);}
-  .levelbar select{padding:.32rem .55rem; border-radius:8px; border:1px solid var(--border);
-    background:var(--card); color:var(--text); font-size:.88rem; cursor:pointer;}
+  .apphead{display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+    padding:1rem 0 .85rem; margin-bottom:.4rem; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:.65rem; min-width:0;}
+  .applogo{font-size:1.9rem; line-height:1; flex-shrink:0;}
+  .brandtext{min-width:0;}
+  .brandtext h1{font-size:1.35rem; letter-spacing:-.02em; line-height:1.1;}
+  .brandtext p{color:var(--muted); font-size:.8rem; margin-top:.1rem;}
+  .headctrls{display:flex; align-items:center; gap:.5rem; flex-shrink:0;}
+  .lvlwrap{display:inline-flex; align-items:center; gap:.35rem; font-size:.82rem; color:var(--muted);}
+  .lvlwrap select{padding:.32rem .55rem; border-radius:8px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:.82rem; cursor:pointer;}
+  @media (max-width:430px){ .brandtext p{display:none;} }
   .langtog{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
   .langtog button{border:none; background:var(--card); color:var(--muted); font-size:.78rem;
     font-weight:700; padding:.28rem .5rem; cursor:pointer;}
@@ -298,17 +303,20 @@
 <body>
 <div id="gtoasts" class="gtoasts" aria-live="polite" aria-atomic="false"></div>
 <div class="wrap">
-  <header>
-    <h1>Question Lab 🧩</h1>
-    <p data-i18n="subtitle">Arma preguntas en inglés como legos. Respóndelas como ping pong.</p>
+  <header class="apphead">
+    <div class="brand">
+      <span class="applogo" aria-hidden="true">🧩</span>
+      <div class="brandtext">
+        <h1>Question Lab</h1>
+        <p data-i18n="subtitle">Arma preguntas en inglés como legos. Respóndelas como ping pong.</p>
+      </div>
+    </div>
+    <div class="headctrls">
+      <span class="lvlwrap" id="lvlWrap"><span data-i18n="lvl">📊 Nivel</span><select id="levelSel" aria-label="Nivel CEFR"></select></span>
+      <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
+      <button type="button" class="themebtn" id="themeTog">🌗</button>
+    </div>
   </header>
-
-  <div class="levelbar" id="levelbar">
-    <span data-i18n="lvl">📊 Nivel</span>
-    <select id="levelSel" aria-label="Nivel CEFR"></select>
-    <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
-    <button type="button" class="themebtn" id="themeTog">🌗</button>
-  </div>
 
   <details>
     <summary data-i18n="legendSummary">🧩 ¿Qué significa cada pieza?</summary>
@@ -1563,7 +1571,12 @@ function setLevel(id){
     sel.value = curLevel;
     sel.addEventListener("change", ()=>setLevel(sel.value));
   }
-  if(fromHub && $("levelbar")) $("levelbar").style.display = "none";
+  // Desde el hub, el nivel y el idioma los controla el hub → se ocultan;
+  // el botón de tema se mantiene visible (control global de la suite).
+  if(fromHub){
+    if($("lvlWrap")) $("lvlWrap").style.display = "none";
+    if($("langTog")) $("langTog").style.display = "none";
+  }
 })();
 /* El hub manda nivel e idioma por postMessage */
 window.addEventListener("message", e=>{
