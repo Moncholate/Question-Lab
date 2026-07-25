@@ -86,6 +86,33 @@
   .tabbtn.active::before{content:""; position:absolute; top:0; left:22%; right:22%; height:2.5px;
     background:var(--accent); border-radius:0 0 3px 3px;}
   .tabbtn:not(.active):hover{color:var(--text);}
+  /* Práctica: menú de modos + back link */
+  .pback{display:inline-flex; align-items:center; gap:.25rem; margin-bottom:.7rem; padding:.35rem .7rem;
+    border:1px solid var(--border); border-radius:9px; background:var(--card); color:var(--muted);
+    font-size:.85rem; font-weight:700; cursor:pointer; transition:all .12s;}
+  .pback:hover{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 40%, transparent);}
+  .pmenu{display:flex; flex-direction:column; gap:.6rem; margin-top:.7rem;}
+  .pmode{display:flex; align-items:center; gap:.8rem; text-align:left; padding:.9rem 1rem;
+    border:1.5px solid var(--border); border-radius:14px; background:var(--card); color:var(--text);
+    cursor:pointer; transition:all .14s;}
+  .pmode:hover{border-color:var(--accent); box-shadow:0 4px 14px -8px color-mix(in srgb, var(--accent) 60%, transparent); transform:translateY(-1px);}
+  .pmode .pmi{font-size:1.7rem; line-height:1; flex-shrink:0;}
+  .pmode .pmt{display:flex; flex-direction:column; gap:.1rem;}
+  .pmode .pmt b{font-size:1.02rem;}
+  .pmode .pmt small{color:var(--muted); font-size:.83rem;}
+  /* Progreso */
+  .pstreak{display:flex; align-items:center; gap:.9rem; padding:1rem; border-radius:14px; margin-top:.6rem;
+    border:1px solid var(--border); background:var(--card);}
+  .pstreak.hot{border:none; color:#fff; background:linear-gradient(135deg, var(--play), var(--play-warm));
+    box-shadow:0 10px 26px -10px color-mix(in srgb, var(--play) 60%, transparent);}
+  .pstreak .psi{font-size:2.1rem; line-height:1;}
+  .pstreak b{font-size:1.15rem;} .pstreak small{display:block; opacity:.9; font-size:.82rem;}
+  .pbadges{display:grid; grid-template-columns:repeat(auto-fill, minmax(4.6rem,1fr)); gap:.55rem;}
+  .pbadge{display:flex; flex-direction:column; align-items:center; gap:.25rem; text-align:center;
+    padding:.6rem .3rem; border:1px solid var(--border); border-radius:12px; background:var(--card); opacity:.5;}
+  .pbadge.on{opacity:1; border-color:color-mix(in srgb, var(--play) 45%, transparent);}
+  .pbadge .pbi{font-size:1.5rem; line-height:1;}
+  .pbadge small{font-size:.62rem; color:var(--muted); line-height:1.15;}
   .panel{display:none;}
   .panel.active{display:block; animation:fadein .25s;}
   @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
@@ -380,8 +407,22 @@
     </div>
   </div>
 
+  <!-- ============ PRÁCTICA (menú) ============ -->
+  <div class="panel" id="practice">
+    <div class="card">
+      <h2 data-i18n="practiceTitle">🎯 Práctica</h2>
+      <p class="hint" data-i18n="practiceIntro">Elige un modo para practicar:</p>
+      <div class="pmenu">
+        <button class="pmode" data-goto="build"><span class="pmi" aria-hidden="true">🧱</span><span class="pmt"><b data-i18n="navBuild">Construye</b><small data-i18n="pdBuild">Ordena las piezas para armar la pregunta.</small></span></button>
+        <button class="pmode" data-goto="identify"><span class="pmi" aria-hidden="true">🎯</span><span class="pmt"><b data-i18n="navIdentify">Identifica</b><small data-i18n="pdIdentify">Reconoce si es abierta/cerrada y qué tiempo verbal es.</small></span></button>
+        <button class="pmode" data-goto="respond"><span class="pmi" aria-hidden="true">🏓</span><span class="pmt"><b data-i18n="navRespond">Responde</b><small data-i18n="pdRespond">Escribe la respuesta como ping-pong.</small></span></button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ BUILD ============ -->
   <div class="panel" id="build">
+    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card">
       <div class="prompt" id="bPrompt"></div>
       <div class="slotarea" id="bSlots"></div>
@@ -401,6 +442,7 @@
 
   <!-- ============ IDENTIFY ============ -->
   <div class="panel" id="identify">
+    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card">
       <div class="prompt" id="idQuestion"></div>
       <div class="idask">
@@ -426,6 +468,7 @@
 
   <!-- ============ RESPONDE ============ -->
   <div class="panel" id="respond">
+    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card">
       <div class="prompt" id="rQuestion"></div>
       <p class="rhint" id="rHint" data-i18n="rHint">Devuelve la pelota: escribe la respuesta corta (Yes / No).</p>
@@ -562,17 +605,24 @@
       </div>
     </div>
   </div>
+
+  <!-- ============ PROGRESO ============ -->
+  <div class="panel" id="progress">
+    <div class="card">
+      <h2 data-i18n="progressTitle">📊 Progreso</h2>
+      <div id="progressBody"></div>
+    </div>
+  </div>
 </div>
 
 <footer data-i18n="footer">Herramienta pedagógica de análisis por reglas — puede equivocarse con preguntas muy complejas. 🇨🇱</footer>
 </div>
 
 <nav class="tabbar" id="tabbar" aria-label="Secciones">
-  <button class="tabbtn active" data-panel="analyze"><span class="ti" aria-hidden="true">🔍</span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
-  <button class="tabbtn" data-panel="build"><span class="ti" aria-hidden="true">🧱</span><span class="tl" data-i18n="navBuild">Construye</span></button>
-  <button class="tabbtn" data-panel="identify"><span class="ti" aria-hidden="true">🎯</span><span class="tl" data-i18n="navIdentify">Identifica</span></button>
-  <button class="tabbtn" data-panel="respond"><span class="ti" aria-hidden="true">🏓</span><span class="tl" data-i18n="navRespond">Responde</span></button>
-  <button class="tabbtn" data-panel="guide"><span class="ti" aria-hidden="true">📖</span><span class="tl" data-i18n="navGuide">Guía</span></button>
+  <button class="tabbtn active" data-nav="analyze" data-panel="analyze"><span class="ti" aria-hidden="true">🔍</span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
+  <button class="tabbtn" data-nav="guide" data-panel="guide"><span class="ti" aria-hidden="true">📖</span><span class="tl" data-i18n="navGuide">Guía</span></button>
+  <button class="tabbtn" data-nav="practice" data-panel="practice"><span class="ti" aria-hidden="true">🎯</span><span class="tl" data-i18n="navPractice">Práctica</span></button>
+  <button class="tabbtn" data-nav="progress" data-panel="progress"><span class="ti" aria-hidden="true">📊</span><span class="tl" data-i18n="navProgress">Progreso</span></button>
 </nav>
 
 <script>
@@ -1294,15 +1344,35 @@ function cap(s){ return s === "I" ? "I" : s.charAt(0).toUpperCase()+s.slice(1); 
 const $ = id => document.getElementById(id);
 
 /* Tabs — se registran primero para que siempre funcionen */
-document.querySelectorAll(".tabbtn").forEach(t=>{
-  t.addEventListener("click", ()=>{
-    document.querySelectorAll(".tabbtn").forEach(x=>x.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    $(t.dataset.panel).classList.add("active");
-    const sa = document.querySelector(".scrollarea"); if(sa) sa.scrollTop = 0;   // arriba al cambiar de sección
-  });
-});
+/* Navegación: Analizar (default) · Guía · Práctica (menú → modos) · Progreso.
+   Los modos de práctica (build/identify/respond) mantienen activo el nav "Práctica". */
+const NAV_OF = {analyze:"analyze", guide:"guide", practice:"practice", build:"practice", identify:"practice", respond:"practice", progress:"progress"};
+function showPanel(id){
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  const p = $(id); if(p) p.classList.add("active");
+  const nav = NAV_OF[id] || id;
+  document.querySelectorAll(".tabbtn").forEach(x=>x.classList.toggle("active", x.dataset.nav === nav));
+  const sa = document.querySelector(".scrollarea"); if(sa) sa.scrollTop = 0;
+  if(id === "progress") renderProgress();
+}
+document.querySelectorAll(".tabbtn").forEach(b=> b.addEventListener("click", ()=> showPanel(b.dataset.panel)));
+document.querySelectorAll("[data-goto]").forEach(b=> b.addEventListener("click", ()=> showPanel(b.dataset.goto)));
+/* Panel de progreso: racha de días + galería de insignias (gamificación de suite) */
+function renderProgress(){
+  const el = $("progressBody"); if(!el) return;
+  const G = window.GH_GAME;
+  if(!G){ el.innerHTML = `<p class="hint">${t("progEmpty")}</p>`; return; }
+  if(!ghProgress) ghProgress = G.loadProgress(localStorage);
+  const p = ghProgress;
+  const streak = (p.dayStreak && p.dayStreak.count) || 0, best = (p.dayStreak && p.dayStreak.best) || 0;
+  const bmap = p.badges || {};
+  const isOn = b => b.perTense ? Object.keys(bmap).some(k => k.startsWith(b.id + ":")) : !!bmap[b.id];
+  const unlocked = G.BADGES.filter(isOn).length;
+  const streakCard = `<div class="pstreak ${streak > 0 ? "hot" : ""}"><span class="psi">${streak > 0 ? "🔥" : "💤"}</span><div><b>${streak} ${esc(t("progDays"))}</b><small>${esc(t("progBest"))}: ${best}</small></div></div>`;
+  const grid = G.BADGES.map(b => { const on = isOn(b); let name = (lang === "en" ? b.name.en : b.name.es).replace("{tense}", "…");
+    return `<div class="pbadge ${on ? "on" : ""}" title="${esc(name)}"><span class="pbi">${on ? b.icon : "🔒"}</span><small>${esc(name)}</small></div>`; }).join("");
+  el.innerHTML = streakCard + `<p class="hint" style="margin:.9rem 0 .4rem">${esc(t("progBadges"))} — ${unlocked}/${G.BADGES.length}</p><div class="pbadges">${grid}</div>`;
+}
 
 // Ejemplos REPRESENTATIVOS del nivel (no acumulativos): 2-3 por nivel.
 // La app igual analiza gramática de niveles anteriores; aquí mostramos lo nuevo del nivel.
@@ -1656,6 +1726,12 @@ const I18N = {
     lvl:"📊 Nivel",
     tabAnalyze:"🔍 Analiza", tabBuild:"🧱 Construye", tabGuide:"📖 Guía",
     navAnalyze:"Analiza", navBuild:"Construye", navIdentify:"Identifica", navRespond:"Responde", navGuide:"Guía",
+    navPractice:"Práctica", navProgress:"Progreso",
+    practiceTitle:"🎯 Práctica", practiceIntro:"Elige un modo para practicar:",
+    pdBuild:"Ordena las piezas para armar la pregunta.",
+    pdIdentify:"Reconoce si es abierta/cerrada y qué tiempo verbal es.",
+    pdRespond:"Escribe la respuesta como ping-pong.",
+    progressTitle:"📊 Progreso", progDays:"días de racha", progBest:"Mejor", progBadges:"Insignias", progEmpty:"Empieza a practicar para sumar racha e insignias 🌱",
     legendSummary:"🧩 ¿Qué significa cada pieza?",
     pWh:"Wh-word", pWhD:"Lo que se pregunta (el tipo de pregunta).",
     pAux:"Auxiliar", pAuxD:"Verbo ayudante — lleva la información de tiempo.",
@@ -1731,6 +1807,12 @@ const I18N = {
     lvl:"📊 Level",
     tabAnalyze:"🔍 Analyze", tabBuild:"🧱 Build", tabGuide:"📖 Guide",
     navAnalyze:"Analyze", navBuild:"Build", navIdentify:"Identify", navRespond:"Respond", navGuide:"Guide",
+    navPractice:"Practice", navProgress:"Progress",
+    practiceTitle:"🎯 Practice", practiceIntro:"Choose a mode to practice:",
+    pdBuild:"Arrange the pieces to build the question.",
+    pdIdentify:"Tell if it's open/closed and which tense it is.",
+    pdRespond:"Type the answer like ping-pong.",
+    progressTitle:"📊 Progress", progDays:"day streak", progBest:"Best", progBadges:"Badges", progEmpty:"Start practising to build your streak and badges 🌱",
     legendSummary:"🧩 What does each piece mean?",
     pWh:"Wh-word", pWhD:"What is being asked (the type of question).",
     pAux:"Auxiliary", pAuxD:"Helper verb — it carries the tense information.",
