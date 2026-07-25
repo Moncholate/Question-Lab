@@ -49,8 +49,10 @@
   .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem; flex:1;}
   /* Contenido en inglés que se lee con atención → Atkinson Hyperlegible (DUA) */
   .prompt, .ej, .sentence, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
-  .apphead{display:flex; align-items:center; justify-content:space-between; gap:.75rem;
-    padding:1rem 0 .85rem; margin-bottom:.4rem; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+  .apphead{position:sticky; top:0; z-index:30; background:var(--bg);
+    border-bottom:1px solid var(--border); box-shadow:0 1px 8px -4px rgba(0,0,0,.15);}
+  .apphead-inner{max-width:640px; margin:0 auto; padding:.65rem 1rem;
+    display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap;}
   .brand{display:flex; align-items:center; gap:.65rem; min-width:0;}
   .applogo{font-size:1.9rem; line-height:1; flex-shrink:0;}
   .brandtext{min-width:0;}
@@ -303,8 +305,8 @@
 </head>
 <body>
 <div id="gtoasts" class="gtoasts" aria-live="polite" aria-atomic="false"></div>
-<div class="wrap">
-  <header class="apphead">
+<header class="apphead">
+  <div class="apphead-inner">
     <div class="brand">
       <span class="applogo" aria-hidden="true">🧩</span>
       <div class="brandtext">
@@ -317,8 +319,9 @@
       <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
       <button type="button" class="themebtn" id="themeTog">🌗</button>
     </div>
-  </header>
-
+  </div>
+</header>
+<div class="wrap">
   <details>
     <summary data-i18n="legendSummary">🧩 ¿Qué significa cada pieza?</summary>
     <ol class="piecelist">
