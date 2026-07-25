@@ -356,40 +356,6 @@
 </header>
 <div class="scrollarea">
 <div class="wrap">
-  <details>
-    <summary data-i18n="legendSummary">🧩 ¿Qué significa cada pieza?</summary>
-    <ol class="piecelist">
-      <li><span class="block wh" data-i18n="pWh">Wh-word</span><span class="pdesc" data-i18n="pWhD">Lo que se pregunta (el tipo de pregunta).</span></li>
-      <li><span class="block aux" data-i18n="pAux">Auxiliar</span><span class="pdesc" data-i18n="pAuxD">Verbo ayudante — lleva la información de tiempo.</span></li>
-      <li><span class="block semiaux" data-i18n="pSemi">Semi-aux</span><span class="pdesc" data-i18n="pSemiD">Ayuda extra para ciertos casos (going to, used to).</span></li>
-      <li><span class="block subj" data-i18n="pSubj">Sujeto</span><span class="pdesc" data-i18n="pSubjD">De quién se habla, o quién hace la acción.</span></li>
-      <li><span class="block verb" data-i18n="pVerb">Verbo principal</span><span class="pdesc" data-i18n="pVerbD">Acción o estado que se realiza.</span></li>
-      <li><span class="block comp" data-i18n="pComp">Complemento</span><span class="pdesc" data-i18n="pCompD">Información adicional de la oración.</span></li>
-      <li><span class="block adv" data-i18n="pAdv">Adverbio</span><span class="pdesc" data-i18n="pAdvD">Modifica al verbo (ever, never, always, often…).</span></li>
-      <li><span class="block new" data-i18n="pNew">+ Info nueva</span><span class="pdesc" data-i18n="pNewD">Lo que tú agregas al responder — no viene de la pregunta.</span></li>
-    </ol>
-  </details>
-
-  <details>
-    <summary>🏓 La analogía del ping pong: ¿qué se devuelve?</summary>
-    <div class="explain">
-      <p>Hablar es como jugar <b>ping pong</b>: alguien te lanza la pelota (la pregunta) y tú la devuelves, pero no igual — le agregas algo tuyo.</p>
-      <p>Lo que <b>rebota</b> de la pregunta a la respuesta es: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.</p>
-      <p>La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no rebota</b>: nunca aparece en la respuesta. Es solo la <b>guía</b> que te dice qué tipo de información nueva 🆕 debes agregar — un lugar si preguntó «where», una persona si preguntó «who», etc.</p>
-      <p>Y esa información nueva es la única pieza que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.</p>
-    </div>
-  </details>
-
-  <details>
-    <summary>🍦 La analogía del helado: ¿simple o compuesto?</summary>
-    <div class="explain">
-      <p>Los tiempos <b>simples</b> son como los helados simples: en su forma <b>positiva</b> se utiliza un solo verbo — <b>una bolita de helado</b> 🍦 — que lleva toda la <b>carga temporal</b> (<i>works</i> = work + s, <i>played</i> = play + ed).</p>
-      <p>Sin embargo, para el <b>negativo</b> y el <b>interrogativo</b> piden una <b>bolita prestada: do / does / did</b>, y es la bolita prestada la que lleva la carga temporal — por eso el verbo queda en forma base (<i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>). Al responder en positivo, <b>sueltas</b> la bolita prestada — ya no hace falta — y su carga <b>pasa al verbo</b>: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i></p>
-      <p>Los tiempos <b>compuestos</b>, como su nombre lo dice, traen <b>más de una bolita por naturaleza</b> 🍦🍦, y todas deben estar presentes siempre — en positivo, negativo e interrogativo. Entre todas las bolitas se reparten la carga temporal: <i>She <b>is sleeping</b>. / She <b>isn't sleeping</b>. / <b>Is</b> she <b>sleeping</b>?</i></p>
-      <p>¿Y el verbo <b>to be</b>? Es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. Nunca pide bolitas prestadas: <i>Is she a doctor? — Yes, she <b>is</b>.</i></p>
-    </div>
-  </details>
-
   <!-- ============ ANALYZE ============ -->
   <div class="panel active" id="analyze">
     <div class="card">
@@ -490,6 +456,40 @@
 
   <!-- ============ GUÍA ============ -->
   <div class="panel" id="guide">
+    <details>
+      <summary data-i18n="legendSummary">🧩 ¿Qué significa cada pieza?</summary>
+      <ol class="piecelist">
+        <li><span class="block wh" data-i18n="pWh">Wh-word</span><span class="pdesc" data-i18n="pWhD">Lo que se pregunta (el tipo de pregunta).</span></li>
+        <li><span class="block aux" data-i18n="pAux">Auxiliar</span><span class="pdesc" data-i18n="pAuxD">Verbo ayudante — lleva la información de tiempo.</span></li>
+        <li><span class="block semiaux" data-i18n="pSemi">Semi-aux</span><span class="pdesc" data-i18n="pSemiD">Ayuda extra para ciertos casos (going to, used to).</span></li>
+        <li><span class="block subj" data-i18n="pSubj">Sujeto</span><span class="pdesc" data-i18n="pSubjD">De quién se habla, o quién hace la acción.</span></li>
+        <li><span class="block verb" data-i18n="pVerb">Verbo principal</span><span class="pdesc" data-i18n="pVerbD">Acción o estado que se realiza.</span></li>
+        <li><span class="block comp" data-i18n="pComp">Complemento</span><span class="pdesc" data-i18n="pCompD">Información adicional de la oración.</span></li>
+        <li><span class="block adv" data-i18n="pAdv">Adverbio</span><span class="pdesc" data-i18n="pAdvD">Modifica al verbo (ever, never, always, often…).</span></li>
+        <li><span class="block new" data-i18n="pNew">+ Info nueva</span><span class="pdesc" data-i18n="pNewD">Lo que tú agregas al responder — no viene de la pregunta.</span></li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>🏓 La analogía del ping pong: ¿qué se devuelve?</summary>
+      <div class="explain">
+        <p>Hablar es como jugar <b>ping pong</b>: alguien te lanza la pelota (la pregunta) y tú la devuelves, pero no igual — le agregas algo tuyo.</p>
+        <p>Lo que <b>rebota</b> de la pregunta a la respuesta es: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.</p>
+        <p>La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no rebota</b>: nunca aparece en la respuesta. Es solo la <b>guía</b> que te dice qué tipo de información nueva 🆕 debes agregar — un lugar si preguntó «where», una persona si preguntó «who», etc.</p>
+        <p>Y esa información nueva es la única pieza que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>🍦 La analogía del helado: ¿simple o compuesto?</summary>
+      <div class="explain">
+        <p>Los tiempos <b>simples</b> son como los helados simples: en su forma <b>positiva</b> se utiliza un solo verbo — <b>una bolita de helado</b> 🍦 — que lleva toda la <b>carga temporal</b> (<i>works</i> = work + s, <i>played</i> = play + ed).</p>
+        <p>Sin embargo, para el <b>negativo</b> y el <b>interrogativo</b> piden una <b>bolita prestada: do / does / did</b>, y es la bolita prestada la que lleva la carga temporal — por eso el verbo queda en forma base (<i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>). Al responder en positivo, <b>sueltas</b> la bolita prestada — ya no hace falta — y su carga <b>pasa al verbo</b>: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i></p>
+        <p>Los tiempos <b>compuestos</b>, como su nombre lo dice, traen <b>más de una bolita por naturaleza</b> 🍦🍦, y todas deben estar presentes siempre — en positivo, negativo e interrogativo. Entre todas las bolitas se reparten la carga temporal: <i>She <b>is sleeping</b>. / She <b>isn't sleeping</b>. / <b>Is</b> she <b>sleeping</b>?</i></p>
+        <p>¿Y el verbo <b>to be</b>? Es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. Nunca pide bolitas prestadas: <i>Is she a doctor? — Yes, she <b>is</b>.</i></p>
+      </div>
+    </details>
+
     <div class="card">
       <h2 data-i18n-html="whH2"><span class="cdot" style="background:var(--wh)"></span> Wh-words: la pieza que pregunta</h2>
       <table class="gtable">
