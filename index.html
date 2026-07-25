@@ -96,6 +96,11 @@
     background:var(--accent); color:#fff; cursor:pointer; transition:transform .1s;
   }
   button.primary:active{transform:scale(.96);}
+  .clearbtn{display:inline-flex; align-items:center; justify-content:center; padding:0 .8rem;
+    border:1.5px solid var(--border); border-radius:12px; background:var(--card); color:var(--muted);
+    cursor:pointer; transition:all .12s; flex-shrink:0;}
+  .clearbtn:hover{color:var(--err); border-color:color-mix(in srgb, var(--err) 40%, transparent);
+    background:color-mix(in srgb, var(--err) 8%, transparent);}
   .examples{display:flex; flex-wrap:wrap; gap:.4rem;}
   .exhint{font-size:.82rem; color:var(--muted); margin:.5rem 0 .3rem;}
   .chip{
@@ -354,6 +359,7 @@
       <div class="qinput">
         <input type="text" id="qin" placeholder="Where do you live?" autocomplete="off" autocapitalize="off">
         <button class="primary" id="goBtn" data-i18n="btnAnalyze">Analizar</button>
+        <button class="clearbtn" id="clearBtn" data-i18n-title="btnReset" title="Borrar" aria-label="Borrar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
       <div id="result"></div>
       <div id="exWrap">
@@ -1318,6 +1324,14 @@ function renderResult(r, container){
 
 $("goBtn").addEventListener("click", ()=> goAnalyze($("qin").value));
 $("qin").addEventListener("keydown", e=>{ if(e.key==="Enter") goAnalyze($("qin").value); });
+/* Borrado: vacía la pregunta, limpia el resultado y vuelve a mostrar los ejemplos */
+function clearAnalyze(){
+  $("qin").value = "";
+  $("result").innerHTML = "";
+  const w = $("exWrap"); if(w) w.style.display = "";
+  $("qin").focus();
+}
+$("clearBtn").addEventListener("click", clearAnalyze);
 $("examples").addEventListener("click", e=>{
   if(e.target.classList.contains("chip")){
     $("qin").value = e.target.textContent;
@@ -1761,6 +1775,7 @@ function applyI18n(){
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll("[data-i18n-html]").forEach(el=>{ el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{ const s = t(el.dataset.i18nTitle); el.title = s; el.setAttribute("aria-label", s); });
   populateLevelSel();
   document.querySelectorAll("#langTog button").forEach(b=> b.classList.toggle("on", b.dataset.lang === lang));
 }
