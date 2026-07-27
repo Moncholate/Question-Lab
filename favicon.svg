@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Question Lab">
-  <defs>
-    <linearGradient id="ql" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#14b8a6"/>
-      <stop offset="1" stop-color="#0891b2"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#ql)"/>
-  <text x="32" y="45" text-anchor="middle" font-family="system-ui,'Segoe UI',Arial,sans-serif" font-size="40" font-weight="800" fill="#ffffff">?</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400.0 400.0" width="400.0" height="400.0"><rect width="400.0" height="400.0" rx="88.0" fill="#2ac7b4"/><g transform="translate(200.0,200.0) scale(0.9091) translate(-200.0,-200.0)"><g transform="translate(72.0,24.0)"><rect x="1.4" y="1.4" width="253.1" height="61.1" rx="4.5" fill="#ffffff"/><rect x="1.4" y="65.4" width="61.1" height="61.1" rx="4.5" fill="#ffffff"/><rect x="193.4" y="65.4" width="61.1" height="61.1" rx="4.5" fill="#ffffff"/><rect x="129.4" y="129.4" width="125.1" height="29.1" rx="4.5" fill="#ffffff"/><rect x="65.4" y="161.4" width="125.1" height="61.1" rx="4.5" fill="#ffffff"/><rect x="65.4" y="225.4" width="61.1" height="29.1" rx="4.5" fill="#ffffff"/><rect x="65.4" y="289.4" width="61.1" height="61.1" rx="4.5" fill="#ffffff"/></g></g></svg>

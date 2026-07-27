@@ -20,7 +20,10 @@
 }catch(e){}})();
 </script>
 <title>Question Lab 🧩</title>
-<link rel="icon" href="favicon.svg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="stylesheet" href="tokens.css">
 <script src="cefr.generated.js"></script>
 <script src="bank.js"></script>
@@ -55,7 +58,7 @@
   .apphead-inner{max-width:640px; margin:0 auto; padding:.65rem 1rem;
     display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap;}
   .brand{display:flex; align-items:center; gap:.65rem; min-width:0;}
-  .applogo{font-size:1.9rem; line-height:1; flex-shrink:0;}
+  .applogo{width:34px; height:34px; flex-shrink:0; display:block;}
   .brandtext{min-width:0;}
   .brandtext h1{font-size:1.35rem; letter-spacing:-.02em; line-height:1.1;}
   .brandtext p{color:var(--muted); font-size:.8rem; margin-top:.1rem;}
@@ -342,7 +345,7 @@
 <header class="apphead">
   <div class="apphead-inner">
     <div class="brand">
-      <span class="applogo" aria-hidden="true">🧩</span>
+      <img class="applogo" src="logo.svg" alt="" aria-hidden="true" width="34" height="34">
       <div class="brandtext">
         <h1>Question Lab</h1>
         <p data-i18n="subtitle">Arma preguntas en inglés como legos. Respóndelas como ping pong.</p>
