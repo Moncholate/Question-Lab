@@ -50,9 +50,6 @@ window.GRAMMAR_CEFR = {
     "simple-future": "intermedio1",
     "past-perfect": "intermedio2",
     "used-to": "intermedio2",
-    "present-perfect-continuous": "avanzado",
-    "would-past": "avanzado",
-    "future-perfect": "avanzado",
-    "past-perfect-continuous": "avanzado"
+    "present-perfect-continuous": "avanzado"
   }
 };
