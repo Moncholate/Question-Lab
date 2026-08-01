@@ -124,7 +124,9 @@
     box-shadow:0 10px 26px -10px color-mix(in srgb, var(--play) 60%, transparent);}
   .pstreak .psi{font-size:2.1rem; line-height:1;}
   .pstreak b{font-size:1.15rem;} .pstreak small{display:block; opacity:.9; font-size:.82rem;}
-  .pbadges{display:grid; grid-template-columns:repeat(auto-fill, minmax(4.6rem,1fr)); gap:.55rem;}
+  /* Filas y no fichas: en una ficha de 4.6rem solo cabía el nombre, y "🔒 Analista"
+     sin descripción no le dice nada a nadie. En pantalla ancha van a dos columnas. */
+  .pbadges{display:grid; grid-template-columns:repeat(auto-fill, minmax(15rem,1fr)); gap:.45rem;}
   /* Rachas por modo (Progreso) */
   .pmodes{display:flex; flex-direction:column; gap:.4rem;}
   .pmrow{display:flex; align-items:center; gap:.6rem; padding:.55rem .8rem; background:var(--card);
@@ -133,11 +135,13 @@
   .pmrow b{font-size:.92rem;}
   .pmrow .pmrv{margin-left:auto; font-weight:800; font-size:.95rem;}
   .pmrow .pmrv small{color:var(--muted); font-weight:600;}
-  .pbadge{display:flex; flex-direction:column; align-items:center; gap:.25rem; text-align:center;
-    padding:.6rem .3rem; border:1px solid var(--border); border-radius:12px; background:var(--card); opacity:.5;}
+  .pbadge{display:flex; align-items:center; gap:.6rem; padding:.55rem .8rem;
+    border:1px solid var(--border); border-radius:11px; background:var(--card); opacity:.62;}
   .pbadge.on{opacity:1; border-color:color-mix(in srgb, var(--play) 45%, transparent);}
-  .pbadge .pbi{font-size:1.5rem; line-height:1;}
-  .pbadge small{font-size:.62rem; color:var(--muted); line-height:1.15;}
+  .pbadge .pbi{font-size:1.35rem; line-height:1; flex-shrink:0;}
+  .pbadge .pbt{min-width:0;}
+  .pbadge b{display:block; font-size:.9rem; line-height:1.2;}
+  .pbadge small{display:block; font-size:.74rem; color:var(--muted); line-height:1.25; margin-top:.1rem;}
   .panel{display:none;}
   .panel.active{display:block; animation:fadein .25s;}
   @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
@@ -1405,12 +1409,26 @@ function renderProgress(){
     { k:"id", icon:"🎯", name:t("navIdentify"), now:cur("ql_id_streak") },
     { k:"r",  icon:"🏓", name:t("navRespond"),  now:cur("ql_r_streak") },
   ].map(m => {
+    /* "Mejor" solo cuando de verdad aporta. Si la racha actual YA es la mejor,
+       imprimir el mismo número dos veces es ruido en un panel que se mira de
+       reojo: eran 6 cifras para 3 modos. */
     const bst = Math.max(bests[m.k]||0, m.now);
-    return `<div class="pmrow"><span class="pmri" aria-hidden="true">${m.icon}</span><b>${esc(m.name)}</b><span class="pmrv">${m.now} <small>· ${esc(t("progBest"))}: ${bst}</small></span></div>`;
+    const bestBit = bst > m.now ? ` <small>· ${esc(t("progBest"))}: ${bst}</small>` : "";
+    return `<div class="pmrow"><span class="pmri" aria-hidden="true">${m.icon}</span><b>${esc(m.name)}</b><span class="pmrv">${m.now}${bestBit}</span></div>`;
   }).join("");
   const modesCard = `<p class="hint" style="margin:.9rem 0 .4rem">${esc(t("progModes"))}</p><div class="pmodes">${modeRows}</div>`;
-  const grid = G.BADGES.map(b => { const on = isOn(b); let name = (lang === "en" ? b.name.en : b.name.es).replace("{tense}", "…");
-    return `<div class="pbadge ${on ? "on" : ""}" title="${esc(name)}"><span class="pbi">${on ? b.icon : "🔒"}</span><small>${esc(name)}</small></div>`; }).join("");
+  /* Las insignias van en filas con su descripción, no en fichas con solo el
+     nombre: antes se veía "🔒 Analista" y no había forma de saber qué era ni
+     dónde se conseguía. Bloqueada muestra `where` si lo trae (el candado deja
+     de ser un muro y pasa a ser una pista). */
+  const grid = G.BADGES.map(b => {
+    const on = isOn(b);
+    const name = (lang === "en" ? b.name.en : b.name.es).replace("{tense}", "…");
+    const desc = lang === "en" ? b.desc.en : b.desc.es;
+    const where = !on && b.where ? (lang === "en" ? b.where.en : b.where.es) : "";
+    return `<div class="pbadge ${on ? "on" : ""}"><span class="pbi" aria-hidden="true">${on ? b.icon : "🔒"}</span>`
+      + `<div class="pbt"><b>${esc(name)}</b><small>${esc(where || desc)}</small></div></div>`;
+  }).join("");
   el.innerHTML = streakCard + modesCard + `<p class="hint" style="margin:.9rem 0 .4rem">${esc(t("progBadges"))} — ${unlocked}/${G.BADGES.length}</p><div class="pbadges">${grid}</div>`;
 }
 
