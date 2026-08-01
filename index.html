@@ -1641,7 +1641,7 @@ function checkBuild(){
       bScored = true;
       const rr = analyze(q); const btid = rr.ok ? tenseIdOf(rr.tense) : null;
       if(!ghProgress) ghProgress = G.loadProgress(localStorage);
-      G.recordAttempt(ghProgress, { app:"questionlab", tenseId: btid, correct: !bFailed, answerStreak: streak });
+      G.recordAttempt(ghProgress, { app:"questionlab", mode:"build", tenseId: btid, correct: !bFailed, answerStreak: streak });
       G.evaluateBadges(ghProgress, G.BADGES, btid ? [btid] : []).newly.forEach(showBadgeToast);
       G.saveProgress(localStorage, ghProgress);
     }
@@ -2238,7 +2238,7 @@ function checkId(){
   const G = window.GH_GAME;
   if(G){
     if(!ghProgress) ghProgress = G.loadProgress(localStorage);
-    G.recordAttempt(ghProgress, { app:"questionlab", tenseId: idCurrent.tid, correct: ok, answerStreak: idStreak });
+    G.recordAttempt(ghProgress, { app:"questionlab", mode:"identify", tenseId: idCurrent.tid, correct: ok, answerStreak: idStreak });
     G.evaluateBadges(ghProgress, G.BADGES, [idCurrent.tid]).newly.forEach(showBadgeToast);
     G.saveProgress(localStorage, ghProgress);
   }
@@ -2378,7 +2378,7 @@ function checkR(){
   const G = window.GH_GAME;
   if(G){
     if(!ghProgress) ghProgress = G.loadProgress(localStorage);
-    G.recordAttempt(ghProgress, { app:"questionlab", tenseId: rCurrent.tid, correct: ok, answerStreak: rStreak });
+    G.recordAttempt(ghProgress, { app:"questionlab", mode:"respond", tenseId: rCurrent.tid, correct: ok, answerStreak: rStreak });
     G.evaluateBadges(ghProgress, G.BADGES, [rCurrent.tid]).newly.forEach(showBadgeToast);
     G.saveProgress(localStorage, ghProgress);
   }
