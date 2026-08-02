@@ -154,13 +154,27 @@
   .hint{color:var(--muted); font-size:.88rem;}
   .cdot{display:inline-block; width:.72em; height:.72em; border-radius:50%; vertical-align:-.05em; margin:0 .06em; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
 
-  /* Analyze input */
-  .qinput{display:flex; gap:.5rem; margin-bottom:.6rem;}
-  .qinput input{
-    flex:1; min-width:0; padding:.85rem 1rem; font-size:1.05rem; border:1.5px solid var(--border);
-    border-radius:12px; background:var(--bg); color:var(--text); outline:none;
+  /* Analyze input
+     El campo ocupa el ANCHO COMPLETO y los botones van debajo. Antes los tres
+     compartían una fila: en un celular de 360px, "Analizar" y el basurero se
+     llevaban ~150px y al campo le quedaban unos 20 caracteres visibles. Escribir
+     "Where have you been living since 2020?" era escribir a ciegas, y lo primero
+     que uno necesita es releer lo que escribió para corregirlo.
+     Y es <textarea>, no <input>: una pregunta larga en una sola línea se
+     desplaza igual aunque ocupe todo el ancho. Crece solo hasta 5 líneas. */
+  .qinput{display:flex; flex-direction:column; gap:.5rem; margin-bottom:.6rem;}
+  .qinput textarea{
+    width:100%; padding:.85rem 1rem; font-size:1.05rem; line-height:1.45;
+    border:1.5px solid var(--border); border-radius:12px;
+    background:var(--bg); color:var(--text); outline:none;
+    resize:none; overflow-y:auto; min-height:3.1rem; max-height:9rem;
+    font-family:inherit;
   }
-  .qinput input:focus{border-color:var(--accent);}
+  .qinput textarea:focus{border-color:var(--accent);}
+  .qactions{display:flex; gap:.5rem;}
+  .qactions .primary{flex:1;}
+  /* En pantalla ancha el botón no necesita estirarse de lado a lado */
+  @media (min-width:560px){ .qactions .primary{flex:0 0 auto; min-width:11rem;} }
   button.primary{
     padding:.85rem 1.2rem; font-size:1rem; font-weight:700; border:none; border-radius:12px;
     background:var(--accent); color:#fff; cursor:pointer; transition:transform .1s;
@@ -390,9 +404,11 @@
     <div class="card">
       <h2 data-i18n="analyzeTitle">Escribe una pregunta en inglés</h2>
       <div class="qinput">
-        <input type="text" id="qin" placeholder="Where do you live?" autocomplete="off" autocapitalize="off">
-        <button class="primary" id="goBtn" data-i18n="btnAnalyze">Analizar</button>
-        <button class="clearbtn" id="clearBtn" data-i18n-title="btnReset" title="Borrar" aria-label="Borrar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        <textarea id="qin" rows="1" placeholder="Where do you live?" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+        <div class="qactions">
+          <button class="primary" id="goBtn" data-i18n="btnAnalyze">Analizar</button>
+          <button class="clearbtn" id="clearBtn" data-i18n-title="btnReset" title="Borrar" aria-label="Borrar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div>
       </div>
       <div id="result"></div>
       <div id="exWrap">
@@ -1519,11 +1535,26 @@ function renderResult(r, container){
   container.innerHTML = html;
 }
 
+/* El campo crece con lo que se escribe, hasta el max-height del CSS (5 líneas);
+   pasado eso se desplaza. Se resetea antes de medir porque scrollHeight nunca
+   baja solo: sin eso el campo crecería al borrar texto pero no se encogería. */
+function autoGrow(){
+  const el = $("qin"); if(!el) return;
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
 $("goBtn").addEventListener("click", ()=> goAnalyze($("qin").value));
-$("qin").addEventListener("keydown", e=>{ if(e.key==="Enter") goAnalyze($("qin").value); });
+$("qin").addEventListener("input", autoGrow);
+/* Enter analiza, como siempre. En un <textarea> hay que impedir el salto de
+   línea a mano, porque una pregunta no lleva ninguno. Shift+Enter sí lo deja
+   pasar, por si alguien pega algo de varias líneas. */
+$("qin").addEventListener("keydown", e=>{
+  if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); goAnalyze($("qin").value); }
+});
 /* Borrado: vacía la pregunta, limpia el resultado y vuelve a mostrar los ejemplos */
 function clearAnalyze(){
   $("qin").value = "";
+  autoGrow();
   $("result").innerHTML = "";
   const w = $("exWrap"); if(w) w.style.display = "";
   $("qin").focus();
@@ -1532,6 +1563,7 @@ $("clearBtn").addEventListener("click", clearAnalyze);
 $("examples").addEventListener("click", e=>{
   if(e.target.classList.contains("chip")){
     $("qin").value = e.target.textContent;
+    autoGrow();
     goAnalyze(e.target.textContent);
   }
 });
