@@ -1672,6 +1672,15 @@ function rondaFin(m){
       `<button class="primary" id="${m}Again">${esc(t("roundAgain"))}</button>` +
       `<button class="ghost" data-goto="practice">${esc(t("roundBack"))}</button>` +
     `</div>`;
+  /* La ronda cerrada es un logro en sí: se registra en el progreso compartido
+     y puede desbloquear la insignia 💎 de ronda perfecta. */
+  if(window.GH_GAME && window.GH_GAME.recordRound){
+    const G = window.GH_GAME;
+    if(!ghProgress) ghProgress = G.loadProgress(localStorage);
+    G.recordRound(ghProgress, { app:"questionlab", ok:r.ok, total:tot });
+    G.evaluateBadges(ghProgress, G.BADGES, []).newly.forEach(showBadgeToast);
+    G.saveProgress(localStorage, ghProgress);
+  }
   rondaVista(m, true);
   $(m + "Again").addEventListener("click", ()=> rondaReinicia(m));
   $(MODOS[m].fin).querySelector("[data-goto]").addEventListener("click", ()=> showPanel("practice"));
