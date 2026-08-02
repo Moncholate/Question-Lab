@@ -266,6 +266,19 @@
   }
   button.ghost:hover{color:var(--text);}
   .progress{font-size:.85rem; color:var(--muted);}
+  /* Rondas de práctica: barra fina arriba de la tarjeta + tarjeta de cierre.
+     Sin una meta visible la sesión no termina nunca y el alumno no sabe si va
+     por la mitad o recién empezando. Diez ejercicios son 3-5 minutos, que es
+     lo que el propio banco de frases le predica al que estudia de noche. */
+  .rbar{height:4px; border-radius:999px; background:var(--border); overflow:hidden; margin:-.2rem 0 .9rem;}
+  .rbar i{display:block; height:100%; background:var(--accent); border-radius:999px;
+    width:0; transition:width .3s cubic-bezier(.22,1,.36,1);}
+  @media (prefers-reduced-motion:reduce){ .rbar i{transition:none;} }
+  .roundend{text-align:center; padding:1.6rem 1.2rem;}
+  .roundend .rescore{font-size:2.4rem; font-weight:800; line-height:1; color:var(--accent);}
+  .roundend .restot{font-size:.95rem; color:var(--muted); margin-top:.3rem;}
+  .roundend .resmeta{font-size:.9rem; margin-top:.7rem;}
+  .roundend .resbtns{display:flex; gap:.5rem; justify-content:center; margin-top:1.2rem; flex-wrap:wrap;}
 
   /* Identify mode */
   .idask{display:flex; flex-direction:column; gap:.9rem; margin:.5rem 0 .8rem;}
@@ -434,7 +447,8 @@
   <!-- ============ BUILD ============ -->
   <div class="panel" id="build">
     <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
-    <div class="card">
+    <div class="card" id="bCard">
+      <div class="rbar" id="bBar"><i></i></div>
       <div class="prompt" id="bPrompt"></div>
       <div class="slotarea" id="bSlots"></div>
       <div class="blocks pool" id="bPool"></div>
@@ -449,12 +463,14 @@
       </div>
     </div>
     <div id="bResult"></div>
+    <div class="card roundend" id="bEnd" style="display:none"></div>
   </div>
 
   <!-- ============ IDENTIFY ============ -->
   <div class="panel" id="identify">
     <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
-    <div class="card">
+    <div class="card" id="idCard">
+      <div class="rbar" id="idBar"><i></i></div>
       <div class="prompt" id="idQuestion"></div>
       <div class="idask">
         <div class="idrow"><span data-i18n="idTypeQ">¿Abierta o cerrada?</span><div class="idopts" id="idTypeOpts"></div></div>
@@ -468,6 +484,7 @@
       <div class="buildmsg" id="idMsg"></div>
       <div class="buildbar">
         <span class="streak" id="idStreak"></span>
+        <span class="progress" id="idProg"></span>
         <span>
           <button class="primary" id="idCheck" data-i18n="idCheck">Comprobar</button>
           <button class="ghost" id="idNext" data-i18n="idNext" style="display:none">Siguiente →</button>
@@ -475,12 +492,14 @@
       </div>
     </div>
     <div id="idReveal"></div>
+    <div class="card roundend" id="idEnd" style="display:none"></div>
   </div>
 
   <!-- ============ RESPONDE ============ -->
   <div class="panel" id="respond">
     <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
-    <div class="card">
+    <div class="card" id="rCard">
+      <div class="rbar" id="rBar"><i></i></div>
       <div class="prompt" id="rQuestion"></div>
       <p class="rhint" id="rHint" data-i18n="rHint">Devuelve la pelota: escribe la respuesta corta (Yes / No).</p>
       <div class="idask" id="rTypeRow" style="display:none">
@@ -490,6 +509,7 @@
       <div class="buildmsg" id="rMsg"></div>
       <div class="buildbar">
         <span class="streak" id="rStreak"></span>
+        <span class="progress" id="rProg"></span>
         <span>
           <button class="primary" id="rCheck" data-i18n="idCheck">Comprobar</button>
           <button class="ghost" id="rNext" data-i18n="idNext" style="display:none">Siguiente →</button>
@@ -497,6 +517,7 @@
       </div>
     </div>
     <div id="rReveal"></div>
+    <div class="card roundend" id="rEnd" style="display:none"></div>
   </div>
 
   <!-- ============ GUÍA ============ -->
@@ -1600,6 +1621,71 @@ const CHALLENGES = [
    blocks:[["Did","aux"],["you","subj"],["use to","semiaux"],["play","verb"],["football as a child?","comp"]]}
 ];
 
+/* ══════════════ RONDAS DE PRÁCTICA ══════════════
+   Los tres modos generaban ejercicios sin fin. Peor: Construye mostraba
+   "Desafío 3 de 13" pero con `bIdx % length`, así que al llegar a 13 volvía a 1
+   y seguía — una meta que se corre sola es peor que ninguna.
+   Ahora cada sesión son 10 ejercicios, con la cuenta a la vista y una tarjeta
+   de cierre al terminar. El alumno sabe cuánto le falta y decide si encadena
+   otra ronda o la retoma después, que es justo lo que pedía el docente.
+   Construye usa el mínimo entre 10 y los desafíos de su nivel: repetir dentro
+   de la misma ronda no sería practicar, sería rellenar. */
+const RONDA = 10;
+const rondas = { b:{hechos:0, ok:0, mejor:0}, id:{hechos:0, ok:0, mejor:0}, r:{hechos:0, ok:0, mejor:0} };
+const MODOS = {
+  b:  { ejer:"bCard",  barra:"bBar",  prog:"bProg",  fin:"bEnd",  reveal:"bResult", nombre:()=>t("navBuild"),    otra:()=>{ bIdx++; loadChallenge(); } },
+  id: { ejer:"idCard", barra:"idBar", prog:"idProg", fin:"idEnd", reveal:"idReveal", nombre:()=>t("navIdentify"), otra:()=>renderId(true) },
+  r:  { ejer:"rCard",  barra:"rBar",  prog:"rProg",  fin:"rEnd",  reveal:"rReveal",  nombre:()=>t("navRespond"),  otra:()=>renderR(true) },
+};
+const rondaTotal = m => m === "b" ? Math.min(RONDA, activeChallenges.length || RONDA) : RONDA;
+function rondaSuma(m, acerto, rachaActual){
+  const r = rondas[m];
+  r.hechos++; if(acerto) r.ok++;
+  r.mejor = Math.max(r.mejor, rachaActual || 0);
+}
+function rondaPinta(m){
+  const r = rondas[m], tot = rondaTotal(m);
+  const prog = $(MODOS[m].prog);
+  if(prog) prog.textContent = t("roundOf").replace("{n}", Math.min(r.hechos + 1, tot)).replace("{t}", tot);
+  const barra = $(MODOS[m].barra);
+  if(barra && barra.firstElementChild) barra.firstElementChild.style.width = (r.hechos / tot * 100) + "%";
+}
+const rondaTerminada = m => rondas[m].hechos >= rondaTotal(m);
+/* Mostrar u ocultar el ejercicio por ID y no caminando el DOM: 
+   se rompe en cuanto alguien mueve un div de sitio, y ya lo hizo. */
+function rondaVista(m, mostrandoResumen){
+  const ejer = $(MODOS[m].ejer), rev = $(MODOS[m].reveal), fin = $(MODOS[m].fin);
+  if(ejer) ejer.style.display = mostrandoResumen ? "none" : "";
+  if(rev)  rev.style.display  = mostrandoResumen ? "none" : "";
+  if(fin)  fin.style.display  = mostrandoResumen ? "" : "none";
+}
+/* Cierre: se oculta el ejercicio y su revelado, y queda solo el resumen. */
+function rondaFin(m){
+  const r = rondas[m], tot = rondaTotal(m);
+  const perfecto = r.ok === tot;
+  $(MODOS[m].fin).innerHTML =
+    `<div class="rescore">${r.ok} / ${tot}</div>` +
+    `<div class="restot">${esc(t("roundDone"))} · ${esc(MODOS[m].nombre())}</div>` +
+    (r.mejor > 1 ? `<div class="resmeta">🔥 ${esc(t("roundBest"))}: ${r.mejor}</div>` : "") +
+    (perfecto ? `<div class="resmeta">⭐ ${esc(t("roundPerfect"))}</div>` : "") +
+    `<div class="resbtns">` +
+      `<button class="primary" id="${m}Again">${esc(t("roundAgain"))}</button>` +
+      `<button class="ghost" data-goto="practice">${esc(t("roundBack"))}</button>` +
+    `</div>`;
+  rondaVista(m, true);
+  $(m + "Again").addEventListener("click", ()=> rondaReinicia(m));
+  $(MODOS[m].fin).querySelector("[data-goto]").addEventListener("click", ()=> showPanel("practice"));
+}
+function rondaReinicia(m){
+  rondas[m] = { hechos:0, ok:0, mejor:0 };
+  rondaVista(m, false);
+  const rev = $(MODOS[m].reveal); if(rev) rev.innerHTML = "";
+  MODOS[m].otra();
+  rondaPinta(m);
+}
+/* Lo que hace el botón "Siguiente": o el ejercicio que sigue, o cerrar la ronda. */
+function rondaAvanza(m){ if(rondaTerminada(m)) rondaFin(m); else { MODOS[m].otra(); rondaPinta(m); } }
+
 let bIdx = 0, bPlaced = [], bPool = [], bFailed = false, bScored = false, activeChallenges = CHALLENGES, curCh = null;
 /* localStorage puede estar bloqueado (modo privado, file://) — nunca debe romper la app */
 function loadStreak(){ try{ return parseInt(localStorage.getItem("ql_streak")||"0",10)||0; }catch(e){ return 0; } }
@@ -1638,7 +1724,7 @@ function renderBuild(){
     : `<span class="hint" style="padding:.4rem">${t('emptyBuild')}</span>`;
   $("bPool").innerHTML = bPool.map((b,i)=>`<span class="block ${b.role}" data-pool="${i}">${esc(b.text)}<small>${trLabel(roleLabel(b.role))}</small></span>`).join("");
   setStreak($("bStreak"), streak);
-  $("bProg").textContent = t('progA') + ((bIdx % activeChallenges.length)+1) + t('progOf') + activeChallenges.length;
+  rondaPinta("b");
 }
 function roleLabel(r){ return {wh:"wh-word", aux:"auxiliar", semiaux:"semi-aux", subj:"sujeto", verb:"verbo", comp:"complemento"}[r] || r; }
 
@@ -1663,6 +1749,7 @@ function checkBuild(){
   if(ok){
     $("bSlots").className = "slotarea correct";
     if(!bFailed){ streak++; bumpBestStreak("b", streak); }
+    rondaSuma("b", !bFailed, streak);
     saveStreak(streak);
     msg.textContent = t('buildOk');
     msg.className = "buildmsg ok";
@@ -1680,7 +1767,7 @@ function checkBuild(){
     $("bResult").insertAdjacentHTML("beforeend",
       `<div style="text-align:center; margin-bottom:1rem">
         <button class="primary" id="bNext">${t('nextChallenge')}</button></div>`);
-    $("bNext").addEventListener("click", ()=>{ bIdx++; loadChallenge(); });
+    $("bNext").addEventListener("click", ()=> rondaAvanza("b"));
     renderBuild();
     scrollReveal($("bResult"));
   } else {
@@ -1699,7 +1786,7 @@ $("bReset").addEventListener("click", ()=>{
   $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
   renderBuild();
 });
-$("bSkip").addEventListener("click", ()=>{ bIdx++; loadChallenge(); });
+$("bSkip").addEventListener("click", ()=>{ if(!bScored) rondaSuma("b", false, 0); rondaAvanza("b"); });
 
 /* ================================================================
    NIVELES CEFR  (fuente: Grammar HUB/curriculum.json → cefr.generated.js)
@@ -1796,6 +1883,13 @@ function applyLevel(){
   updateGuideAccordion();
   renderExamples();
   refilterChallenges();
+  /* Cambiar de nivel cambia el banco de ejercicios, así que la ronda en curso
+     deja de tener sentido: se reinician las tres y se cierra cualquier resumen
+     que hubiera quedado abierto. */
+  ["b","id","r"].forEach(m=>{
+    rondas[m] = { hechos:0, ok:0, mejor:0 };
+    rondaVista(m, false);
+  });
   buildIdPool(); renderId(true);
   buildRPool(); renderR(true);
 }
@@ -1897,6 +1991,7 @@ const I18N = {
     buildOk:"🎉 ¡Perfecto! Ahora mira cómo se responde…",
     buildBad:"Casi… el orden no es el correcto. Recuerda: (Wh) + Auxiliar + Sujeto + Verbo + Complemento. Toca una pieza para devolverla.",
     emptyBuild:"Toca las piezas en orden para armar la pregunta…",
+    roundOf:"Ejercicio {n} de {t}", roundDone:"Ronda terminada", roundBest:"Mejor racha", roundPerfect:"¡Ronda perfecta!", roundAgain:"Otra ronda", roundBack:"Volver",
     streak:"🔥 Racha: ", progA:"Desafío ", progOf:" de ", nextChallenge:"Siguiente desafío →",
     tabIdentify:"🔍 Identifica",
     idTypeQ:"¿Abierta o cerrada?", idTenseQ:"¿Qué tiempo?", idOpen:"Abierta", idClosed:"Cerrada",
@@ -1978,6 +2073,7 @@ const I18N = {
     buildOk:"🎉 Perfect! Now see how it's answered…",
     buildBad:"Almost… the order isn't right. Remember: (Wh) + Auxiliary + Subject + Verb + Complement. Tap a piece to send it back.",
     emptyBuild:"Tap the pieces in order to build the question…",
+    roundOf:"Exercise {n} of {t}", roundDone:"Round complete", roundBest:"Best streak", roundPerfect:"Perfect round!", roundAgain:"Another round", roundBack:"Back",
     streak:"🔥 Streak: ", progA:"Challenge ", progOf:" of ", nextChallenge:"Next challenge →",
     tabIdentify:"🔍 Identify",
     idTypeQ:"Open or closed?", idTenseQ:"Which tense?", idOpen:"Open", idClosed:"Closed",
@@ -2226,6 +2322,7 @@ function renderId(pickNew){
   $("idReveal").innerHTML = "";
   $("idNext").style.display = "none"; $("idCheck").style.display = "";
   setStreak($("idStreak"), idStreak);
+  rondaPinta("id");
   if(!idCurrent){
     $("idQuestion").textContent = t("idEmpty");
     $("idTypeOpts").innerHTML = ""; $("idFamOpts").innerHTML = ""; $("idTenseOpts").innerHTML = ""; $("idCheck").style.display = "none";
@@ -2263,6 +2360,7 @@ function checkId(){
     else if(x.dataset.tense === idTense) x.classList.add("wrong");
   });
   const ok = idType === idCurrent.type && idTense === idCurrent.tid;
+  rondaSuma("id", ok, ok ? idStreak + 1 : idStreak);
   if(ok){ idStreak++; bumpBestStreak("id", idStreak); $("idMsg").textContent = t("idCorrect"); $("idMsg").className = "buildmsg ok"; }
   else { idStreak = 0; $("idMsg").textContent = t("idWrong"); $("idMsg").className = "buildmsg bad"; }
   saveIdStreak();
@@ -2301,7 +2399,7 @@ $("idTenseOpts").addEventListener("click", e => {
   [...$("idTenseOpts").children].forEach(x => x.classList.toggle("sel", x === b));
 });
 $("idCheck").addEventListener("click", checkId);
-$("idNext").addEventListener("click", () => renderId(true));
+$("idNext").addEventListener("click", () => rondaAvanza("id"));
 
 /* ================================================================
    RESPONDE — devuelve la pelota (respuesta corta a preguntas cerradas)
@@ -2361,6 +2459,7 @@ function renderR(pickNew){
   $("rInput").value = ""; $("rInput").disabled = false;
   $("rNext").style.display = "none"; $("rCheck").style.display = "";
   setStreak($("rStreak"), rStreak);
+  rondaPinta("r");
   if(!rCurrent){
     $("rQuestion").textContent = t("rEmpty");
     $("rInput").style.display = "none"; $("rCheck").style.display = "none"; $("rTypeRow").style.display = "none";
@@ -2402,6 +2501,7 @@ function checkR(){
     });
   }
   rChecked = true; $("rInput").disabled = true;
+  rondaSuma("r", ok, ok ? rStreak + 1 : rStreak);
   if(ok){ rStreak++; bumpBestStreak("r", rStreak); $("rMsg").textContent = t("rGood"); $("rMsg").className = "buildmsg ok"; }
   else { rStreak = 0; $("rMsg").textContent = t("rTry"); $("rMsg").className = "buildmsg bad"; }
   try{ localStorage.setItem("ql_r_streak", rStreak); }catch(e){}
@@ -2418,7 +2518,7 @@ function checkR(){
   scrollReveal($("rReveal"));
 }
 $("rCheck").addEventListener("click", checkR);
-$("rNext").addEventListener("click", () => renderR(true));
+$("rNext").addEventListener("click", () => rondaAvanza("r"));
 $("rInput").addEventListener("keydown", e => { if(e.key === "Enter" && !rChecked) checkR(); });
 $("rTypeOpts").addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b || rChecked) return;
