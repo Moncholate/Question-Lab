@@ -1631,7 +1631,12 @@ const CHALLENGES = [
    Construye usa el mínimo entre 10 y los desafíos de su nivel: repetir dentro
    de la misma ronda no sería practicar, sería rellenar. */
 const RONDA = 10;
-const rondas = { b:{hechos:0, ok:0, mejor:0}, id:{hechos:0, ok:0, mejor:0}, r:{hechos:0, ok:0, mejor:0} };
+/* `verificado` = el ejercicio en pantalla ya se respondió y se está mostrando la
+   corrección. Sin este dato el rótulo se calculaba como hechos+1 y saltaba al
+   verificar: "Ejercicio 2 de 10" aparecía con la corrección del 1 y otra vez con
+   el enunciado del 2, y la ronda parecía de 11. */
+const rondaCero = () => ({ hechos:0, ok:0, mejor:0, verificado:false });
+const rondas = { b:rondaCero(), id:rondaCero(), r:rondaCero() };
 const MODOS = {
   b:  { ejer:"bCard",  barra:"bBar",  prog:"bProg",  fin:"bEnd",  reveal:"bResult", nombre:()=>t("navBuild"),    otra:()=>{ bIdx++; loadChallenge(); } },
   id: { ejer:"idCard", barra:"idBar", prog:"idProg", fin:"idEnd", reveal:"idReveal", nombre:()=>t("navIdentify"), otra:()=>renderId(true) },
@@ -1641,12 +1646,17 @@ const rondaTotal = m => m === "b" ? Math.min(RONDA, activeChallenges.length || R
 function rondaSuma(m, acerto, rachaActual){
   const r = rondas[m];
   r.hechos++; if(acerto) r.ok++;
+  r.verificado = true;
   r.mejor = Math.max(r.mejor, rachaActual || 0);
 }
+/* Dos cuentas distintas a propósito: el rótulo nombra el ejercicio que está en
+   pantalla (no cambia hasta que el alumno pide el siguiente) y la barra mide los
+   terminados (sí avanza al verificar, porque ese ya lo hizo). */
 function rondaPinta(m){
   const r = rondas[m], tot = rondaTotal(m);
   const prog = $(MODOS[m].prog);
-  if(prog) prog.textContent = t("roundOf").replace("{n}", Math.min(r.hechos + 1, tot)).replace("{t}", tot);
+  const enPantalla = Math.min(r.hechos + (r.verificado ? 0 : 1), tot);
+  if(prog) prog.textContent = t("roundOf").replace("{n}", enPantalla).replace("{t}", tot);
   const barra = $(MODOS[m].barra);
   if(barra && barra.firstElementChild) barra.firstElementChild.style.width = (r.hechos / tot * 100) + "%";
 }
@@ -1686,14 +1696,21 @@ function rondaFin(m){
   $(MODOS[m].fin).querySelector("[data-goto]").addEventListener("click", ()=> showPanel("practice"));
 }
 function rondaReinicia(m){
-  rondas[m] = { hechos:0, ok:0, mejor:0 };
+  rondas[m] = rondaCero();
   rondaVista(m, false);
   const rev = $(MODOS[m].reveal); if(rev) rev.innerHTML = "";
   MODOS[m].otra();
   rondaPinta(m);
 }
-/* Lo que hace el botón "Siguiente": o el ejercicio que sigue, o cerrar la ronda. */
-function rondaAvanza(m){ if(rondaTerminada(m)) rondaFin(m); else { MODOS[m].otra(); rondaPinta(m); } }
+/* Lo que hace el botón "Siguiente": o el ejercicio que sigue, o cerrar la ronda.
+   Bajar `verificado` antes de pintar es lo que hace avanzar el rótulo: recién
+   aquí el alumno dejó atrás la corrección y pasa al ejercicio siguiente. */
+function rondaAvanza(m){
+  if(rondaTerminada(m)){ rondaFin(m); return; }
+  rondas[m].verificado = false;
+  MODOS[m].otra();
+  rondaPinta(m);
+}
 
 let bIdx = 0, bPlaced = [], bPool = [], bFailed = false, bScored = false, activeChallenges = CHALLENGES, curCh = null;
 /* localStorage puede estar bloqueado (modo privado, file://) — nunca debe romper la app */
@@ -1795,7 +1812,10 @@ $("bReset").addEventListener("click", ()=>{
   $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
   renderBuild();
 });
-$("bSkip").addEventListener("click", ()=>{ if(!bScored) rondaSuma("b", false, 0); rondaAvanza("b"); });
+/* El guardia es `verificado`, no `bScored`: bScored solo se pone cuando existe
+   GH_GAME, así que sin el motor de progreso saltar después de acertar contaba el
+   mismo ejercicio dos veces y la ronda terminaba antes. */
+$("bSkip").addEventListener("click", ()=>{ if(!rondas.b.verificado) rondaSuma("b", false, 0); rondaAvanza("b"); });
 
 /* ================================================================
    NIVELES CEFR  (fuente: Grammar HUB/curriculum.json → cefr.generated.js)
@@ -1896,8 +1916,9 @@ function applyLevel(){
      deja de tener sentido: se reinician las tres y se cierra cualquier resumen
      que hubiera quedado abierto. */
   ["b","id","r"].forEach(m=>{
-    rondas[m] = { hechos:0, ok:0, mejor:0 };
+    rondas[m] = rondaCero();
     rondaVista(m, false);
+    rondaPinta(m);   // Construye ya se redibujó arriba: sin esto su cuenta queda con el total viejo
   });
   buildIdPool(); renderId(true);
   buildRPool(); renderR(true);
@@ -2163,7 +2184,12 @@ function setLang(l){
   if(curCh) $("bPrompt").textContent = (lang === "en" && curCh.pe) ? curCh.pe : curCh.prompt;
   const q = $("qin") && $("qin").value.trim();
   if(q) renderResult(analyze(q), $("result"));
-  renderId(false); renderR(false);
+  /* Un ejercicio ya corregido no se vuelve a dibujar: renderId/renderR lo dejan
+     como si no se hubiera respondido, y entonces el alumno lo contestaba de
+     nuevo y contaba dos veces en la ronda. Las opciones de ese ejercicio quedan
+     en el idioma anterior hasta el siguiente; la pregunta es en inglés igual. */
+  if(!rondas.id.verificado) renderId(false);
+  if(!rondas.r.verificado)  renderR(false);
   updateGuideAccordion();   // etiquetas del acordeón de la Guía en el idioma nuevo
   updateGuideWh();
   updateThemeBtn();
@@ -2370,6 +2396,7 @@ function checkId(){
   });
   const ok = idType === idCurrent.type && idTense === idCurrent.tid;
   rondaSuma("id", ok, ok ? idStreak + 1 : idStreak);
+  rondaPinta("id");   // avanza la barra; el rótulo se queda en este ejercicio
   if(ok){ idStreak++; bumpBestStreak("id", idStreak); $("idMsg").textContent = t("idCorrect"); $("idMsg").className = "buildmsg ok"; }
   else { idStreak = 0; $("idMsg").textContent = t("idWrong"); $("idMsg").className = "buildmsg bad"; }
   saveIdStreak();
@@ -2511,6 +2538,7 @@ function checkR(){
   }
   rChecked = true; $("rInput").disabled = true;
   rondaSuma("r", ok, ok ? rStreak + 1 : rStreak);
+  rondaPinta("r");    // avanza la barra; el rótulo se queda en este ejercicio
   if(ok){ rStreak++; bumpBestStreak("r", rStreak); $("rMsg").textContent = t("rGood"); $("rMsg").className = "buildmsg ok"; }
   else { rStreak = 0; $("rMsg").textContent = t("rTry"); $("rMsg").className = "buildmsg bad"; }
   try{ localStorage.setItem("ql_r_streak", rStreak); }catch(e){}
