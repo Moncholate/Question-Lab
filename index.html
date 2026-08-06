@@ -794,16 +794,45 @@ const NOT_VERBS = new Set(["thing","something","anything","everything","nothing"
   "evening","king","ring","wing","spring","string","sibling","ceiling","clothing","darling","during",
   // sustantivos en -ing SIN uso común como gerundio (los ambiguos como building/meeting/painting
   // se dejan fuera: romperían el presente continuo «Are you building a house?»)
-  "lightning","wedding","pudding","earring",
-  /* ADJETIVOS en -ing. Son materia de AEF (interested/interesting) y sin esto
-     «Is your job interesting?» salía como Presente Continuo, porque la regla
-     «termina en -ing → es verbo» no distingue el adjetivo del gerundio.
-     Solo van los que casi nunca funcionan como verbo continuo. Quedan FUERA a
-     propósito relaxing, worrying, annoying, embarrassing, confusing y
-     surprising: «Are you relaxing?» y «Am I confusing you?» son continuos de
-     verdad y pesan más que su lectura adjetiva. */
-  "interesting","boring","tiring","amazing","exciting","disappointing",
-  "frightening","terrifying","disgusting","challenging"]);
+  "lightning","wedding","pudding","earring"]);
+
+/* ── Adjetivo en -ing vs. gerundio ────────────────────────────────────────────
+   «Is your job interesting?» (adjetivo, to be) contra «Am I confusing you?»
+   (gerundio, presente continuo). La regla «termina en -ing → es verbo» no los
+   distingue, y meter las palabras en NOT_VERBS tampoco sirve: son las MISMAS
+   palabras en los dos casos.
+   La señal es estructural, no semántica. Todos estos son verbos psicológicos
+   —X interesa a Y— y en progresivo piden objeto. Si no hay nada detrás, la
+   lectura es la adjetiva. Es materia de AEF (interested / interesting). */
+const PSY_TRANS = new Set(["interest","bore","tire","amaze","excite","disappoint",
+  "frighten","terrify","disgust","challenge","confuse","surprise","annoy",
+  "embarrass","shock","fascinate","depress","satisfy","exhaust","move"]);
+/* Estos además funcionan sin objeto («I relax»), así que el objeto no alcanza y
+   hace falta mirar el sujeto: «Are you relaxing?» es continuo de verdad. */
+const PSY_INTRANS = new Set(["relax","worry"]);
+function psyBase(w){
+  if(!w || !w.endsWith("ing")) return null;
+  const s = w.slice(0,-3);
+  for(const c of [s, s+"e", s.slice(0,-1)])       // annoy·ing · confus+e · runn→run
+    if(PSY_TRANS.has(c) || PSY_INTRANS.has(c)) return c;
+  return null;
+}
+/* ¿La palabra en -ing de la posición i es adjetivo (complemento del be) y no el
+   verbo principal? Solo se pronuncia cuando hay señal; si no, se abstiene. */
+function adjEnIng(lower, i, auxIdx, aux, n){
+  if(!["am","is","are","was","were"].includes(aux)) return false;
+  if(i <= auxIdx+1) return false;                 // sin sujeto en medio no hay nada que decidir
+  const base = psyBase(lower[i]);
+  if(!base) return false;
+  let fin = n-1;                                  // «tonight» no es objeto
+  while(fin > i && TIME_PLACE_ADV.has(lower[fin])) fin--;
+  if(fin > i) return false;                       // hay objeto detrás → progresivo
+  if(PSY_INTRANS.has(base)){
+    const subj = lower.slice(auxIdx+1, i);
+    if(subj.length === 1 && PRONOUNS.includes(subj[0])) return false;
+  }
+  return true;
+}
 
 function isVerbCandidate(w){
   if(!w) return false;
@@ -904,8 +933,24 @@ function analyze(raw){
 
   // 3. Sujeto: desde después del aux hasta el primer verbo candidato
   let vIdx = -1;
+  const esVerboEn = i => isVerbCandidate(lower[i]) && !DETS.includes(lower[i])
+                         && !adjEnIng(lower, i, auxIdx, aux, n);
   for(let i = auxIdx+1; i < n; i++){
-    if(isVerbCandidate(lower[i]) && !DETS.includes(lower[i])){ vIdx = i; break; }
+    if(!esVerboEn(i)) continue;
+    /* Sustantivo deverbal DENTRO del sujeto: «Is the plan working?» daba
+       sujeto=«the» y complemento=«plan working», que además se ve en pantalla.
+       Si la palabra va dentro de un sintagma abierto por un determinante y
+       todavía queda otro verbo detrás, el verbo era el otro. Es la misma idea
+       que «Does work start at eight?» —resuelto más abajo—, pero ahí el
+       sustantivo va pelado y aquí lleva determinante, así que aquel guardia no
+       llegaba. Sin otro verbo detrás no se toca nada: «Does the bus stop
+       here?» y «Is the plan ready?» siguen como estaban. */
+    if(lower.slice(auxIdx+1, i).some(w => DETS.includes(w))){
+      let otro = -1;
+      for(let j = i+1; j < n; j++){ if(esVerboEn(j)){ otro = j; break; } }
+      if(otro !== -1) continue;
+    }
+    vIdx = i; break;
   }
 
   // Cláusula relativa escondida: "What is one thing (that) Mia has always loved?"
