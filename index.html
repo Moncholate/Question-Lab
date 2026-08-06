@@ -765,10 +765,11 @@ const REG = ["like","live","work","play","study","travel","visit","cook","dance"
   "unlock","wander","warn","welcome","whisper","wipe","worry","wrap","yell","bark","belong","breathe",
   "chat","cheer","decorate","defend","depend","deserve","destroy","disappear","encourage","examine",
   "manage","marry","obey","organize","perform","pretend","punish","recognize","regret","ruin",
-  // «accept» no tiene homónimo sustantivo. «pass» sí (un pase), pero en un curso
-  // «Did you pass the exam?» pesa mucho más que «Is your pass valid?».
-  // «stop» queda FUERA a propósito: «the bus stop» se comía el sujeto entero.
-  "accept","pass"];
+  // Homónimo sustantivo-verbo: no es motivo para dejar el verbo fuera. El
+  // buscador de sujeto ya resuelve el par ("Where is the bus stop?" ≠ "Does the
+  // bus stop here?"), y sin el verbo en la lista la pregunta ni siquiera se
+  // parsea. Probado en pares mínimos con work/plan/call/watch/change/order.
+  "accept","pass","stop"];
 
 const VERB_BASES = new Set([...Object.keys(IRR), ...REG]);
 const PAST_FORMS = new Map();  // pasado -> base

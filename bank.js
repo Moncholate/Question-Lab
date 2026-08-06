@@ -65,6 +65,7 @@ window.QUESTION_BANK = {
     "Does your brother study English?",
     "Do we need a car?",
     "Does the bus arrive on time?",
+    "Does the bus stop here?",
     "Do you drink tea in the morning?",
     "Does she live with her parents?",
     "Do your friends speak English?",
