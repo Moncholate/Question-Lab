@@ -108,6 +108,11 @@
     border:1px solid var(--border); border-radius:9px; background:var(--card); color:var(--muted);
     font-size:.85rem; font-weight:700; cursor:pointer; transition:all .12s;}
   .pback:hover{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 40%, transparent);}
+  /* Vuelta al modo principal. Va un punto más apagada que «← Práctica» para que
+     la jerarquía se lea sola: primero sales del submodo, después de la sección.
+     Antes no existía y el único «atrás» a la vista era el del Hub. */
+  .pmain{font-weight:600; opacity:.85;}
+  .pmain:hover{opacity:1;}
   .pmenu{display:flex; flex-direction:column; gap:.6rem; margin-top:.7rem;}
   .pmode{display:flex; align-items:center; gap:.8rem; text-align:left; padding:.9rem 1rem;
     border:1.5px solid var(--border); border-radius:14px; background:var(--card); color:var(--text);
@@ -433,6 +438,7 @@
 
   <!-- ============ PRÁCTICA (menú) ============ -->
   <div class="panel" id="practice">
+    <button class="pback pmain" data-goto="analyze">← <span data-i18n="navAnalyze">Analiza</span></button>
     <div class="card">
       <h2 data-i18n="practiceTitle">🎯 Práctica</h2>
       <p class="hint" data-i18n="practiceIntro">Elige un modo para practicar:</p>
@@ -522,6 +528,7 @@
 
   <!-- ============ GUÍA ============ -->
   <div class="panel" id="guide">
+    <button class="pback pmain" data-goto="analyze">← <span data-i18n="navAnalyze">Analiza</span></button>
     <details>
       <summary data-i18n="legendSummary">🧩 ¿Qué significa cada pieza?</summary>
       <ol class="piecelist">
@@ -674,6 +681,7 @@
 
   <!-- ============ PROGRESO ============ -->
   <div class="panel" id="progress">
+    <button class="pback pmain" data-goto="analyze">← <span data-i18n="navAnalyze">Analiza</span></button>
     <div class="card">
       <h2 data-i18n="progressTitle">📊 Progreso</h2>
       <div id="progressBody"></div>
@@ -2327,6 +2335,12 @@ function setLang(l){
 }
 document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("click", ()=> setLang(b.dataset.lang)));
 /* Toggle de tema de la suite (auto → claro → oscuro), compartido vía window.ghTheme */
+/* Embebida en el Hub: el tema se maneja desde la barra del Hub, no desde acá —
+   en celular esta cabecera queda cargada y el botón compite con el título.
+   Standalone / PWA es el único que hay, así que se mantiene. */
+const enElHub = (() => { try { return window.self !== window.top; } catch(e) { return false; } })();
+if(enElHub && $("themeTog")) $("themeTog").style.display = "none";
+
 function updateThemeBtn(){
   const el = $("themeTog"); if(!el || !window.ghTheme) return;
   const target = window.ghTheme.effective() === "dark" ? "light" : "dark";   // modo al que puedes cambiar
