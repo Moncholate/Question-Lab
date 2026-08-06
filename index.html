@@ -803,13 +803,27 @@ const NOT_VERBS = new Set(["thing","something","anything","everything","nothing"
    palabras en los dos casos.
    La señal es estructural, no semántica. Todos estos son verbos psicológicos
    —X interesa a Y— y en progresivo piden objeto. Si no hay nada detrás, la
-   lectura es la adjetiva. Es materia de AEF (interested / interesting). */
+   lectura es la adjetiva. Es materia de AEF (interested / interesting).
+   Lo que entra en la lista NO es «verbo psicológico» en sentido estricto, es
+   algo más estrecho: verbos que necesitan objeto. «move» estuvo un rato aquí y
+   fue un error — un tren se mueve solo, así que «Is the train moving?» pasó a
+   leerse como adjetivo. Antes de agregar uno: ¿puede la acción no llevar
+   objeto? Si sí, no va. */
 const PSY_TRANS = new Set(["interest","bore","tire","amaze","excite","disappoint",
   "frighten","terrify","disgust","challenge","confuse","surprise","annoy",
-  "embarrass","shock","fascinate","depress","satisfy","exhaust","move"]);
+  "embarrass","shock","fascinate","depress","satisfy","exhaust",
+  // mismo criterio, y son los adjetivos en -ing más frecuentes del inglés de aula
+  "refresh","reward","charm","demand","promise","mislead","overwhelm","disturb",
+  "alarm","convince","encourage","discourage","entertain","inspire","thrill",
+  "puzzle","irritate","frustrate","please","stun"]);
 /* Estos además funcionan sin objeto («I relax»), así que el objeto no alcanza y
    hace falta mirar el sujeto: «Are you relaxing?» es continuo de verdad. */
 const PSY_INTRANS = new Set(["relax","worry"]);
+/* Adverbios de grado. Modifican adjetivos, NUNCA un progresivo: «Are you very
+   working?» no existe. Así que uno de estos delante zanja la lectura sin
+   consultar ninguna lista, y cubre los -ing que no están en ellas.
+   «really» y «totally» quedan FUERA: «Are you really working?» es normal. */
+const GRADO = new Set(["very","quite","extremely","incredibly","fairly","rather","pretty","so","too"]);
 function psyBase(w){
   if(!w || !w.endsWith("ing")) return null;
   const s = w.slice(0,-3);
@@ -822,6 +836,8 @@ function psyBase(w){
 function adjEnIng(lower, i, auxIdx, aux, n){
   if(!["am","is","are","was","were"].includes(aux)) return false;
   if(i <= auxIdx+1) return false;                 // sin sujeto en medio no hay nada que decidir
+  if(!lower[i].endsWith("ing")) return false;
+  if(GRADO.has(lower[i-1])) return true;          // «Is the drink very refreshing?»
   const base = psyBase(lower[i]);
   if(!base) return false;
   let fin = n-1;                                  // «tonight» no es objeto

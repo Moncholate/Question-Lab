@@ -58,6 +58,29 @@ console.log('\n2 · adjetivo en -ing o gerundio (verbos psicológicos)');
   ['Is the music relaxing tonight?','to-be-pres'],['Are you relaxing tonight?','present-continuous'],
 ].forEach(([q,e]) => ok(q,e));
 
+console.log('\n   la lista es de verbos QUE PIDEN OBJETO, no de «psicológicos»');
+// «move» estuvo en la lista y rompió esto: un tren se mueve solo. La pregunta
+// para agregar una palabra es si la acción puede no llevar objeto.
+[ ['Is the train moving?','present-continuous'],  ['Are you moving?','present-continuous'],
+  ['Is the line moving?','present-continuous'],   ['Are they moving the sofa?','present-continuous'],
+].forEach(([q,e]) => ok(q,e));
+
+console.log('\n   -ing adjetivos frecuentes, con su lectura verbal al lado');
+[ ['Is the work demanding?','to-be-pres'],        ['Is he demanding a refund?','present-continuous'],
+  ['Is the show entertaining?','to-be-pres'],     ['Are they entertaining guests?','present-continuous'],
+  ['Is the result promising?','to-be-pres'],      ['Are you promising too much?','present-continuous'],
+  ['Is the drink refreshing?','to-be-pres'],      ['Is the sign misleading?','to-be-pres'],
+  ['Is the news alarming?','to-be-pres'],         ['Is the view stunning?','to-be-pres'],
+].forEach(([q,e]) => ok(q,e));
+
+console.log('\n   adverbio de grado: zanja sin consultar ninguna lista');
+// «soothing» no está en PSY_TRANS y aun así sale bien.
+[ ['Is the water very soothing?','to-be-pres'],   ['Is the movie quite boring?','to-be-pres'],
+  ['Is it too demanding?','to-be-pres'],
+  // «really» queda fuera a propósito: sí puede ir delante de un progresivo
+  ['Are you really working?','present-continuous'],['Is she really studying?','present-continuous'],
+].forEach(([q,e]) => ok(q,e));
+
 console.log('\n   la regla debe ABSTENERSE cuando el verbo no es psicológico');
 [ ['Are you working?','present-continuous'],      ['Is she cooking dinner?','present-continuous'],
   ['Are they building a house?','present-continuous'], ['Is it raining?','present-continuous'],
