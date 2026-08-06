@@ -764,7 +764,11 @@ const REG = ["like","live","work","play","study","travel","visit","cook","dance"
   "succeed","suffer","supply","support","suppose","surprise","survive","thank","treat","trust",
   "unlock","wander","warn","welcome","whisper","wipe","worry","wrap","yell","bark","belong","breathe",
   "chat","cheer","decorate","defend","depend","deserve","destroy","disappear","encourage","examine",
-  "manage","marry","obey","organize","perform","pretend","punish","recognize","regret","ruin"];
+  "manage","marry","obey","organize","perform","pretend","punish","recognize","regret","ruin",
+  // «accept» no tiene homónimo sustantivo. «pass» sí (un pase), pero en un curso
+  // «Did you pass the exam?» pesa mucho más que «Is your pass valid?».
+  // «stop» queda FUERA a propósito: «the bus stop» se comía el sujeto entero.
+  "accept","pass"];
 
 const VERB_BASES = new Set([...Object.keys(IRR), ...REG]);
 const PAST_FORMS = new Map();  // pasado -> base
@@ -789,7 +793,16 @@ const NOT_VERBS = new Set(["thing","something","anything","everything","nothing"
   "evening","king","ring","wing","spring","string","sibling","ceiling","clothing","darling","during",
   // sustantivos en -ing SIN uso común como gerundio (los ambiguos como building/meeting/painting
   // se dejan fuera: romperían el presente continuo «Are you building a house?»)
-  "lightning","wedding","pudding","earring"]);
+  "lightning","wedding","pudding","earring",
+  /* ADJETIVOS en -ing. Son materia de AEF (interested/interesting) y sin esto
+     «Is your job interesting?» salía como Presente Continuo, porque la regla
+     «termina en -ing → es verbo» no distingue el adjetivo del gerundio.
+     Solo van los que casi nunca funcionan como verbo continuo. Quedan FUERA a
+     propósito relaxing, worrying, annoying, embarrassing, confusing y
+     surprising: «Are you relaxing?» y «Am I confusing you?» son continuos de
+     verdad y pesan más que su lectura adjetiva. */
+  "interesting","boring","tiring","amazing","exciting","disappointing",
+  "frightening","terrifying","disgusting","challenging"]);
 
 function isVerbCandidate(w){
   if(!w) return false;
@@ -2474,9 +2487,14 @@ function expectedAnswers(r){
   if(!r.ok || !r.answer || r.answer.kind !== "closed") return [];
   return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" "));
 }
-/* wh-base de la pregunta (la más larga que matchee: "how many", "what time"…) */
+/* wh-base de la pregunta (la más larga que matchee: "how many", "what time"…)
+   El wh contraído se desarma primero: sin esto "What's your name?" daba la base
+   «what's», que no está en la tabla, y Responde caía al comodín "tu información".
+   Como el comodín es el único que no sale de WH_HINTS, quedaba de regalo entre
+   los distractores. Y son las preguntas más naturales del nivel básico. */
 function whBaseOf(q){
-  const s = q.toLowerCase().replace(/[¿?]/g, "").trim();
+  const s = q.toLowerCase().replace(/[¿?]/g, "").trim()
+             .replace(/\b(what|where|who|when|how|why|which)['’]s\b/g, "$1 is");
   const keys = Object.keys(WH_HINTS).sort((a, b) => b.length - a.length);
   for(const k of keys){ if(s === k || s.startsWith(k + " ")) return k; }
   return s.split(/\s+/)[0];

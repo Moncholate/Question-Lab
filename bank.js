@@ -6,6 +6,12 @@
    ABIERTA/CERRADA con su analizador, y balancea el azar entre tiempos y tipos.
    El nivel es la llave del arreglo; el filtrado es acumulativo (un alumno en un
    nivel practica ese nivel y todos los anteriores).
+
+   OJO: si el analizador no entiende una pregunta, `buildIdPool` la descarta con
+   `if(!r.ok) continue` — no avisa, simplemente no aparece nunca. Y si el tiempo
+   que deriva no está entre los visibles del nivel, la pregunta sí sale pero su
+   respuesta correcta no se puede marcar. Las dos cosas son invisibles probando
+   a mano, así que hay que correr la auditoría del banco al agregar preguntas.
    ============================================================================ */
 window.QUESTION_BANK = {
   basico1: [
@@ -18,6 +24,15 @@ window.QUESTION_BANK = {
     "Are you tired?",
     "Is she Mexican?",
     "Are your parents at home?",
+    "Is your job interesting?",
+    "Are you married?",
+    "Are we late?",
+    "Is the book boring?",
+    "Is the classroom cold?",
+    "Am I right?",
+    "Is your family from Santiago?",
+    "Are the shops open today?",
+    "Is this seat free?",
     // Verbo to be (presente) — abiertas
     "What's your name?",
     "Where are you from?",
@@ -29,6 +44,16 @@ window.QUESTION_BANK = {
     "How are you?",
     "What time is it?",
     "Who are they?",
+    "Where is your office?",
+    "How old are you?",
+    "What's your favorite food?",
+    "Who is your English teacher?",
+    "Why are you late?",
+    "What day is it today?",
+    "How much is a coffee?",
+    "Whose book is this?",
+    "What time is your class?",
+    "Which bag is yours?",
     // Presente simple — cerradas
     "Do you like coffee?",
     "Does he speak English?",
@@ -36,13 +61,31 @@ window.QUESTION_BANK = {
     "Do you have a car?",
     "Does she work on Saturdays?",
     "Do you play soccer?",
+    "Do you work on weekends?",
+    "Does your brother study English?",
+    "Do we need a car?",
+    "Does the bus arrive on time?",
+    "Do you drink tea in the morning?",
+    "Does she live with her parents?",
+    "Do your friends speak English?",
+    "Does it rain a lot in winter?",
     // Presente simple — abiertas
     "Where do you live?",
     "What do you do?",
     "When do you get up?",
     "How does she travel to work?",
     "What time do you have lunch?",
-    "How often do you exercise?"
+    "How often do you exercise?",
+    "What time do you start work?",
+    "How do you go to work?",
+    "Why do you study English?",
+    "Where does your family live?",
+    "How often do you cook?",
+    "What kind of music do you like?",
+    "How much do you pay for the bus?",
+    "Who do you live with?",
+    "When do you have English class?",
+    "How many hours do you work?"
   ],
   basico2: [
     // Presente continuo — cerradas
@@ -50,40 +93,73 @@ window.QUESTION_BANK = {
     "Is she cooking dinner?",
     "Are they playing outside?",
     "Is it raining?",
+    "Is your phone charging?",
+    "Are you working today?",
+    "Is he waiting outside?",
+    "Are the children sleeping?",
     // Presente continuo — abiertas
     "What are you doing?",
     "Where is he going?",
     "Why are you laughing?",
     "Who is she talking to?",
+    "What are they building?",
+    "How is she feeling today?",
+    "Where are you going now?",
+    "Why is the bus stopping?",
     // Pasado simple — cerradas
     "Did you watch the movie?",
     "Did she call you?",
     "Did they arrive late?",
     "Did you have breakfast?",
+    "Did you sleep well?",
+    "Did he pass the exam?",
+    "Did they pay the bill?",
+    "Did you like the food?",
     // Pasado simple — abiertas
     "What did you do yesterday?",
     "Where did they go?",
     "When did the movie start?",
     "How did you learn English?",
+    "What time did you get home?",
+    "Why did you change jobs?",
+    "Who did you go with?",
+    "How much did you pay?",
     // Verbo to be (pasado) — cerradas
     "Were you at the party?",
     "Was the film good?",
     "Was she your teacher?",
     "Were they happy?",
+    "Was the exam difficult?",
+    "Were you tired yesterday?",
+    "Was it expensive?",
+    "Were the streets busy?",
+    "Was the trip tiring?",
     // Verbo to be (pasado) — abiertas
     "Where were you last night?",
     "Why was he angry?",
     "How was your weekend?",
     "Who was that woman?",
+    "Where was your first job?",
+    "How old were you then?",
+    "What was the problem?",
+    "Which team was better?",
     // Modal (can) — cerradas
     "Can you swim?",
     "Can she drive?",
     "Can I help you?",
     "Can they come tomorrow?",
+    "Can you drive a truck?",
+    "Can we start now?",
+    "Can she work on Sundays?",
+    "Can I pay by card?",
     // Modal (can) — abiertas
     "What can you cook?",
     "Where can I buy tickets?",
-    "How can I help?"
+    "How can I help?",
+    "What can I do?",
+    "When can you start?",
+    "How much can I spend?",
+    "Which one can I take?"
   ],
   elemental1: [
     // Sin tiempo nuevo (AEF Elemental I): variedad con tiempos ya vistos.
@@ -91,12 +167,21 @@ window.QUESTION_BANK = {
     "Is your city bigger than Santiago?",
     "Is English more difficult than Spanish?",
     "Who is the best singer in your country?",
+    "Is Santiago more expensive than Valparaiso?",
+    "How far is your house from here?",
+    "What's the best restaurant in your city?",
+    "Which city is bigger?",
     // Presente simple (have to, frecuencia, adverbios de modo)
     "Do you usually work on weekends?",
     "Do you have to wear a uniform?",
     "What time do you have to start work?",
     "How often do you go to the gym?",
     "Does he speak English well?",
+    "Do you have to work on Saturdays?",
+    "Does he have to travel for work?",
+    "How fast does the metro go?",
+    "How well does she write?",
+    "Do you speak English at work?",
     // Presente continuo (contraste con el simple)
     "Are you working right now?",
     "What are you reading these days?",
@@ -104,16 +189,26 @@ window.QUESTION_BANK = {
     "Did you enjoy the concert?",
     "Where did you spend your holidays?",
     "How much did the tickets cost?",
+    "Did you have to study last night?",
+    "How long did the trip take?",
     // Would (ofrecimientos / invitaciones — Practical English) — cerradas
     "Would you like a coffee?",
     "Would you like to dance?",
     "Would she like a dessert?",
     "Would you travel the world if you were rich?",
+    "Would you like some water?",
+    "Would he like to join us?",
+    "Would you like to see the menu?",
+    "Would they like a table outside?",
     // Would — abiertas
     "What would you like to drink?",
     "What would you like to order?",
     "Where would you like to sit?",
-    "What would you do with a million dollars?"
+    "What would you do with a million dollars?",
+    "What would you like for lunch?",
+    "When would you like to start?",
+    "How would you like your coffee?",
+    "Which table would you like?"
   ],
   elemental2: [
     // Futuro con «going to» — cerradas
@@ -121,21 +216,37 @@ window.QUESTION_BANK = {
     "Is she going to study medicine?",
     "Are they going to buy a house?",
     "Is it going to rain tomorrow?",
+    "Are you going to look for a new job?",
+    "Is he going to sell his car?",
+    "Are we going to be late?",
+    "Are they going to move to another city?",
     // Futuro con «going to» — abiertas
     "What are you going to do this weekend?",
     "Where are you going to live?",
     "When are they going to arrive?",
     "How are you going to get there?",
+    "What are you going to study?",
+    "Who are you going to invite?",
+    "When are you going to finish?",
+    "How long are you going to stay?",
     // Presente perfecto — cerradas
     "Have you ever been to Europe?",
     "Has she finished her homework?",
     "Have they seen this movie?",
     "Have you ever eaten sushi?",
+    "Have you finished the report?",
+    "Has she called you back?",
+    "Have you already had lunch?",
+    "Has the class started?",
     // Presente perfecto — abiertas
     "What have you done today?",
     "Where have you been?",
     "How many countries have you visited?",
-    "Why has he left?"
+    "Why has he left?",
+    "How many times have you changed jobs?",
+    "What has she said?",
+    "Why have you come back?",
+    "How long have you known him?"
   ],
   intermedio1: [
     // Pasado continuo — cerradas
@@ -143,21 +254,37 @@ window.QUESTION_BANK = {
     "Was she watching TV?",
     "Were they waiting for us?",
     "Was it raining this morning?",
+    "Were you working late last night?",
+    "Was she living alone then?",
+    "Were they arguing again?",
+    "Was he driving too fast?",
     // Pasado continuo — abiertas
     "What were you doing at eight?",
     "Where were they going?",
     "Why was he crying?",
     "Who were you talking to?",
+    "What were they talking about?",
+    "How fast was he driving?",
+    "Where were you living in 2020?",
+    "Who were you working for?",
     // Futuro con «will» — cerradas
     "Will you help me?",
     "Will she come to the party?",
     "Will they finish on time?",
     "Will it be sunny tomorrow?",
+    "Will you be at the meeting?",
+    "Will it take long?",
+    "Will they accept the offer?",
+    "Will she need help?",
     // Futuro con «will» — abiertas
     "What will you do after graduation?",
     "Where will you go next year?",
     "When will the train arrive?",
-    "How will they solve this problem?"
+    "How will they solve this problem?",
+    "How long will the trip take?",
+    "Who will replace him?",
+    "Which option will you choose?",
+    "When will you know the answer?"
   ],
   intermedio2: [
     // Pasado perfecto — cerradas
@@ -165,21 +292,37 @@ window.QUESTION_BANK = {
     "Had she left when you arrived?",
     "Had they finished the project?",
     "Had he ever flown before?",
+    "Had the film started when you arrived?",
+    "Had you studied English before?",
+    "Had she told you the truth?",
+    "Had they already eaten?",
     // Pasado perfecto — abiertas
     "What had you done before the meeting?",
     "Where had they gone?",
     "Why had she quit her job?",
     "How long had you waited?",
+    "What had he promised?",
+    "Why had they left so early?",
+    "How many times had you tried?",
+    "Where had she worked before?",
     // Used to — cerradas
     "Did you use to play football?",
     "Did she use to live in Madrid?",
     "Did they use to work together?",
     "Did he use to study French?",
+    "Did you use to smoke?",
+    "Did she use to have long hair?",
+    "Did they use to be friends?",
+    "Did he use to work here?",
     // Used to — abiertas
     "What did you use to do as a child?",
     "Where did you use to live?",
     "What sports did you use to play?",
-    "How did people use to travel?"
+    "How did people use to travel?",
+    "What did you use to eat for breakfast?",
+    "Who did you use to sit with?",
+    "How often did you use to travel?",
+    "Where did your family use to go in summer?"
   ],
   avanzado: [
     // Presente perfecto continuo — cerradas
@@ -187,10 +330,24 @@ window.QUESTION_BANK = {
     "Has she been studying all day?",
     "Have they been living here for years?",
     "Has it been raining all night?",
+    "Have you been feeling better?",
+    "Has he been looking for a job?",
+    "Have they been working together long?",
+    "Has she been taking classes?",
+    "Have you been sleeping well lately?",
+    "Have we been doing this wrong?",
     // Presente perfecto continuo — abiertas
     "What have you been doing lately?",
     "How long have you been working here?",
     "Why have they been arguing?",
-    "Where has she been staying?"
+    "Where has she been staying?",
+    "How long have you been studying English?",
+    "What has she been working on?",
+    "Why have you been avoiding the subject?",
+    "Where have they been living?",
+    "How many hours have you been waiting?",
+    "Who have you been talking to?",
+    "What have they been saying?",
+    "How long has it been raining?"
   ]
 };
