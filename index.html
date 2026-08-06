@@ -1013,9 +1013,31 @@ function analyze(raw){
   let beMain = false, verbForm = null, mainBase = null, goingTo = false;
   let semiAuxText = null, usedTo = false, beLike = false, beLikeText = "";
 
-  if(vIdx === auxIdx+1 && ["is","are","am","was","were","do","does","did","have","has","had","will","can","could","would","should","may","might","must"].includes(aux)){
+  /* PREGUNTA DE SUJETO con tiempo compuesto: «Who is coming?», «What has
+     changed?», «Who has been waiting?». El hueco entre el auxiliar y el verbo
+     está vacío porque la wh-word YA ES el sujeto — no falta nada.
+     Sin esto se leían de dos maneras, las dos malas: con «be» tomaba el
+     gerundio como sujeto («Who is coming?» → to be presente, sujeto=coming), y
+     con «has/have» disparaba el aviso de sujeto faltante, o sea le decía al
+     alumno que su pregunta correcta estaba mal armada.
+     El camino de `analyzeSubjectQ` solo cubre el verbo de una palabra («Who
+     lives here?»), así que estas se resuelven aquí y aprovechan toda la lógica
+     de tiempos de más abajo. */
+  const whBaseSuj = whText.toLowerCase().split(" ")[0];
+  const whEsSujeto = isOpen && vIdx === auxIdx+1
+    && ["who","what","which","whose"].includes(whBaseSuj)
+    && auxIdx === whLen                       // el aux va pegado a la wh: no hay sujeto en medio
+    && (
+      (["am","is","are","was","were"].includes(aux) && lower[vIdx].endsWith("ing")) ||
+      (["have","has","had"].includes(aux) &&
+        (lower[vIdx] === "been" || PART_FORMS.has(lower[vIdx]) || lower[vIdx].endsWith("ed")))
+    );
+
+  if(!whEsSujeto && vIdx === auxIdx+1 && ["is","are","am","was","were","do","does","did","have","has","had","will","can","could","would","should","may","might","must"].includes(aux)){
     // El token justo después del aux parece verbo pero debería ser sujeto (nombres como "work" o error)
     // Solo lo tratamos como sujeto si NO hay más verbos después; si hay, era sujeto-nombre.
+    // No aplica a la pregunta de sujeto: ahí «going to» y «been» son parte del
+    // verbo, y sin el guardia se los llevaba al sujeto.
     let v2 = -1;
     for(let i = vIdx+1; i < n; i++){ if(isVerbCandidate(lower[i])){ v2 = i; break; } }
     if(v2 > 0){ vIdx = v2; } // "Does work start at 8?" -> subj = work
@@ -1024,7 +1046,7 @@ function analyze(raw){
   // Falta el sujeto: tras un aux "prestado" (do/have/did) viene el verbo pegado,
   // sin sujeto en medio y sin otro verbo después → la pregunta perdió el sujeto.
   // (Las preguntas bien armadas siempre llevan el sujeto entre el aux y el verbo.)
-  if(vIdx === auxIdx+1 && ["do","does","did","have","has","had"].includes(aux)){
+  if(!whEsSujeto && vIdx === auxIdx+1 && ["do","does","did","have","has","had"].includes(aux)){
     const auxW = tokens[auxIdx], vW = tokens[vIdx];
     const parts = [];
     if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
@@ -1062,7 +1084,13 @@ function analyze(raw){
     return incompleteResult(parts, [note]);
   }
 
-  if(vIdx > auxIdx+1){
+  if(whEsSujeto){
+    // La wh-word ocupa la casilla del sujeto; el resto sigue el camino normal,
+    // así que la sección de tiempos de más abajo funciona sin tocarla.
+    subjTokens = [whText];
+    verbTokens = [tokens[vIdx]];
+    compTokens = tokens.slice(vIdx+1);
+  } else if(vIdx > auxIdx+1){
     subjTokens = tokens.slice(auxIdx+1, vIdx);
     verbTokens = [tokens[vIdx]];
     compTokens = tokens.slice(vIdx+1);
@@ -1196,7 +1224,8 @@ function analyze(raw){
 
   // 7. Componentes visuales
   const parts = [];
-  if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
+  // En la pregunta de sujeto la wh-word ES el sujeto: una sola pieza, no dos.
+  if(isOpen) parts.push({role:"wh", text:whText, label: whEsSujeto ? "wh = sujeto" : "wh-word"});
   let auxLabel = beMain ? "verbo to be ⭐"
     : ["do","does","did"].includes(aux) ? "aux prestado 🍦"
     : "auxiliar";
@@ -1205,7 +1234,7 @@ function analyze(raw){
   const auxText = negative && !NEG_AUX[lower[auxIdx]] ? tokens[auxIdx] + " … not" : tokens[auxIdx];
   // Cuando "be" es el verbo principal (no hay otro verbo), pinta como verbo, no como auxiliar
   parts.push({role: beMain ? "verb" : "aux", text:auxText, label: auxLabel});
-  parts.push({role:"subj", text:subjText, label:"sujeto"});
+  if(!whEsSujeto) parts.push({role:"subj", text:subjText, label:"sujeto"});
   if(beLike) parts.push({role:"wh", text:beLikeText, label:"pareja del what"});
   if(!beMain && semiAuxText) parts.push({role:"semiaux", text:semiAuxText, label:"semi-aux"});
   if(advTokens.length) parts.push({role:"adv", text:advTokens.join(" "), label:"adverbio"});
@@ -1241,8 +1270,35 @@ function analyze(raw){
   if(!isOpen && !beMain && ["have","has","had","am","is","are","was","were","will"].includes(aux)) notes.push("Tiempo compuesto = dos bolitas de fábrica 🍦🍦: el auxiliar «" + aux + "» ya viene incluido, no pide nada prestado. La respuesta corta siempre devuelve la primera bolita (el auxiliar).");
   if(tenseNote) notes.push(tenseNote);
 
-  const typeStr = (isOpen ? "Abierta (Wh-question)" : "Cerrada (Yes/No)") + (negative ? " · negativa ⛔" : "");
-  return {ok:true, type: typeStr, tense, parts, answer, warnings, notes};
+  /* Pregunta de sujeto: la respuesta NO agrega un dato al final, NOMBRA al
+     sujeto. Sin esto salía «He/she/it is coming + una persona 🧑 tonight», que
+     enseña justo lo contrario de lo que hay que aprender aquí. */
+  let answerFinal = answer, typeStr;
+  if(whEsSujeto){
+    const auxCorto = tokens[auxIdx].toLowerCase();
+    const largas = [
+      {role:"new", text:"[sujeto real]", label:"info nueva"},
+      {role:"aux", text:auxCorto, label:"auxiliar"}
+    ];
+    if(semiAuxText) largas.push({role:"semiaux", text:semiAuxText, label:"semi-aux"});
+    if(verbTokens.length) largas.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
+    if(compTokens.length) largas.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
+    answerFinal = {kind:"subject", lines:[
+      {icon:"🏓", pieces:[
+        {role:"new", text:"[sujeto real]", label:"info nueva"},
+        {role:"aux", text:auxCorto + ".", label:"auxiliar"}
+      ], caption:"Respuesta corta"},
+      {icon:"🏓", pieces:largas, caption:"Respuesta larga"}
+    ]};
+    notes.unshift(
+      `<b>Pregunta de sujeto</b>: «${whText}» no pide un dato al final — <b>ES el sujeto</b>. Por eso entre «${tokens[auxIdx]}» y «${verbTokens.join(" ")}» no hay nadie: el hueco no está vacío por error, lo ocupa la wh-word.`,
+      `Se responde <b>nombrando</b> a quien hace la acción: «Ana ${auxCorto}${compTokens.length || verbTokens.length ? " " + [semiAuxText, verbTokens.join(" "), compTokens.join(" ")].filter(Boolean).join(" ") : ""}». En español pasa igual: «¿Quién viene?» → «Viene Ana», no «Ana viene alguien».`
+    );
+    typeStr = "Abierta — de sujeto" + (negative ? " · negativa ⛔" : "");
+  } else {
+    typeStr = (isOpen ? "Abierta (Wh-question)" : "Cerrada (Yes/No)") + (negative ? " · negativa ⛔" : "");
+  }
+  return {ok:true, type: typeStr, tense, parts, answer: answerFinal, warnings, notes};
 }
 
 function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){

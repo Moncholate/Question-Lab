@@ -100,7 +100,39 @@ console.log('\n   sin otro verbo detrás no se toca nada');
   ['Where is the bus stop?','to-be-pres'],        ['Is your watch expensive?','to-be-pres'],
 ].forEach(([q,e]) => ok(q,e));
 
-console.log('\n4 · el banco entero sigue analizándose');
+/* La pregunta de sujeto no es ambigüedad léxica, pero comparte el problema de
+   fondo: un hueco que parece un error y no lo es. «Who is coming?» no tiene
+   sujeto entre el auxiliar y el verbo porque la wh-word YA es el sujeto.
+   Antes daba dos resultados malos, y el segundo era el peor posible en una app
+   de enseñanza: decirle al alumno que su pregunta correcta está mal armada. */
+console.log('\n4 · pregunta de sujeto con tiempo compuesto');
+[ ['Who is coming tonight?','present-continuous'],  ['Who is calling?','present-continuous'],
+  ['What is happening?','present-continuous'],      ['Who was waiting?','past-continuous'],
+  ['Who has called?','present-perfect'],            ['What has changed?','present-perfect'],
+  ['Who is going to pay?','future-going-to'],       ['Who has been waiting?','present-perfect-continuous'],
+  ['Who is going to the party?','present-continuous'], ['Which student has finished?','present-perfect'],
+  // las de verbo simple, que ya funcionaban por otro camino
+  ['Who lives here?','simple-present'],             ['Who called you?','simple-past'],
+  ['What happened?','simple-past'],                 ['Who will come?','simple-future'],
+].forEach(([q,e]) => ok(q,e));
+
+console.log('\n   y lo que NO es pregunta de sujeto');
+[ ['What are you doing?','present-continuous'],     ['Who is your teacher?','to-be-pres'],
+  ['What is your name?','to-be-pres'],              ['Where is he going?','present-continuous'],
+  ['Who is she talking to?','present-continuous'],  ['What have you done today?','present-perfect'],
+  ['Does work start at eight?','simple-present'],   ['Is the plan working?','present-continuous'],
+].forEach(([q,e]) => ok(q,e));
+
+console.log('\n   la respuesta NOMBRA al sujeto, no agrega un dato al final');
+{
+  const r = analyze('Who is coming tonight?');
+  const largo = (r.answer?.lines || []).map(l => l.pieces.map(p => p.text).join(' ')).join(' | ');
+  const bien = r.answer?.kind === 'subject' && largo.includes('[sujeto real] is coming tonight');
+  if (!bien) fail++;
+  console.log(`  ${bien ? '✓' : '✗'} Who is coming tonight? → ${largo}`);
+}
+
+console.log('\n5 · el banco entero sigue analizándose');
 const todas = Object.values(BANK).flat();
 const rotas = todas.filter(q => !analyze(q).ok);
 rotas.forEach(q => console.log('  ✗ ' + q));
