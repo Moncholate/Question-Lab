@@ -369,6 +369,14 @@
   /* Legend */
   details{margin-bottom:1rem;}
   summary{cursor:pointer; color:var(--muted); font-size:.92rem; padding:.3rem 0;}
+  /* Iconos de los desplegables de la Guía: ladrillos dibujados por nosotros, en
+     PLANO. El 3D se hace papilla bajo 32px — la misma razón por la que los
+     favicon usan la variante plana (ver la memoria de los logos).
+     Van `inline`, no en un flex: `display:flex` en un <summary> le quita el
+     triangulito de desplegar, y esa afordancia vale más que la alineación.
+     NO se llama `.gicon`: esa clase ya es la del icono de los toasts. */
+  .gbrick{height:1.3rem; width:1.3rem; vertical-align:-.36em; margin-right:.4rem;}
+  .gbrick-w{width:1.41rem;}   /* el de dos piezas es más ancho (viewBox 26) */
   .legend{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.6rem;}
   .piecelist{list-style:none; margin-top:.6rem; display:flex; flex-direction:column; gap:.55rem;}
   .piecelist li{display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;}
@@ -592,7 +600,7 @@
   <div class="panel" id="guide">
     <button class="pback pmain" data-goto="analyze">← <span data-i18n="navAnalyze">Analiza</span></button>
     <details>
-      <summary data-i18n="legendSummary">🧩 ¿Qué significa cada pieza?</summary>
+      <summary><svg class="gbrick" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="#2DD4BF"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="#2DD4BF"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="#2DD4BF"/></svg><span data-i18n="legendSummary">¿Qué significa cada pieza?</span></summary>
       <ol class="piecelist">
         <li><span class="block wh" data-i18n="pWh">Wh-word</span><span class="pdesc" data-i18n="pWhD">Lo que se pregunta (el tipo de pregunta).</span></li>
         <li><span class="block aux" data-i18n="pAux">Auxiliar</span><span class="pdesc" data-i18n="pAuxD">Verbo ayudante — lleva la información de tiempo.</span></li>
@@ -606,7 +614,7 @@
     </details>
 
     <details>
-      <summary data-i18n="gPiezasSum">🧱 Qué piezas se devuelven al responder</summary>
+      <summary><svg class="gbrick gbrick-w" viewBox="0 0 26 24" aria-hidden="true"><rect x="0.5" y="13" width="11" height="9.5" rx="1.5" fill="#6366F1"/><rect x="2.7" y="11.3" width="2.9" height="3.5" rx="1" fill="#6366F1"/><rect x="6.9" y="11.3" width="2.9" height="3.5" rx="1" fill="#6366F1"/><rect x="14.5" y="13" width="11" height="9.5" rx="1.5" fill="#FB7185"/><rect x="16.7" y="11.3" width="2.9" height="3.5" rx="1" fill="#FB7185"/><rect x="20.9" y="11.3" width="2.9" height="3.5" rx="1" fill="#FB7185"/><path d="M5 8.4 A 8 4.6 0 0 1 21 8.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polygon points="5,10.6 2.9,7.1 7.6,6.6" fill="currentColor"/><polygon points="21,10.6 23.1,7.1 18.4,6.6" fill="currentColor"/></svg><span data-i18n="gPiezasSum">Qué piezas se devuelven al responder</span></summary>
       <div class="explain">
         <p data-i18n-html="gPiezasP1">Una conversación se construye <b>entre dos</b>. La pregunta te pasa unas piezas; al responder devuelves esas mismas y <b>agregas la tuya</b> — la que el otro no tenía.</p>
         <p data-i18n-html="gPiezasP2">Las piezas que <b>vuelven</b> de la pregunta a la respuesta son: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.</p>
@@ -616,7 +624,7 @@
     </details>
 
     <details>
-      <summary data-i18n="gSelloSum">🧱 Dónde va el sello del tiempo: simple o compuesto</summary>
+      <summary><svg class="gbrick" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="#FBBF24"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="#FBBF24"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="#FBBF24"/><circle cx="12" cy="14" r="4.2" fill="#334155"/><path d="M12 11.6 V14 h2" fill="none" stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="gSelloSum">Dónde va el sello del tiempo: simple o compuesto</span></summary>
       <div class="explain">
         <p data-i18n-html="gSelloP1">Todo tiempo verbal lleva su <b>sello</b> estampado en alguna pieza. La diferencia entre simple y compuesto es <b>en cuál</b>.</p>
         <p data-i18n-html="gSelloP2">En los <b>simples</b> hay una sola pieza y el sello va en ella: <i>work → work<b>s</b></i>, <i>play → play<b>ed</b></i>.</p>
@@ -2169,7 +2177,7 @@ const I18N = {
     pdIdentify:"Reconoce si es abierta/cerrada y qué tiempo verbal es.",
     pdRespond:"Devuelve las piezas de la pregunta y agrega la tuya.",
     progressTitle:"📊 Progreso", progDays:"días de racha", progBest:"Mejor", progBadges:"Insignias", progModes:"Rachas por modo", progEmpty:"Empieza a practicar para sumar racha e insignias 🌱",
-    legendSummary:"🧩 ¿Qué significa cada pieza?",
+    legendSummary:"¿Qué significa cada pieza?",
     pWh:"Wh-word", pWhD:"Lo que se pregunta (el tipo de pregunta).",
     pAux:"Auxiliar", pAuxD:"Verbo ayudante — lleva la información de tiempo.",
     pSemi:"Semi-aux", pSemiD:"Ayuda extra para ciertos casos (going to, used to).",
@@ -2183,12 +2191,12 @@ const I18N = {
     footer:"Herramienta pedagógica de análisis por reglas — puede equivocarse con preguntas muy complejas. 🇨🇱",
     whH2:`<span class="cdot" style="background:var(--wh)"></span> Wh-words: la pieza que pregunta`,
     tensesH2:"⏱️ Tiempos: cuándo se usa cada uno",
-    gPiezasSum:"🧱 Qué piezas se devuelven al responder",
+    gPiezasSum:"Qué piezas se devuelven al responder",
     gPiezasP1:`Una conversación se construye <b>entre dos</b>. La pregunta te pasa unas piezas; al responder devuelves esas mismas y <b>agregas la tuya</b> — la que el otro no tenía.`,
     gPiezasP2:`Las piezas que <b>vuelven</b> de la pregunta a la respuesta son: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.`,
     gPiezasP3:`La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no vuelve</b>: nunca aparece en la respuesta. Es la <b>etiqueta del hueco vacío</b> — te dice qué tipo de pieza va ahí: un lugar si preguntó «where», una persona si preguntó «who».`,
     gPiezasP4:`Esa pieza nueva 🆕 es la única que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.`,
-    gSelloSum:"🧱 Dónde va el sello del tiempo: simple o compuesto",
+    gSelloSum:"Dónde va el sello del tiempo: simple o compuesto",
     gSelloP1:`Todo tiempo verbal lleva su <b>sello</b> estampado en alguna pieza. La diferencia entre simple y compuesto es <b>en cuál</b>.`,
     gSelloP2:`En los <b>simples</b> hay una sola pieza y el sello va en ella: <i>work → work<b>s</b></i>, <i>play → play<b>ed</b></i>.`,
     gSelloP3:`Pero en <b>negativo</b> e <b>interrogativo</b> esa pieza no se sostiene sola: hay que <b>pedir prestada una pieza conectora</b> — <b>do / does / did</b> — y el <b>sello se pasa a ella</b>. Por eso el verbo vuelve a su forma base: <i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>. Al responder en positivo <b>devuelves</b> la conectora y el sello vuelve al verbo: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i>`,
@@ -2260,7 +2268,7 @@ const I18N = {
     pdIdentify:"Tell if it's open/closed and which tense it is.",
     pdRespond:"Send back the question's pieces and add your own.",
     progressTitle:"📊 Progress", progDays:"day streak", progBest:"Best", progBadges:"Badges", progModes:"Streaks by mode", progEmpty:"Start practising to build your streak and badges 🌱",
-    legendSummary:"🧩 What does each piece mean?",
+    legendSummary:"What does each piece mean?",
     pWh:"Wh-word", pWhD:"What is being asked (the type of question).",
     pAux:"Auxiliary", pAuxD:"Helper verb — it carries the tense information.",
     pSemi:"Semi-aux", pSemiD:"Extra helper for certain cases (going to, used to).",
@@ -2274,12 +2282,12 @@ const I18N = {
     footer:"Rule-based analysis teaching tool — it may get very complex questions wrong. 🇨🇱",
     whH2:`<span class="cdot" style="background:var(--wh)"></span> Wh-words: the piece that asks`,
     tensesH2:"⏱️ Tenses: when to use each one",
-    gPiezasSum:"🧱 Which pieces come back in the answer",
+    gPiezasSum:"Which pieces come back in the answer",
     gPiezasP1:`A conversation is built <b>by two people</b>. The question hands you some pieces; when you answer you hand those back and <b>add your own</b> — the one the other person did not have.`,
     gPiezasP2:`The pieces that <b>come back</b> from question to answer are: the <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> (even if the person changes: <i>you → I</i>), the <b>main verb</b> <span class="cdot" style="background:var(--verb)"></span>, the <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span> (sometimes — always in closed questions, in open ones only if the tense is compound) and the <b>complement</b> <span class="cdot" style="background:var(--comp)"></span>.`,
     gPiezasP3:`The <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>does not come back</b>: it never shows up in the answer. It is the <b>label on the empty slot</b> — it tells you what kind of piece goes there: a place if it asked "where", a person if it asked "who".`,
     gPiezasP4:`That new piece 🆕 is the only one that <b>does not come from the question</b>: it is your contribution, what you know and the other person does not.`,
-    gSelloSum:"🧱 Where the tense stamp goes: simple or compound",
+    gSelloSum:"Where the tense stamp goes: simple or compound",
     gSelloP1:`Every tense carries its <b>stamp</b> on one of the pieces. The difference between simple and compound is <b>which one</b>.`,
     gSelloP2:`In <b>simple</b> tenses there is one piece and the stamp is on it: <i>work → work<b>s</b></i>, <i>play → play<b>ed</b></i>.`,
     gSelloP3:`But in the <b>negative</b> and the <b>question</b> that piece cannot stand on its own: you have to <b>borrow a connector piece</b> — <b>do / does / did</b> — and the <b>stamp moves onto it</b>. That is why the verb goes back to its base form: <i>did</i> takes the past, <i>does</i> takes the <i>-s</i>. When you answer in the positive you <b>give the connector back</b> and the stamp returns to the verb: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i>`,
