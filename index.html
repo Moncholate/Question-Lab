@@ -198,7 +198,7 @@
   }
   .chip:hover{border-color:var(--aux); color:var(--text);}
 
-  /* Lego blocks */
+  /* Piezas */
   .blocks{display:flex; flex-wrap:wrap; gap:.45rem; align-items:flex-end;}
   .block{
     position:relative; padding:.9rem .8rem .55rem; border-radius:8px; color:#fff;
@@ -230,8 +230,8 @@
   .badge.type{background:color-mix(in srgb, var(--wh) 14%, transparent); color:var(--wh);
     border-color:color-mix(in srgb, var(--wh) 35%, transparent);}
 
-  .pingpong{margin-top:.9rem; padding-top:.9rem; border-top:1px dashed var(--border);}
-  .pingpong h3{font-size:.95rem; margin-bottom:.55rem;}
+  .answerbox{margin-top:.9rem; padding-top:.9rem; border-top:1px dashed var(--border);}
+  .answerbox h3{font-size:.95rem; margin-bottom:.55rem;}
   .ansline{display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin:.4rem 0;}
   .ansline .tag{font-size:1.1rem; margin-right:.15rem;}
   .note{
@@ -405,7 +405,7 @@
       <img class="applogo" src="logo.svg" alt="" aria-hidden="true" width="34" height="34">
       <div class="brandtext">
         <h1>Question Lab</h1>
-        <p data-i18n="subtitle">Arma preguntas en inglés como legos. Respóndelas como ping pong.</p>
+        <p data-i18n="subtitle">Arma preguntas en inglés pieza por pieza. Respóndelas con las mismas piezas.</p>
       </div>
     </div>
     <div class="headctrls">
@@ -445,7 +445,7 @@
       <div class="pmenu">
         <button class="pmode" data-goto="build"><span class="pmi" aria-hidden="true">🧱</span><span class="pmt"><b data-i18n="navBuild">Construye</b><small data-i18n="pdBuild">Ordena las piezas para armar la pregunta.</small></span></button>
         <button class="pmode" data-goto="identify"><span class="pmi" aria-hidden="true">🎯</span><span class="pmt"><b data-i18n="navIdentify">Identifica</b><small data-i18n="pdIdentify">Reconoce si es abierta/cerrada y qué tiempo verbal es.</small></span></button>
-        <button class="pmode" data-goto="respond"><span class="pmi" aria-hidden="true">🏓</span><span class="pmt"><b data-i18n="navRespond">Responde</b><small data-i18n="pdRespond">Escribe la respuesta como ping-pong.</small></span></button>
+        <button class="pmode" data-goto="respond"><span class="pmi" aria-hidden="true">💬</span><span class="pmt"><b data-i18n="navRespond">Responde</b><small data-i18n="pdRespond">Devuelve las piezas de la pregunta y agrega la tuya.</small></span></button>
       </div>
     </div>
   </div>
@@ -507,7 +507,7 @@
     <div class="card" id="rCard">
       <div class="rbar" id="rBar"><i></i></div>
       <div class="prompt" id="rQuestion"></div>
-      <p class="rhint" id="rHint" data-i18n="rHint">Devuelve la pelota: escribe la respuesta corta (Yes / No).</p>
+      <p class="rhint" id="rHint" data-i18n="rHint">Devuelve las piezas: escribe la respuesta corta (Yes / No).</p>
       <div class="idask" id="rTypeRow" style="display:none">
         <div class="idrow"><span data-i18n="rTypeQ">¿Qué tipo de información pide?</span><div class="idopts" id="rTypeOpts"></div></div>
       </div>
@@ -588,7 +588,7 @@
       <h2 data-i18n="tensesH2">⏱️ Tiempos: cuándo se usa cada uno</h2>
 
       <div class="tense" data-tense="simple-present" data-fam="present" data-asp="0">
-        <h3 data-i18n-html="tSimplePresent">Presente Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
+        <h3 data-i18n-html="tSimplePresent">Presente Simple 🧱 <span class="hint">(pide conectora prestada)</span></h3>
         <div class="pat"><span class="mini aux">Do / Does</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uSimplePresent">Rutinas, hábitos, hechos generales, gustos.</p>
         <p class="ej">Do you drink coffee every day?</p>
@@ -602,14 +602,14 @@
       </div>
 
       <div class="tense" data-tense="present-continuous" data-fam="present" data-asp="1">
-        <h3 data-i18n-html="tPresentCont">Presente Continuo 🍦🍦</h3>
+        <h3 data-i18n-html="tPresentCont">Presente Continuo 🧱🧱</h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mIng">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPresentCont">Lo que pasa ahora mismo; también planes ya agendados.</p>
         <p class="ej">What are you doing right now?</p>
       </div>
 
       <div class="tense" data-tense="simple-past" data-fam="past" data-asp="0">
-        <h3 data-i18n-html="tSimplePast">Pasado Simple 🍦 <span class="hint">(bolita prestada)</span></h3>
+        <h3 data-i18n-html="tSimplePast">Pasado Simple 🧱 <span class="hint">(pide conectora prestada)</span></h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uSimplePast">Acciones terminadas en un momento específico del pasado.</p>
         <p class="ej">Did she travel to Peru last year?</p>
@@ -623,49 +623,49 @@
       </div>
 
       <div class="tense" data-tense="past-continuous" data-fam="past" data-asp="1">
-        <h3 data-i18n-html="tPastCont">Pasado Continuo 🍦🍦</h3>
+        <h3 data-i18n-html="tPastCont">Pasado Continuo 🧱🧱</h3>
         <div class="pat"><span class="mini aux">Was / Were</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mIng">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPastCont">Acción en progreso en el pasado, a menudo interrumpida por otra.</p>
         <p class="ej">Was he sleeping when you called?</p>
       </div>
 
       <div class="tense" data-tense="present-perfect" data-fam="present" data-asp="2">
-        <h3 data-i18n-html="tPresentPerfect">Presente Perfecto 🍦🍦</h3>
+        <h3 data-i18n-html="tPresentPerfect">Presente Perfecto 🧱🧱</h3>
         <div class="pat"><span class="mini aux">Have / Has</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mPart">participio</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPresentPerfect">Experiencias de vida (sin fecha específica) y acciones pasadas con efecto en el presente.</p>
         <p class="ej">Have you ever visited Chiloé?</p>
       </div>
 
       <div class="tense" data-tense="past-perfect" data-fam="past" data-asp="2">
-        <h3 data-i18n-html="tPastPerfect">Pasado Perfecto 🍦🍦</h3>
+        <h3 data-i18n-html="tPastPerfect">Pasado Perfecto 🧱🧱</h3>
         <div class="pat"><span class="mini aux">Had</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mPart">participio</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPastPerfect">Lo que pasó <b>antes</b> de otra acción en el pasado.</p>
         <p class="ej">Had you eaten before the meeting?</p>
       </div>
 
       <div class="tense" data-tense="simple-future" data-fam="future" data-asp="0">
-        <h3 data-i18n-html="tFutureWill">Futuro con «will» 🍦🍦</h3>
+        <h3 data-i18n-html="tFutureWill">Futuro con «will» 🧱🧱</h3>
         <div class="pat"><span class="mini aux">Will</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uFutureWill">Decisiones espontáneas, promesas, predicciones.</p>
         <p class="ej">Will you come to class tomorrow?</p>
       </div>
 
       <div class="tense" data-tense="future-going-to" data-fam="future" data-asp="0">
-        <h3 data-i18n-html="tFutureGoing">Futuro con «going to» 🍦🍦</h3>
+        <h3 data-i18n-html="tFutureGoing">Futuro con «going to» 🧱🧱</h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini semiaux">going to</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uFutureGoing">Planes e intenciones ya decididos. El «be» es el auxiliar oficial; «going to» es su ayudante (semi-aux).</p>
         <p class="ej">What are you going to do this weekend?</p>
       </div>
 
       <div class="tense" data-tense="used-to" data-fam="past" data-asp="0">
-        <h3 data-i18n-html="tUsedTo">Hábito pasado con «used to» 🍦</h3>
+        <h3 data-i18n-html="tUsedTo">Hábito pasado con «used to» 🧱</h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini semiaux">use to</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uUsedTo">Hábitos o estados del pasado que ya no ocurren. En positivo el semi-aux recupera la carga temporal: I <b>used to</b> play football.</p>
         <p class="ej">Did you use to play football as a child?</p>
       </div>
 
       <div class="tense" data-cefr="basico2" data-fam="modal" data-asp="0">
-        <h3 data-i18n-html="tModals">Modales 🍦🍦 <span class="hint">(can, could, should, would…)</span></h3>
+        <h3 data-i18n-html="tModals">Modales 🧱🧱 <span class="hint">(can, could, should, would…)</span></h3>
         <div class="pat"><span class="mini aux">Can / Should…</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uModals">Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.</p>
         <p class="ej">Can you swim?</p>
@@ -1008,7 +1008,7 @@ function analyze(raw){
       const flippedSubj = tokens.slice(auxIdx+1)
         .map(t => ({you:"I", your:"my", yours:"mine"}[t.toLowerCase()] || t)).join(" ");
       const hint2 = whHint(whText.toLowerCase());
-      const relAnswer = {kind:"open", lines:[{icon:"🏓", pieces:[
+      const relAnswer = {kind:"open", lines:[{icon:"💬", pieces:[
         {role:"subj", text:cap(flippedSubj), label:"sujeto + cláusula"},
         {role:"verb", text:tokens[auxIdx].toLowerCase(), label:"verbo to be ⭐"},
         {role:"new", text:"+ " + hint2, label:"info nueva"}
@@ -1236,7 +1236,7 @@ function analyze(raw){
   // En la pregunta de sujeto la wh-word ES el sujeto: una sola pieza, no dos.
   if(isOpen) parts.push({role:"wh", text:whText, label: whEsSujeto ? "wh = sujeto" : "wh-word"});
   let auxLabel = beMain ? "verbo to be ⭐"
-    : ["do","does","did"].includes(aux) ? "aux prestado 🍦"
+    : ["do","does","did"].includes(aux) ? "conectora prestada 🧱"
     : "auxiliar";
   if(negative) auxLabel += " ⛔";
   // Si el "not" venía separado ("did … not"), lo mostramos junto al auxiliar
@@ -1250,7 +1250,7 @@ function analyze(raw){
   if(!beMain && verbTokens.length){
     if(verbForm === "perfCont" && verbTokens.length >= 2){
       // Perfecto continuo: "been" es parte del auxiliar (have/has/had been), no del verbo
-      parts.push({role:"aux", text:verbTokens[0], label:"auxiliar (be) 🍦"});
+      parts.push({role:"aux", text:verbTokens[0], label:"auxiliar (be) 🧱"});
       parts.push({role:"verb", text:verbTokens.slice(1).join(" "), label:"verbo -ing"});
     } else {
       parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
@@ -1258,25 +1258,25 @@ function analyze(raw){
   }
   if(compTokens.length) parts.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
 
-  // 8. Respuesta ping pong
+  // 8. Respuesta: qué piezas vuelven
   const answer = buildAnswer({isOpen, whText: whText.toLowerCase(), aux, subjLower, subjText,
     beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens, notes});
 
   if(beLike) notes.push("«What + be + sujeto + <b>like</b>?» es un molde fijo para pedir <b>descripciones</b> (¿cómo es/era…?). Ese «like» no es el verbo gustar: hace pareja con el «what», y en la respuesta <b>desaparece</b>: «She was friendly and a bit shy».");
 
   if(negative && !isOpen) notes.push("Pregunta <b>negativa</b>: expresa sorpresa o busca confirmación («¿No te gusta…?»). En inglés respondes según la <b>realidad</b>, sin importar el «not»: «Yes, I do» = sí me gusta · «No, I don't» = no me gusta.");
-  if(negative && isOpen) notes.push("Pregunta <b>negativa</b>: la respuesta devuelve la negación tal cual. El auxiliar negativo conserva la carga temporal 🍦, así que el verbo se queda en forma base: «He <b>didn't like</b> it because…».");
+  if(negative && isOpen) notes.push("Pregunta <b>negativa</b>: la respuesta devuelve la negación tal cual. El auxiliar negativo conserva el <b>sello del tiempo</b> 🧱, así que el verbo se queda en forma base: «He <b>didn't like</b> it because…».");
 
   if(goingTo) notes.push("Aquí el <b>be</b> es el auxiliar oficial <span class=\"cdot\" style=\"background:var(--aux)\"></span> (él hace la pregunta y la negación) y «going to» es su <b>ayudante</b> (semi-auxiliar): juntos forman el futuro. El verbo principal queda en forma base.");
   if(usedTo) notes.push("«used to» = hábitos del pasado que ya no ocurren. Funciona como <b>semi-auxiliar</b>: en la pregunta, «did» se lleva la carga temporal y queda «use to»; al responder en positivo, sueltas el «did» y su carga <b>pasa al semi-auxiliar</b>: «I <b>used to</b> play…».");
 
-  if(beMain) notes.push("El verbo <b>to be</b> es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. No pide bolitas prestadas — él mismo pregunta, niega y responde: «Yes, she <b>is</b>».");
+  if(beMain) notes.push("El verbo <b>to be</b> es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. Es la pieza que <b>se conecta sola</b>, no le pide prestado a nadie — él mismo pregunta, niega y responde: «Yes, she <b>is</b>».");
   if(!isOpen && ["do","does","did"].includes(aux)){
     const exSubj = aux === "does" ? "she" : "I";
     const exVerb = aux === "does" ? "likes" : "like";
-    notes.push(`Tiempo simple = helado de una bolita 🍦. Para preguntar pidió una <b>bolita prestada</b> («${aux}»). En la respuesta <b>corta</b> esa bolita se queda («Yes, ${exSubj} <b>${aux}</b>»); pero en la respuesta <b>larga</b> ya no hace falta — sueltas la bolita prestada y el verbo recupera su sabor: «Yes, ${exSubj} <b>${exVerb}</b> coffee a lot».`);
+    notes.push(`Tiempo simple = una sola pieza 🧱. Para preguntar tuvo que <b>pedir prestada una conectora</b> («${aux}»), y el sello del tiempo se pasó a ella. En la respuesta <b>corta</b> la conectora se queda («Yes, ${exSubj} <b>${aux}</b>»); en la <b>larga</b> ya no hace falta — la devuelves y el sello vuelve al verbo: «Yes, ${exSubj} <b>${exVerb}</b> coffee a lot».`);
   }
-  if(!isOpen && !beMain && ["have","has","had","am","is","are","was","were","will"].includes(aux)) notes.push("Tiempo compuesto = dos bolitas de fábrica 🍦🍦: el auxiliar «" + aux + "» ya viene incluido, no pide nada prestado. La respuesta corta siempre devuelve la primera bolita (el auxiliar).");
+  if(!isOpen && !beMain && ["have","has","had","am","is","are","was","were","will"].includes(aux)) notes.push("Tiempo compuesto = dos piezas 🧱🧱: la conectora «" + aux + "» viene <b>de fábrica</b>, no se pide prestada a nadie. La respuesta corta siempre devuelve esa primera pieza (el auxiliar).");
   if(tenseNote) notes.push(tenseNote);
 
   /* Pregunta de sujeto: la respuesta NO agrega un dato al final, NOMBRA al
@@ -1293,11 +1293,11 @@ function analyze(raw){
     if(verbTokens.length) largas.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
     if(compTokens.length) largas.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
     answerFinal = {kind:"subject", lines:[
-      {icon:"🏓", pieces:[
+      {icon:"💬", pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
         {role:"aux", text:auxCorto + ".", label:"auxiliar"}
       ], caption:"Respuesta corta"},
-      {icon:"🏓", pieces:largas, caption:"Respuesta larga"}
+      {icon:"💬", pieces:largas, caption:"Respuesta larga"}
     ]};
     notes.unshift(
       `<b>Pregunta de sujeto</b>: «${whText}» no pide un dato al final — <b>ES el sujeto</b>. Por eso entre «${tokens[auxIdx]}» y «${verbTokens.join(" ")}» no hay nadie: el hueco no está vacío por error, lo ocupa la wh-word.`,
@@ -1331,11 +1331,11 @@ function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
   const answer = {
     kind:"subject",
     lines:[
-      {icon:"🏓", pieces:[
+      {icon:"💬", pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
         {role: auxIsMainVerb ? "verb" : "aux", text:auxShort+".", label:"auxiliar"}
       ], caption:"Respuesta corta"},
-      {icon:"🏓", pieces:[
+      {icon:"💬", pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
         {role:"verb", text:tokens[vIdx], label:"verbo"},
         ...(compTokens.length ? [{role:"comp", text:compTokens.join(" "), label:"complemento"}] : [])
@@ -1362,7 +1362,7 @@ function checkAgreement(aux, subj){
   return null;
 }
 
-/* ---- Generación de la respuesta ping pong ---- */
+/* ---- Generación de la respuesta: qué piezas vuelven ---- */
 const FLIP_SUBJ = {i:"you", you:"I", we:"we", they:"they", he:"he", she:"she", it:"it"};
 const FLIP_AUX_TO_I = {are:"am", is:"am", were:"was", does:"do", has:"have"};
 const FLIP_AUX_TO_YOU = {am:"are", is:"are", was:"were", does:"do", has:"have"};
@@ -1393,7 +1393,7 @@ function buildAnswer(ctx){
     if(subjLower === "i") newSubj = "you";
     if(newSubj === "I" || newSubj === "i") newSubj = "I";
   } else if(isOpen && beMain){
-    // Identidad con be: el sujeto completo rebota ("your favorite food" -> "my favorite food")
+    // Identidad con be: el sujeto completo vuelve ("your favorite food" -> "my favorite food")
     newSubj = subjText.split(" ").map(t => ({you:"I", your:"my", yours:"mine"}[t.toLowerCase()] || t)).join(" ");
   } else {
     newSubj = "he / she / it / they";
@@ -1476,7 +1476,7 @@ function buildAnswer(ctx){
       verbPhrase = [{role:"aux", text:newAux, label:"auxiliar"},
         {role:"new", text:"[la acción: travel, study…]", label:"verbo nuevo"}];
     }
-    notes2.push("Excepción del <b>do</b> como verbo principal: no se devuelve la pelota con «do» — se reemplaza por el verbo de la acción que se hizo, hace o hará: «What did you <b>do</b>?» → «I <b>played</b> football».");
+    notes2.push("Excepción del <b>do</b> como verbo principal: la pieza «do» no se devuelve — se reemplaza por el verbo de la acción que se hizo, hace o hará: «What did you <b>do</b>?» → «I <b>played</b> football».");
   } else if(beMain){
     verbPhrase = [{role:"verb", text:newAux, label:"verbo to be ⭐"}];
   } else if(aux === "do"){
@@ -1537,11 +1537,11 @@ function buildAnswer(ctx){
     pieces = [subjPiece, ...verbPhrase, ...(compPiece ? [compPiece] : []), newPiece];
   }
   if(gapAfterVerb && !beLike) notes2.push(`Tu respuesta ocupa el <b>hueco</b> que dejó «${whText}»: como preguntaba por el objeto del verbo, la info nueva va justo después del verbo, antes del complemento.`);
-  if(!doMain && !usedTo && !negative && aux==="did") notes2.push(`Sueltas la bolita prestada 🍦: «did» ya no hace falta, y la carga temporal que llevaba pasa al verbo: «did … ${mainBase}» → «${pastOf(mainBase)}».`);
-  if(!doMain && usedTo && !negative) notes2.push("Sueltas la bolita prestada 🍦: «did» ya no hace falta, y la carga temporal que llevaba pasa al semi-auxiliar: «did … use to» → «used to».");
-  if(!doMain && !negative && aux==="does") notes2.push("Sueltas la bolita prestada 🍦: «does» ya no hace falta, y la «-s» de tercera persona que llevaba pasa al verbo.");
-  if(!doMain && !negative && aux==="do") notes2.push("Sueltas la bolita prestada 🍦: en la respuesta afirmativa el «do» ya no hace falta — queda solo el verbo con su sabor.");
-  return {kind:"open", lines:[{icon:"🏓", pieces, caption:"Estructura de la respuesta"}], subjNote, extraNotes:notes2};
+  if(!doMain && !usedTo && !negative && aux==="did") notes2.push(`Devuelves la conectora prestada 🧱: «did» ya no hace falta, y el sello del tiempo que llevaba vuelve al verbo: «did … ${mainBase}» → «${pastOf(mainBase)}».`);
+  if(!doMain && usedTo && !negative) notes2.push("Devuelves la conectora prestada 🧱: «did» ya no hace falta, y el sello del tiempo que llevaba pasa al semi-auxiliar: «did … use to» → «used to».");
+  if(!doMain && !negative && aux==="does") notes2.push("Devuelves la conectora prestada 🧱: «does» ya no hace falta, y la «-s» de tercera persona que llevaba vuelve al verbo.");
+  if(!doMain && !negative && aux==="do") notes2.push("Devuelves la conectora prestada 🧱: en la respuesta afirmativa el «do» ya no hace falta — queda solo el verbo.");
+  return {kind:"open", lines:[{icon:"💬", pieces, caption:"Estructura de la respuesta"}], subjNote, extraNotes:notes2};
 }
 
 function cap(s){ return s === "I" ? "I" : s.charAt(0).toUpperCase()+s.slice(1); }
@@ -1584,7 +1584,7 @@ function renderProgress(){
   const modeRows = [
     { k:"b",  icon:"🧱", name:t("navBuild"),    now:cur("ql_streak") },
     { k:"id", icon:"🎯", name:t("navIdentify"), now:cur("ql_id_streak") },
-    { k:"r",  icon:"🏓", name:t("navRespond"),  now:cur("ql_r_streak") },
+    { k:"r",  icon:"💬", name:t("navRespond"),  now:cur("ql_r_streak") },
   ].map(m => {
     /* "Mejor" solo cuando de verdad aporta. Si la racha actual YA es la mejor,
        imprimir el mismo número dos veces es ruido en un panel que se mira de
@@ -1678,7 +1678,7 @@ function renderResult(r, container){
     return;
   }
 
-  html += `<div class="pingpong"><h3>${t('pingpongHeading')}</h3>`;
+  html += `<div class="answerbox"><h3>${t('answerHeading')}</h3>`;
   if(r.answer.kind === "open"){
     html += `<p class="hint">${t('renderHint')}</p>`;
   }
@@ -2093,20 +2093,19 @@ window.addEventListener("message", e=>{
 });
 
 /* ================================================================
-   i18n — capas 1–2 (interfaz + referencia). Las metáforas largas
-   (ping pong, helado) y las notas del análisis quedan en español.
+   i18n — capas 1–2 (interfaz + referencia). Las notas largas del
+   análisis quedan en español.
 ================================================================ */
 const I18N = {
   es: {
-    subtitle:"Arma preguntas en inglés como legos. Respóndelas como ping pong.",
+    subtitle:"Arma preguntas en inglés pieza por pieza. Respóndelas con las mismas piezas.",
     lvl:"📊 Nivel",
-    tabAnalyze:"🔍 Analiza", tabBuild:"🧱 Construye", tabGuide:"📖 Guía",
     navAnalyze:"Analiza", navBuild:"Construye", navIdentify:"Identifica", navRespond:"Responde", navGuide:"Guía",
     navPractice:"Práctica", navProgress:"Progreso",
     practiceTitle:"🎯 Práctica", practiceIntro:"Elige un modo para practicar:",
     pdBuild:"Ordena las piezas para armar la pregunta.",
     pdIdentify:"Reconoce si es abierta/cerrada y qué tiempo verbal es.",
-    pdRespond:"Escribe la respuesta como ping-pong.",
+    pdRespond:"Devuelve las piezas de la pregunta y agrega la tuya.",
     progressTitle:"📊 Progreso", progDays:"días de racha", progBest:"Mejor", progBadges:"Insignias", progModes:"Rachas por modo", progEmpty:"Empieza a practicar para sumar racha e insignias 🌱",
     legendSummary:"🧩 ¿Qué significa cada pieza?",
     pWh:"Wh-word", pWhD:"Lo que se pregunta (el tipo de pregunta).",
@@ -2139,18 +2138,18 @@ const I18N = {
     wd_howmuch:"cantidad (incontable), precio", wd_howoften:"frecuencia", wd_howlong:"duración",
     wd_howold:"edad", wd_whattime:"hora exacta",
     mSubj:"sujeto", mBase:"verbo base", mIng:"verbo-ing", mPart:"participio", mConj:"verbo conjugado",
-    tSimplePresent:`Presente Simple 🍦 <span class="hint">(bolita prestada)</span>`,
+    tSimplePresent:`Presente Simple 🧱 <span class="hint">(pide conectora prestada)</span>`,
     tToBePresent:`Presente de «to be» 👑 <span class="hint">(el punki: no pide prestado)</span>`,
-    tPresentCont:"Presente Continuo 🍦🍦",
-    tSimplePast:`Pasado Simple 🍦 <span class="hint">(bolita prestada)</span>`,
+    tPresentCont:"Presente Continuo 🧱🧱",
+    tSimplePast:`Pasado Simple 🧱 <span class="hint">(pide conectora prestada)</span>`,
     tToBePast:"Pasado de «to be» 👑",
-    tPastCont:"Pasado Continuo 🍦🍦",
-    tPresentPerfect:"Presente Perfecto 🍦🍦",
-    tPastPerfect:"Pasado Perfecto 🍦🍦",
-    tFutureWill:`Futuro con «will» 🍦🍦`,
-    tFutureGoing:`Futuro con «going to» 🍦🍦`,
-    tUsedTo:`Hábito pasado con «used to» 🍦`,
-    tModals:`Modales 🍦🍦 <span class="hint">(can, could, should, would…)</span>`,
+    tPastCont:"Pasado Continuo 🧱🧱",
+    tPresentPerfect:"Presente Perfecto 🧱🧱",
+    tPastPerfect:"Pasado Perfecto 🧱🧱",
+    tFutureWill:`Futuro con «will» 🧱🧱`,
+    tFutureGoing:`Futuro con «going to» 🧱🧱`,
+    tUsedTo:`Hábito pasado con «used to» 🧱`,
+    tModals:`Modales 🧱🧱 <span class="hint">(can, could, should, would…)</span>`,
     tSubjectQ:`Pregunta de sujeto 🕵️ <span class="hint">(la excepción sin auxiliar)</span>`,
     uSimplePresent:"Rutinas, hábitos, hechos generales, gustos.",
     uToBePresent:"Identidad, estados, descripciones, nacionalidad, profesión.",
@@ -2166,24 +2165,23 @@ const I18N = {
     uModals:"Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.",
     uSubjectQ:"Cuando la wh-word ES el sujeto, no se usa auxiliar y el verbo va conjugado.",
     piecesTitle:"🧩 Piezas de tu pregunta",
-    pingpongHeading:"🏓 Devuelve la pelota — así se responde:",
-    renderHint:`<span class="cdot" style="background:var(--wh)"></span> La wh-word <b>no rebota</b> — es la <b>guía</b> que indica qué tipo de info nueva agregar. Lo que sí rebota: <span class="cdot" style="background:var(--subj)"></span> sujeto, <span class="cdot" style="background:var(--verb)"></span> verbo, <span class="cdot" style="background:var(--aux)"></span> auxiliar (a veces) y <span class="cdot" style="background:var(--comp)"></span> complemento.`,
+    answerHeading:"💬 Qué piezas se devuelven — así se responde:",
+    renderHint:`<span class="cdot" style="background:var(--wh)"></span> La wh-word <b>no vuelve</b> — es la <b>etiqueta del hueco</b>: dice qué tipo de pieza nueva agregar. Las que sí vuelven: <span class="cdot" style="background:var(--subj)"></span> sujeto, <span class="cdot" style="background:var(--verb)"></span> verbo, <span class="cdot" style="background:var(--aux)"></span> auxiliar (a veces) y <span class="cdot" style="background:var(--comp)"></span> complemento.`,
     recipeHint:`Recuerda la receta: <b>(Wh) + Auxiliar + Sujeto + Verbo + Complemento</b> 🧩`,
     buildOk:"🎉 ¡Perfecto! Ahora mira cómo se responde…",
     buildBad:"Casi… el orden no es el correcto. Recuerda: (Wh) + Auxiliar + Sujeto + Verbo + Complemento. Toca una pieza para devolverla.",
     emptyBuild:"Toca las piezas en orden para armar la pregunta…",
     roundOf:"Ejercicio {n} de {t}", roundDone:"Ronda terminada", roundBest:"Mejor racha", roundPerfect:"¡Ronda perfecta!", roundAgain:"Otra ronda", roundBack:"Volver",
-    streak:"🔥 Racha: ", progA:"Desafío ", progOf:" de ", nextChallenge:"Siguiente desafío →",
-    tabIdentify:"🔍 Identifica",
+    streak:"🔥 Racha: ", nextChallenge:"Siguiente desafío →",
     idTypeQ:"¿Abierta o cerrada?", idTenseQ:"¿Qué tiempo?", idOpen:"Abierta", idClosed:"Cerrada",
     idPickFam:"Elige primero una familia ↑", idCheck:"Comprobar", idNext:"Siguiente →",
     idPickBoth:"Marca las dos: tipo y tiempo.", idCorrect:"🎉 ¡Correcto!", idWrong:"Casi… mira la corrección abajo.",
     idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
     idEmpty:"No hay preguntas en este nivel todavía.",
     achievement:"¡Logro!",
-    tabRespond:"🏓 Responde", exHint:"💡 O prueba con una de estas:",
-    rHint:"Devuelve la pelota: escribe la respuesta corta (Yes / No).",
-    rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien devuelta!",
+    exHint:"💡 O prueba con una de estas:",
+    rHint:"Devuelve las piezas: escribe la respuesta corta (Yes / No).",
+    rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien armada!",
     rTry:"Casi… mira la respuesta correcta abajo.",
     rEmpty:"No hay preguntas en este nivel todavía.",
     rTypeQ:"¿Qué tipo de información pide?",
@@ -2191,15 +2189,14 @@ const I18N = {
     rPickType:"Elige el tipo de información."
   },
   en: {
-    subtitle:"Build questions in English like lego blocks. Answer them like ping-pong.",
+    subtitle:"Build questions in English piece by piece. Answer them with the same pieces.",
     lvl:"📊 Level",
-    tabAnalyze:"🔍 Analyze", tabBuild:"🧱 Build", tabGuide:"📖 Guide",
     navAnalyze:"Analyze", navBuild:"Build", navIdentify:"Identify", navRespond:"Respond", navGuide:"Guide",
     navPractice:"Practice", navProgress:"Progress",
     practiceTitle:"🎯 Practice", practiceIntro:"Choose a mode to practice:",
     pdBuild:"Arrange the pieces to build the question.",
     pdIdentify:"Tell if it's open/closed and which tense it is.",
-    pdRespond:"Type the answer like ping-pong.",
+    pdRespond:"Send back the question's pieces and add your own.",
     progressTitle:"📊 Progress", progDays:"day streak", progBest:"Best", progBadges:"Badges", progModes:"Streaks by mode", progEmpty:"Start practising to build your streak and badges 🌱",
     legendSummary:"🧩 What does each piece mean?",
     pWh:"Wh-word", pWhD:"What is being asked (the type of question).",
@@ -2232,18 +2229,18 @@ const I18N = {
     wd_howmuch:"quantity (uncountable), price", wd_howoften:"frequency", wd_howlong:"duration",
     wd_howold:"age", wd_whattime:"exact time",
     mSubj:"subject", mBase:"base verb", mIng:"verb-ing", mPart:"participle", mConj:"conjugated verb",
-    tSimplePresent:`Simple Present 🍦 <span class="hint">(borrowed scoop)</span>`,
+    tSimplePresent:`Simple Present 🧱 <span class="hint">(borrows a connector)</span>`,
     tToBePresent:`Present of "to be" 👑 <span class="hint">(the punk: never borrows)</span>`,
-    tPresentCont:"Present Continuous 🍦🍦",
-    tSimplePast:`Simple Past 🍦 <span class="hint">(borrowed scoop)</span>`,
+    tPresentCont:"Present Continuous 🧱🧱",
+    tSimplePast:`Simple Past 🧱 <span class="hint">(borrows a connector)</span>`,
     tToBePast:`Past of "to be" 👑`,
-    tPastCont:"Past Continuous 🍦🍦",
-    tPresentPerfect:"Present Perfect 🍦🍦",
-    tPastPerfect:"Past Perfect 🍦🍦",
-    tFutureWill:`Future with "will" 🍦🍦`,
-    tFutureGoing:`Future with "going to" 🍦🍦`,
-    tUsedTo:`Past habit with "used to" 🍦`,
-    tModals:`Modals 🍦🍦 <span class="hint">(can, could, should, would…)</span>`,
+    tPastCont:"Past Continuous 🧱🧱",
+    tPresentPerfect:"Present Perfect 🧱🧱",
+    tPastPerfect:"Past Perfect 🧱🧱",
+    tFutureWill:`Future with "will" 🧱🧱`,
+    tFutureGoing:`Future with "going to" 🧱🧱`,
+    tUsedTo:`Past habit with "used to" 🧱`,
+    tModals:`Modals 🧱🧱 <span class="hint">(can, could, should, would…)</span>`,
     tSubjectQ:`Subject question 🕵️ <span class="hint">(the no-auxiliary exception)</span>`,
     uSimplePresent:"Routines, habits, general facts, likes.",
     uToBePresent:"Identity, states, descriptions, nationality, profession.",
@@ -2259,15 +2256,14 @@ const I18N = {
     uModals:"Ability, permission, advice, possibility, politeness. They don't mark tense on their own.",
     uSubjectQ:"When the wh-word IS the subject, no auxiliary is used and the verb is conjugated.",
     piecesTitle:"🧩 Pieces of your question",
-    pingpongHeading:"🏓 Return the ball — this is how you answer:",
-    renderHint:`<span class="cdot" style="background:var(--wh)"></span> The wh-word <b>doesn't bounce back</b> — it's the <b>guide</b> that tells you what kind of new info to add. What does bounce back: <span class="cdot" style="background:var(--subj)"></span> subject, <span class="cdot" style="background:var(--verb)"></span> verb, <span class="cdot" style="background:var(--aux)"></span> auxiliary (sometimes) and <span class="cdot" style="background:var(--comp)"></span> complement.`,
+    answerHeading:"💬 Which pieces go back — this is how you answer:",
+    renderHint:`<span class="cdot" style="background:var(--wh)"></span> The wh-word <b>doesn't go back</b> — it's the <b>label on the gap</b>: it tells you what kind of new piece to add. The ones that do go back: <span class="cdot" style="background:var(--subj)"></span> subject, <span class="cdot" style="background:var(--verb)"></span> verb, <span class="cdot" style="background:var(--aux)"></span> auxiliary (sometimes) and <span class="cdot" style="background:var(--comp)"></span> complement.`,
     recipeHint:`Remember the recipe: <b>(Wh) + Auxiliary + Subject + Verb + Complement</b> 🧩`,
     buildOk:"🎉 Perfect! Now see how it's answered…",
     buildBad:"Almost… the order isn't right. Remember: (Wh) + Auxiliary + Subject + Verb + Complement. Tap a piece to send it back.",
     emptyBuild:"Tap the pieces in order to build the question…",
     roundOf:"Exercise {n} of {t}", roundDone:"Round complete", roundBest:"Best streak", roundPerfect:"Perfect round!", roundAgain:"Another round", roundBack:"Back",
-    streak:"🔥 Streak: ", progA:"Challenge ", progOf:" of ", nextChallenge:"Next challenge →",
-    tabIdentify:"🔍 Identify",
+    streak:"🔥 Streak: ", nextChallenge:"Next challenge →",
     idTypeQ:"Open or closed?", idTenseQ:"Which tense?", idOpen:"Open", idClosed:"Closed",
     idPickFam:"Pick a family first ↑",
     idCheck:"Check", idNext:"Next →",
@@ -2275,9 +2271,9 @@ const I18N = {
     idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
     idEmpty:"No questions at this level yet.",
     achievement:"Achievement!",
-    tabRespond:"🏓 Respond", exHint:"💡 Or try one of these:",
-    rHint:"Return the ball: type the short answer (Yes / No).",
-    rWrite:"Type your answer.", rGood:"🎉 Nice return!",
+    exHint:"💡 Or try one of these:",
+    rHint:"Send the pieces back: type the short answer (Yes / No).",
+    rWrite:"Type your answer.", rGood:"🎉 Nicely built!",
     rTry:"Almost… see the correct answer below.",
     rEmpty:"No questions at this level yet.",
     rTypeQ:"What type of information does it ask for?",
@@ -2293,7 +2289,8 @@ function t(k){ return (I18N[lang] && I18N[lang][k]) || I18N.es[k] || k; }
 /* Traducción de la salida del análisis: etiquetas de piezas, captions, tiempo,
    tipo y wh-hints. Las NOTAS largas y las metáforas quedan en español. */
 const LBL = { "wh-word":"wh-word", "wh = sujeto":"wh = subject", "auxiliar":"auxiliary",
-  "aux prestado 🍦":"borrowed aux 🍦", "verbo to be ⭐":"'to be' verb ⭐", "semi-aux":"semi-aux",
+  "conectora prestada 🧱":"borrowed connector 🧱", "auxiliar (be) 🧱":"auxiliary (be) 🧱",
+  "verbo to be ⭐":"'to be' verb ⭐", "semi-aux":"semi-aux",
   "verbo":"verb", "verbo conjugado":"conjugated verb", "verbo base":"base verb",
   "verbo en pasado":"past verb", "sujeto":"subject", "sujeto + cláusula relativa":"subject + relative clause",
   "sujeto + cláusula":"subject + clause", "complemento":"complement", "adverbio":"adverb", "info nueva":"new info",
@@ -2606,7 +2603,7 @@ $("idCheck").addEventListener("click", checkId);
 $("idNext").addEventListener("click", () => rondaAvanza("id"));
 
 /* ================================================================
-   RESPONDE — devuelve la pelota (respuesta corta a preguntas cerradas)
+   RESPONDE — devuelve las piezas (respuesta corta a preguntas cerradas)
 ================================================================ */
 let rPool = [], rShown = {}, rCurrent = null, rChecked = false, rStreak = 0, rTypePick = null, rCorrectType = null;
 try{ rStreak = parseInt(localStorage.getItem("ql_r_streak")||"0",10)||0; }catch(e){}
@@ -2654,7 +2651,7 @@ function whBaseOf(q){
   for(const k of keys){ if(s === k || s.startsWith(k + " ")) return k; }
   return s.split(/\s+/)[0];
 }
-/* inicio esperado de la respuesta abierta = sujeto + verbo(s) que rebotan (sin el hueco libre) */
+/* inicio esperado de la respuesta abierta = sujeto + verbo(s) que vuelven (sin el hueco libre) */
 function openExpected(r){
   if(!r.ok || !r.answer || r.answer.kind !== "open") return null;
   const pieces = (r.answer.lines[0] && r.answer.lines[0].pieces) || [];
