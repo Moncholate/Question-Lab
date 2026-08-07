@@ -101,7 +101,9 @@
     min-height:var(--tap-min,44px); transition:color .15s; position:relative;}
   .tabbtn .ti{font-size:1.25rem; line-height:1;}
   .tabbtn .tl{font-size:.66rem; font-weight:700; letter-spacing:.01em;}
-  .tabbtn.active{color:var(--accent);}
+  /* Regla: el acento COMO TEXTO usa `--accent-ink`; como borde o barra, el
+     `--accent` normal. La pestaña activa daba 3,68:1 en claro con el normal. */
+  .tabbtn.active{color:var(--accent-ink);}
   .tabbtn.active::before{content:""; position:absolute; top:0; left:22%; right:22%; height:2.5px;
     background:var(--accent); border-radius:0 0 3px 3px;}
   .tabbtn:not(.active):hover{color:var(--text);}
@@ -109,7 +111,7 @@
   .pback{display:inline-flex; align-items:center; gap:.25rem; margin-bottom:.7rem; padding:.35rem .7rem;
     border:1px solid var(--border); border-radius:9px; background:var(--card); color:var(--muted);
     font-size:.85rem; font-weight:700; cursor:pointer; transition:all .12s;}
-  .pback:hover{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 40%, transparent);}
+  .pback:hover{color:var(--accent-ink); border-color:color-mix(in srgb, var(--accent) 40%, transparent);}
   /* Vuelta al modo principal. Va un punto más apagada que «← Práctica» para que
      la jerarquía se lea sola: primero sales del submodo, después de la sección.
      Antes no existía y el único «atrás» a la vista era el del Hub. */
@@ -279,7 +281,7 @@
   .badges{display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.8rem;}
   .badge{
     padding:.35rem .8rem; border-radius:999px; font-size:.85rem; font-weight:700;
-    background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent);
+    background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent-ink);
     border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   }
   .badge.type{background:color-mix(in srgb, var(--wh) 14%, transparent); color:var(--wh);
@@ -335,7 +337,7 @@
     width:0; transition:width .3s cubic-bezier(.22,1,.36,1);}
   @media (prefers-reduced-motion:reduce){ .rbar i{transition:none;} }
   .roundend{text-align:center; padding:1.6rem 1.2rem;}
-  .roundend .rescore{font-size:2.4rem; font-weight:800; line-height:1; color:var(--accent);}
+  .roundend .rescore{font-size:2.4rem; font-weight:800; line-height:1; color:var(--accent-ink);}
   .roundend .restot{font-size:.95rem; color:var(--muted); margin-top:.3rem;}
   .roundend .resmeta{font-size:.9rem; margin-top:.7rem;}
   .roundend .resbtns{display:flex; gap:.5rem; justify-content:center; margin-top:1.2rem; flex-wrap:wrap;}

@@ -71,34 +71,80 @@ const resolver = (valor, vars, salto = 0) => {
   if (/^#[0-9a-f]{3}$/i.test(v)) return '#' + [...v.slice(1)].map(c => c + c).join('').toLowerCase();
   if (v === '#fff' || v === 'white') return '#ffffff';
   if (v === '#000' || v === 'black') return '#000000';
-  return null;   // gradientes, transparent, color-mix, rgba… fuera de alcance
+  return null;   // gradientes, rgba… fuera de alcance
 };
 
-/* ---------- reglas: selector -> {color, fondo} ---------- */
+const mezclar = (a, b, p) => '#' + [1, 3, 5]
+  .map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * p + parseInt(b.slice(i, i + 2), 16) * (1 - p))
+    .toString(16).padStart(2, '0')).join('');
+
+/** `color-mix(in srgb, X n%, transparent)` sobre una superficie concreta.
+    Sin esto, el fondo del `.badge` —un tinte del 14%— no se medía nunca. */
+const resolverFondo = (valor, vars, superficie) => {
+  const directo = resolver(valor, vars);
+  if (directo) return directo;
+  const m = (valor || '').match(/color-mix\(\s*in srgb\s*,\s*([^,]+?)\s+([\d.]+)%\s*,\s*([^)]+)\)/);
+  if (!m) return null;
+  const c1 = resolver(m[1], vars);
+  const c2 = m[3].trim() === 'transparent' ? superficie : resolver(m[3], vars);
+  return c1 && c2 ? mezclar(c1, c2, parseFloat(m[2]) / 100) : null;
+};
+
+/* ---------- reglas: selector -> {color, fondo} ----------
+   La regex NO puede anclarse en el `}` de la regla anterior: al consumirlo como
+   separador se salta una regla sí y otra no. Con eso veía 116 de 237 y dejaba
+   pasar, por ejemplo, `.buildmsg.ok`. Se apoya en que `[^{}]` no cruza llaves,
+   así que cada bloque se delimita solo. Las cabeceras de @media se quitan para
+   que sus reglas interiores también entren. */
 const reglas = [];
-for (const m of cssApp.matchAll(/(?:^|[};])\s*([^{};@]+?)\s*\{([^}]*)\}/g)) {
+const planas = cssApp.replace(/@(?:media|supports)[^{]*\{/g, '');
+for (const m of planas.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
   const cuerpo = m[2];
+  /* Un ::before/::after con `content:""` no pinta texto: es una barra, un punto
+     o una línea. Heredan el `color` del elemento y salían como «texto gris
+     sobre el acento» — el subrayado de la pestaña activa daba 1,76:1 sin que
+     haya una sola letra ahí. */
+  if (/::(?:before|after)/.test(m[1]) && /content\s*:\s*(""|'')/.test(cuerpo)) continue;
   const color = (cuerpo.match(/(?:^|[;\s])color\s*:\s*([^;]+)/) || [])[1];
   const fondo = (cuerpo.match(/(?:^|[;\s])background(?:-color)?\s*:\s*([^;]+)/) || [])[1];
   if (!color && !fondo) continue;
   for (const sel of m[1].split(',')) reglas.push({ sel: sel.trim(), color, fondo });
 }
 
-/* Color heredado de la clase base: `.block{color:#fff}` alimenta a `.block.wh`. */
-const colorDe = new Map();
-for (const r of reglas) if (r.color && /^\.[\w-]+$/.test(r.sel)) colorDe.set(r.sel, r.color);
+/* Lo que declara la clase base a secas (`.block{}`), para las reglas que solo
+   tocan una parte: `.block{color:#fff}` da el color a `.block.wh`, y
+   `.block{background:…}` dice que `:root[data-theme=dark] .block{color:…}` NO
+   se apoya en el fondo de la página sino en el suyo propio. Sin lo segundo, el
+   chequeo medía la tinta de las piezas contra el fondo y daba 1,00:1. */
+const colorDe = new Map(), fondoDe = new Map();
+for (const r of reglas) if (/^\.[\w-]+$/.test(r.sel)) {
+  if (r.color) colorDe.set(r.sel.slice(1), r.color);
+  if (r.fondo) fondoDe.set(r.sel.slice(1), r.fondo);
+}
+const clasesDe = sel => [...sel.matchAll(/\.([\w-]+)/g)].map(m => m[1]);
 
 /* ---------- pares a medir ---------- */
 const pares = [];
 for (const r of reglas) {
-  if (!r.fondo) continue;
+  const clases = clasesDe(r.sel);
   let color = r.color;
-  if (!color) {                                   // ¿lo hereda de su clase base?
-    const b = r.sel.match(/^(\.[\w-]+)(?:\.[\w-]+)+$/);
-    if (b && colorDe.has(b[1])) color = colorDe.get(b[1]);
+  if (!color && r.fondo) {                        // ¿lo hereda de su clase base?
+    const b = clases.find(c => colorDe.has(c));
+    if (b) color = colorDe.get(b);
   }
-  if (color) pares.push({ sel: r.sel, color, fondo: r.fondo });
+  if (!color) continue;
+  if (r.fondo) { pares.push({ sel: r.sel, color, fondo: r.fondo }); continue; }
+  /* Regla que solo pinta TEXTO. Si alguna de sus clases ya trae fondo propio,
+     ese es el fondo; si no, lo pone el padre y se mide contra las superficies
+     reales de la app — eso es lo que faltaba para ver la pestaña activa y el
+     `.badge`, que fallaban y salían limpios. */
+  const conFondo = clases.find(c => fondoDe.has(c));
+  if (conFondo) pares.push({ sel: r.sel, color, fondo: fondoDe.get(conFondo) });
+  else pares.push({ sel: r.sel, color, superficies: true });
 }
+
+/* Las 4 superficies sobre las que se apoya el texto de esta app. */
+const SUPERFICIES = ['--card', '--bg'];
 
 /* ---------- contraste ---------- */
 const lum = h => {
@@ -113,11 +159,22 @@ const fallos = [];
 let medidos = 0;
 for (const p of pares) {
   for (const t of ['light', 'dark']) {
-    const c = resolver(p.color, tema[t]), f = resolver(p.fondo, tema[t]);
-    if (!c || !f) continue;                       // no medible: gradiente, transparent…
-    medidos++;
-    const r = ratio(c, f);
-    if (r < MIN) fallos.push({ sel: p.sel, tema: t, c, f, r });
+    /* Una regla acotada a un tema solo existe en ESE tema. Sin esto se medía
+       `:root[data-theme="dark"] .block.new` contra el fondo claro, que es una
+       combinación que nunca ocurre. */
+    const acota = p.sel.match(/\[data-theme="(light|dark)"\]/);
+    if (acota && acota[1] !== t) continue;
+    const c = resolver(p.color, tema[t]);
+    if (!c) continue;
+    // Cada superficie posible: la declarada, o las de la app si el fondo es del padre
+    const sups = SUPERFICIES.map(v => resolver(`var(${v})`, tema[t])).filter(Boolean);
+    const fondos = p.superficies ? sups
+      : sups.map(s => resolverFondo(p.fondo, tema[t], s)).filter(Boolean);
+    for (const f of [...new Set(fondos)]) {
+      medidos++;
+      const r = ratio(c, f);
+      if (r < MIN) fallos.push({ sel: p.sel, tema: t, c, f, r });
+    }
   }
 }
 
