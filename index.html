@@ -203,25 +203,75 @@
 
   /* Piezas */
   .blocks{display:flex; flex-wrap:wrap; gap:.45rem; align-items:flex-end;}
+  /* La pieza. Mismo material que las letras de los logos y los dinosaurios:
+     cara con degradado, filo oscuro, brillo arriba y studs cilíndricos. Las
+     proporciones salen de `Grammar HUB/tools/dino/render.mjs` (stud: radio
+     .23·paso, alto .31·paso) para que sean del mismo juego y no solo parecidas.
+     Lo que NO se copia es la proyección 2.5D: en una figura suelta va bien,
+     pero estas piezas van en línea dentro de una oración y el volteo saliente
+     chocaría con las vecinas. Se comparte el material, no el punto de vista. */
   .block{
-    position:relative; padding:.9rem .8rem .55rem; border-radius:8px; color:#fff;
+    --c:var(--comp);
+    --edge:color-mix(in srgb, #000 34%, var(--c));
+    /* La cara del logo va a +10% de blanco; aquí a +4%. Con +10% el texto
+       blanco cae a 4,21:1 sobre `adv` y no pasa AA. Medido, no estimado. */
+    --f1:color-mix(in srgb, #fff 4%, var(--c));
+    --f2:color-mix(in srgb, #000 8%, var(--c));
+    --sTop:color-mix(in srgb, #fff 34%, var(--c));
+    --sBot:color-mix(in srgb, #000 26%, var(--c));
+    --sMid:color-mix(in srgb, #000 2%, var(--c));
+    --sLado:color-mix(in srgb, #000 18%, var(--c));
+    /* El paso entre studs es media altura de la cara, como en el generador:
+       (.98 + 1.05 + .5) / 2 ≈ 1.26rem. Con un paso más corto los studs leían
+       como una línea de puntos en vez de como los del logo. */
+    --paso:1.26rem;
+    position:relative; padding:.98rem .78rem .5rem; border-radius:.2rem; color:#fff;
     font-weight:700; font-size:1rem; min-width:2.6rem; text-align:center;
+    background:linear-gradient(180deg, var(--f1), var(--f2));
+    box-shadow:inset 0 0 0 1px var(--edge), 0 1.5px 0 var(--edge);
     animation:pop .3s backwards;
   }
-  .block::before{ /* lego studs */
-    content:""; position:absolute; top:.28rem; left:50%; transform:translateX(-50%);
-    width:60%; height:.28rem;
-    background:radial-gradient(circle at 25% 50%, rgba(255,255,255,.55) .12rem, transparent .13rem),
-               radial-gradient(circle at 75% 50%, rgba(255,255,255,.55) .12rem, transparent .13rem);
+  /* Cada stud son cinco capas —brillo · tapa · base · costado · cuerpo— sobre un
+     mosaico de un paso de ancho. Con solo tapa y base se veían dos discos
+     apilados con un hueco: el cuerpo es lo que los convierte en un cilindro.
+     `space` coloca SOLO mosaicos enteros y reparte el sobrante, así que la
+     cantidad de studs sigue al ancho de la pieza y nunca se corta uno por la
+     mitad — antes eran dos, midiera lo que midiera. Las cinco capas comparten
+     el ANCHO de mosaico, que es lo que hace que se repartan alineadas; el alto
+     difiere a propósito, y así el cuerpo queda acotado entre los dos centros. */
+  .block::before{
+    content:""; position:absolute; top:.14rem; left:.3rem; right:.3rem; height:.68rem;
+    background-image:
+      radial-gradient(ellipse .10rem .05rem at 43.6% 15%, rgba(255,255,255,.55) 99%, transparent 100%),
+      radial-gradient(ellipse .29rem .145rem at 50% 21%, var(--sTop) 99%, transparent 100%),
+      radial-gradient(ellipse .29rem .145rem at 50% 79%, var(--sBot) 99%, transparent 100%),
+      linear-gradient(90deg, transparent 0 56.9%, var(--sLado) 56.9% 73%, transparent 73%),
+      linear-gradient(90deg, transparent 0 27%, var(--sMid) 27% 73%, transparent 73%);
+    background-size:
+      var(--paso) 100%, var(--paso) 100%, var(--paso) 100%,
+      var(--paso) .395rem, var(--paso) .395rem;
+    /* `center` importa solo cuando cabe UN stud: ahí `space` respeta la
+       posición en vez de pegarlo al borde izquierdo. */
+    background-position: center 0, center 0, center 0, center .143rem, center .143rem;
+    background-repeat:space no-repeat;
+    pointer-events:none;
   }
   .block small{display:block; font-size:.62rem; font-weight:600; opacity:.85; margin-top:.05rem; text-transform:uppercase; letter-spacing:.04em;}
-  .block.wh{background:var(--wh);} .block.aux{background:var(--aux);}
-  .block.semiaux{background:var(--aux);}
-  .block.subj{background:var(--subj);} .block.verb{background:var(--verb);}
-  .block.comp{background:var(--comp);} .block.adv{background:var(--adv);} .block.new{background:transparent; color:var(--new); border:2px dashed var(--new);}
+  .block.wh{--c:var(--wh);} .block.aux{--c:var(--aux);}
+  .block.semiaux{--c:var(--aux);}
+  .block.subj{--c:var(--subj);} .block.verb{--c:var(--verb);}
+  .block.comp{--c:var(--comp);} .block.adv{--c:var(--adv);}
+  /* En oscuro los colores de rol se aclaran y el texto blanco quedaba entre
+     1,48:1 y 3,76:1 — ilegible. La tinta pasa a oscura: 5,3 a 12,4:1. */
+  :root[data-theme="dark"] .block{color:#141826;}
+  .block.new{background:transparent; color:var(--new); border:2px dashed var(--new); box-shadow:none;}
   .block.new::before{display:none;}
-  .block.gap{background:transparent; border:2px dashed currentColor; opacity:.92;}
+  .block.gap{background:transparent; border:2px dashed currentColor; opacity:.92; box-shadow:none;}
   .block.gap::before{display:none;}
+  /* Las punteadas no tienen relleno, así que la tinta oscura de arriba las
+     dejaría negro sobre negro: conservan su propio color. */
+  :root[data-theme="dark"] .block.new{color:var(--new);}
+  :root[data-theme="dark"] .block.gap{color:var(--text);}
   @keyframes pop{from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);}}
 
   .badges{display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.8rem;}
@@ -339,11 +389,20 @@
   .tense .uso{font-size:.86rem; color:var(--muted); margin:.25rem 0;}
   .tense .ej{font-size:.88rem; font-style:italic;}
   .pat{display:flex; flex-wrap:wrap; gap:.25rem; margin:.3rem 0;}
-  .mini{padding:.12rem .5rem; border-radius:6px; color:#fff; font-size:.76rem; font-weight:700;}
-  .mini.wh{background:var(--wh);} .mini.aux{background:var(--aux);}
-  .mini.semiaux{background:var(--aux);}
-  .mini.subj{background:var(--subj);} .mini.verb{background:var(--verb);}
-  .mini.comp{background:var(--comp);} .mini.adv{background:var(--adv);}
+  /* Los patrones de la Guía: mismo material que la pieza grande pero sin studs
+     — son demasiado bajos para que un stud se lea, y a este tamaño sumarían
+     ruido en vez de parecido. */
+  .mini{
+    --c:var(--comp);
+    padding:.12rem .5rem; border-radius:.16rem; color:#fff; font-size:.76rem; font-weight:700;
+    background:linear-gradient(180deg, color-mix(in srgb, #fff 4%, var(--c)), color-mix(in srgb, #000 8%, var(--c)));
+    box-shadow:inset 0 0 0 1px color-mix(in srgb, #000 34%, var(--c));
+  }
+  .mini.wh{--c:var(--wh);} .mini.aux{--c:var(--aux);}
+  .mini.semiaux{--c:var(--aux);}
+  .mini.subj{--c:var(--subj);} .mini.verb{--c:var(--verb);}
+  .mini.comp{--c:var(--comp);} .mini.adv{--c:var(--adv);}
+  :root[data-theme="dark"] .mini{color:#141826;}
   /* Guía — familias de tiempos (tono = tiempo, ícono = aspecto) */
   .tense[data-fam="present"]{--f:var(--t-present); --fbg:var(--t-present-1);}
   .tense[data-fam="past"]{--f:var(--t-past); --fbg:var(--t-past-1);}
