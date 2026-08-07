@@ -65,7 +65,7 @@
   .scrollarea{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;}
   .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem;}
   /* Contenido en inglés que se lee con atención → Atkinson Hyperlegible (DUA) */
-  .prompt, .ej, .sentence, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
+  .prompt, .ej, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
   .apphead{flex-shrink:0; background:var(--bg);
     border-bottom:1px solid var(--border); box-shadow:0 1px 8px -4px rgba(0,0,0,.15);}
   .apphead-inner{max-width:640px; margin:0 auto; padding:.65rem 1rem;
@@ -377,7 +377,6 @@
      NO se llama `.gicon`: esa clase ya es la del icono de los toasts. */
   .gbrick{height:1.3rem; width:1.3rem; vertical-align:-.36em; margin-right:.4rem;}
   .gbrick-w{width:1.41rem;}   /* el de dos piezas es más ancho (viewBox 26) */
-  .legend{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.6rem;}
   .piecelist{list-style:none; margin-top:.6rem; display:flex; flex-direction:column; gap:.55rem;}
   .piecelist li{display:flex; align-items:center; gap:.7rem; flex-wrap:wrap;}
   .piecelist .block{flex-shrink:0; min-width:5.5rem; text-align:center;}
@@ -437,7 +436,6 @@
   .gfam[open] > summary .gcaret{transform:rotate(90deg);}
   .gfam[open] > summary{border-bottom:1px dashed var(--border);}
   .gfam > .tense{padding-left:.9rem; padding-right:.9rem; margin:0 .5rem;}
-  .gcollapse[hidden]{display:none;}
   /* Guía — tabla Wh-words colapsable: fila con el mismo aspecto que una familia */
   .gwh{border:1px solid var(--border); border-radius:12px; background:var(--card); margin-top:.7rem;}
   .gwh > summary{list-style:none; cursor:pointer; padding:.75rem .9rem; display:flex; align-items:center; gap:.55rem;
@@ -552,7 +550,7 @@
         <div class="idrow"><span data-i18n="idTypeQ">¿Abierta o cerrada?</span><div class="idopts" id="idTypeOpts"></div></div>
         <div class="idrow"><span data-i18n="idTenseQ">¿Qué tiempo?</span>
           <div class="idsteps">
-            <div class="idopts idfams" id="idFamOpts"></div>
+            <div class="idopts" id="idFamOpts"></div>
             <div class="idopts idtenses" id="idTenseOpts"></div>
           </div>
         </div>
