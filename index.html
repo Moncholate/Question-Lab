@@ -83,7 +83,9 @@
   .langtog{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
   .langtog button{border:none; background:var(--card); color:var(--muted); font-size:.78rem;
     font-weight:700; padding:.28rem .5rem; cursor:pointer;}
-  .langtog button.on{background:var(--accent); color:#fff;}
+  /* `--accent-solid` y no `--accent`: relleno con texto blanco encima. El
+     acento normal deja el blanco en 3,68:1 y no pasa AA. */
+  .langtog button.on{background:var(--accent-solid); color:#fff;}
   .themebtn{display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .6rem; border-radius:8px;
     border:1px solid var(--border); background:color-mix(in srgb, var(--text) 6%, var(--card)); color:var(--text);
     font-size:.85rem; font-weight:700; line-height:1.2; cursor:pointer; transition:all .12s; white-space:nowrap;}
@@ -185,7 +187,7 @@
   @media (min-width:560px){ .qactions .primary{flex:0 0 auto; min-width:11rem;} }
   button.primary{
     padding:.85rem 1.2rem; font-size:1rem; font-weight:700; border:none; border-radius:12px;
-    background:var(--accent); color:#fff; cursor:pointer; transition:transform .1s;
+    background:var(--accent-solid); color:#fff; cursor:pointer; transition:transform .1s;
   }
   button.primary:active{transform:scale(.96);}
   .clearbtn{display:inline-flex; align-items:center; justify-content:center; padding:0 .8rem;
