@@ -171,10 +171,13 @@
   .qinput textarea{
     width:100%; padding:.85rem 1rem; font-size:1.05rem; line-height:1.45;
     border:1.5px solid var(--border); border-radius:12px;
-    background:var(--bg); color:var(--text); outline:none;
+    background:var(--bg); color:var(--text);
     resize:none; overflow-y:auto; min-height:3.1rem; max-height:9rem;
     font-family:inherit;
   }
+  /* El campo principal tenía `outline:none` y al enfocarlo solo cambiaba el
+     color del borde: 1,5px de cambio de tono es un indicador demasiado débil
+     para quien navega con teclado. El anillo de foco de tokens.css se encarga. */
   .qinput textarea:focus{border-color:var(--accent);}
   .qactions{display:flex; gap:.5rem;}
   .qactions .primary{flex:1;}
