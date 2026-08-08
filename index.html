@@ -19,7 +19,7 @@
   mq.addEventListener?mq.addEventListener('change',apply):mq.addListener(apply);
 }catch(e){}})();
 </script>
-<title>Question Lab 🧩</title>
+<title>Question Lab</title>
 <meta name="description" content="Arma preguntas en inglés y aprende a responderlas">
 <!-- Vista previa al compartir el enlace. Sin og:image, WhatsApp toma el ícono
      de la app, que lleva esquinas transparentes y las pinta blancas. -->
@@ -133,6 +133,13 @@
     cursor:pointer; transition:all .14s;}
   .pmode:hover{border-color:var(--accent); box-shadow:0 4px 14px -8px color-mix(in srgb, var(--accent) 60%, transparent); transform:translateY(-1px);}
   .pmode .pmi{font-size:1.7rem; line-height:1; flex-shrink:0;}
+  /* La pieza de «Construye» va en SVG y no en emoji: 🧱 es un MURO de ladrillos,
+     que es justo la analogía que dejamos atrás. En `currentColor` hereda la
+     tinta del botón, así que no estrena ningún par de contraste. */
+  /* `1em` basta: el span que la contiene ya fija el tamaño (1,7rem en el menú de
+     práctica, 1,25rem en la fila de rachas). `block` porque va sola ahí dentro y
+     así no arrastra el hueco de la línea base. */
+  .lego{display:block; width:1em; height:1em;}
   .pmode .pmt{display:flex; flex-direction:column; gap:.1rem;}
   .pmode .pmt b{font-size:1.02rem;}
   .pmode .pmt small{color:var(--muted); font-size:.83rem;}
@@ -523,10 +530,10 @@
   <div class="panel" id="practice">
     <button class="pback pmain" data-goto="analyze">← <span data-i18n="navAnalyze">Analiza</span></button>
     <div class="card">
-      <h2 data-i18n="practiceTitle">🎯 Práctica</h2>
+      <h2 data-i18n="practiceTitle">Práctica</h2>
       <p class="hint" data-i18n="practiceIntro">Elige un modo para practicar:</p>
       <div class="pmenu">
-        <button class="pmode" data-goto="build"><span class="pmi" aria-hidden="true">🧱</span><span class="pmt"><b data-i18n="navBuild">Construye</b><small data-i18n="pdBuild">Ordena las piezas para armar la pregunta.</small></span></button>
+        <button class="pmode" data-goto="build"><span class="pmi" aria-hidden="true"><svg class="lego" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="currentColor"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/></svg></span><span class="pmt"><b data-i18n="navBuild">Construye</b><small data-i18n="pdBuild">Ordena las piezas para armar la pregunta.</small></span></button>
         <button class="pmode" data-goto="identify"><span class="pmi" aria-hidden="true">🎯</span><span class="pmt"><b data-i18n="navIdentify">Identifica</b><small data-i18n="pdIdentify">Reconoce si es abierta/cerrada y qué tiempo verbal es.</small></span></button>
         <button class="pmode" data-goto="respond"><span class="pmi" aria-hidden="true">💬</span><span class="pmt"><b data-i18n="navRespond">Responde</b><small data-i18n="pdRespond">Devuelve las piezas de la pregunta y agrega la tuya.</small></span></button>
       </div>
@@ -616,22 +623,22 @@
       <summary><svg class="gbrick" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="#2DD4BF"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="#2DD4BF"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="#2DD4BF"/></svg><span data-i18n="legendSummary">¿Qué significa cada pieza?</span></summary>
       <ol class="piecelist">
         <li><span class="block wh" data-i18n="pWh">Wh-word</span><span class="pdesc" data-i18n="pWhD">Lo que se pregunta (el tipo de pregunta).</span></li>
-        <li><span class="block aux" data-i18n="pAux">Auxiliar</span><span class="pdesc" data-i18n="pAuxD">Verbo ayudante — lleva la información de tiempo.</span></li>
+        <li><span class="block aux" data-i18n="pAux">Auxiliar</span><span class="pdesc" data-i18n="pAuxD">Verbo ayudante: lleva la información de tiempo.</span></li>
         <li><span class="block semiaux" data-i18n="pSemi">Semi-aux</span><span class="pdesc" data-i18n="pSemiD">Ayuda extra para ciertos casos (going to, used to).</span></li>
         <li><span class="block subj" data-i18n="pSubj">Sujeto</span><span class="pdesc" data-i18n="pSubjD">De quién se habla, o quién hace la acción.</span></li>
         <li><span class="block verb" data-i18n="pVerb">Verbo principal</span><span class="pdesc" data-i18n="pVerbD">Acción o estado que se realiza.</span></li>
         <li><span class="block comp" data-i18n="pComp">Complemento</span><span class="pdesc" data-i18n="pCompD">Información adicional de la oración.</span></li>
         <li><span class="block adv" data-i18n="pAdv">Adverbio</span><span class="pdesc" data-i18n="pAdvD">Modifica al verbo (ever, never, always, often…).</span></li>
-        <li><span class="block new" data-i18n="pNew">+ Info nueva</span><span class="pdesc" data-i18n="pNewD">Lo que tú agregas al responder — no viene de la pregunta.</span></li>
+        <li><span class="block new" data-i18n="pNew">+ Info nueva</span><span class="pdesc" data-i18n="pNewD">Lo que tú agregas al responder: no viene de la pregunta.</span></li>
       </ol>
     </details>
 
     <details>
       <summary><svg class="gbrick gbrick-w" viewBox="0 0 26 24" aria-hidden="true"><rect x="0.5" y="13" width="11" height="9.5" rx="1.5" fill="#6366F1"/><rect x="2.7" y="11.3" width="2.9" height="3.5" rx="1" fill="#6366F1"/><rect x="6.9" y="11.3" width="2.9" height="3.5" rx="1" fill="#6366F1"/><rect x="14.5" y="13" width="11" height="9.5" rx="1.5" fill="#FB7185"/><rect x="16.7" y="11.3" width="2.9" height="3.5" rx="1" fill="#FB7185"/><rect x="20.9" y="11.3" width="2.9" height="3.5" rx="1" fill="#FB7185"/><path d="M5 8.4 A 8 4.6 0 0 1 21 8.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><polygon points="5,10.6 2.9,7.1 7.6,6.6" fill="currentColor"/><polygon points="21,10.6 23.1,7.1 18.4,6.6" fill="currentColor"/></svg><span data-i18n="gPiezasSum">Qué piezas se devuelven al responder</span></summary>
       <div class="explain">
-        <p data-i18n-html="gPiezasP1">Una conversación se construye <b>entre dos</b>. La pregunta te pasa unas piezas; al responder devuelves esas mismas y <b>agregas la tuya</b> — la que el otro no tenía.</p>
-        <p data-i18n-html="gPiezasP2">Las piezas que <b>vuelven</b> de la pregunta a la respuesta son: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.</p>
-        <p data-i18n-html="gPiezasP3">La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no vuelve</b>: nunca aparece en la respuesta. Es la <b>etiqueta del hueco vacío</b> — te dice qué tipo de pieza va ahí: un lugar si preguntó «where», una persona si preguntó «who».</p>
+        <p data-i18n-html="gPiezasP1">Una conversación se construye <b>entre dos</b>. La pregunta te pasa unas piezas; al responder devuelves esas mismas y <b>agregas la tuya</b>: la que el otro no tenía.</p>
+        <p data-i18n-html="gPiezasP2">Las piezas que <b>vuelven</b> de la pregunta a la respuesta son: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces: en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.</p>
+        <p data-i18n-html="gPiezasP3">La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no vuelve</b>: nunca aparece en la respuesta. Es la <b>etiqueta del hueco vacío</b>; te dice qué tipo de pieza va ahí: un lugar si preguntó «where», una persona si preguntó «who».</p>
         <p data-i18n-html="gPiezasP4">Esa pieza nueva 🆕 es la única que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.</p>
       </div>
     </details>
@@ -641,9 +648,9 @@
       <div class="explain">
         <p data-i18n-html="gSelloP1">Todo tiempo verbal lleva su <b>sello</b> estampado en alguna pieza. La diferencia entre simple y compuesto es <b>en cuál</b>.</p>
         <p data-i18n-html="gSelloP2">En los <b>simples</b> hay una sola pieza y el sello va en ella: <i>work → work<b>s</b></i>, <i>play → play<b>ed</b></i>.</p>
-        <p data-i18n-html="gSelloP3">Pero en <b>negativo</b> e <b>interrogativo</b> esa pieza no se sostiene sola: hay que <b>pedir prestada una pieza conectora</b> — <b>do / does / did</b> — y el <b>sello se pasa a ella</b>. Por eso el verbo vuelve a su forma base: <i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>. Al responder en positivo <b>devuelves</b> la conectora y el sello vuelve al verbo: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i></p>
-        <p data-i18n-html="gSelloP4">Los <b>compuestos</b> traen su conectora <b>de fábrica</b> y no la sueltan nunca — está en positivo, negativo e interrogativo. El sello va en esa primera pieza y el verbo se queda en su forma fija: <i>She <b>is</b> sleeping. / She <b>isn't</b> sleeping. / <b>Is</b> she sleeping?</i></p>
-        <p data-i18n-html="gSelloP5">¿Y el verbo <b>to be</b>? Es la pieza que <b>se conecta sola</b> 🎸: no le pide prestado a nadie, pregunta y responde por su cuenta. <i>Is she a doctor? — Yes, she <b>is</b>.</i></p>
+        <p data-i18n-html="gSelloP3">Pero en <b>negativo</b> e <b>interrogativo</b> esa pieza no se sostiene sola: hay que <b>pedir prestada una pieza</b>, un <b>auxiliar</b> (<b>do / does / did</b>), y el <b>sello se pasa a ella</b>. Por eso el verbo vuelve a su forma base: <i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>. Al responder en positivo <b>devuelves</b> ese auxiliar y el sello vuelve al verbo: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i></p>
+        <p data-i18n-html="gSelloP4">Los <b>compuestos</b> traen su auxiliar <b>de fábrica</b> y no lo sueltan nunca: está en positivo, negativo e interrogativo. El sello va en esa primera pieza y el verbo se queda en su forma fija: <i>She <b>is</b> sleeping. / She <b>isn't</b> sleeping. / <b>Is</b> she sleeping?</i></p>
+        <p data-i18n-html="gSelloP5">¿Y el verbo <b>to be</b>? Es la pieza que <b>se conecta sola</b> 🎸: no le pide prestado a nadie, pregunta y responde por su cuenta. <i>Is she a doctor?</i> → <i>Yes, she <b>is</b>.</i></p>
       </div>
     </details>
 
@@ -671,7 +678,7 @@
       <h2 data-i18n="tensesH2">⏱️ Tiempos: cuándo se usa cada uno</h2>
 
       <div class="tense" data-tense="simple-present" data-fam="present" data-asp="0">
-        <h3 data-i18n-html="tSimplePresent">Presente Simple 🧱 <span class="hint">(pide conectora prestada)</span></h3>
+        <h3 data-i18n-html="tSimplePresent">Presente Simple <span class="hint">· una pieza · pide un auxiliar prestado</span></h3>
         <div class="pat"><span class="mini aux">Do / Does</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uSimplePresent">Rutinas, hábitos, hechos generales, gustos.</p>
         <p class="ej">Do you drink coffee every day?</p>
@@ -685,14 +692,14 @@
       </div>
 
       <div class="tense" data-tense="present-continuous" data-fam="present" data-asp="1">
-        <h3 data-i18n-html="tPresentCont">Presente Continuo 🧱🧱</h3>
+        <h3 data-i18n-html="tPresentCont">Presente Continuo <span class="hint">· dos piezas</span></h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mIng">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPresentCont">Lo que pasa ahora mismo; también planes ya agendados.</p>
         <p class="ej">What are you doing right now?</p>
       </div>
 
       <div class="tense" data-tense="simple-past" data-fam="past" data-asp="0">
-        <h3 data-i18n-html="tSimplePast">Pasado Simple 🧱 <span class="hint">(pide conectora prestada)</span></h3>
+        <h3 data-i18n-html="tSimplePast">Pasado Simple <span class="hint">· una pieza · pide un auxiliar prestado</span></h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uSimplePast">Acciones terminadas en un momento específico del pasado.</p>
         <p class="ej">Did she travel to Peru last year?</p>
@@ -706,49 +713,49 @@
       </div>
 
       <div class="tense" data-tense="past-continuous" data-fam="past" data-asp="1">
-        <h3 data-i18n-html="tPastCont">Pasado Continuo 🧱🧱</h3>
+        <h3 data-i18n-html="tPastCont">Pasado Continuo <span class="hint">· dos piezas</span></h3>
         <div class="pat"><span class="mini aux">Was / Were</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mIng">verbo-ing</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPastCont">Acción en progreso en el pasado, a menudo interrumpida por otra.</p>
         <p class="ej">Was he sleeping when you called?</p>
       </div>
 
       <div class="tense" data-tense="present-perfect" data-fam="present" data-asp="2">
-        <h3 data-i18n-html="tPresentPerfect">Presente Perfecto 🧱🧱</h3>
+        <h3 data-i18n-html="tPresentPerfect">Presente Perfecto <span class="hint">· dos piezas</span></h3>
         <div class="pat"><span class="mini aux">Have / Has</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mPart">participio</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPresentPerfect">Experiencias de vida (sin fecha específica) y acciones pasadas con efecto en el presente.</p>
         <p class="ej">Have you ever visited Chiloé?</p>
       </div>
 
       <div class="tense" data-tense="past-perfect" data-fam="past" data-asp="2">
-        <h3 data-i18n-html="tPastPerfect">Pasado Perfecto 🧱🧱</h3>
+        <h3 data-i18n-html="tPastPerfect">Pasado Perfecto <span class="hint">· dos piezas</span></h3>
         <div class="pat"><span class="mini aux">Had</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mPart">participio</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uPastPerfect">Lo que pasó <b>antes</b> de otra acción en el pasado.</p>
         <p class="ej">Had you eaten before the meeting?</p>
       </div>
 
       <div class="tense" data-tense="simple-future" data-fam="future" data-asp="0">
-        <h3 data-i18n-html="tFutureWill">Futuro con «will» 🧱🧱</h3>
+        <h3 data-i18n-html="tFutureWill">Futuro con «will» <span class="hint">· dos piezas</span></h3>
         <div class="pat"><span class="mini aux">Will</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uFutureWill">Decisiones espontáneas, promesas, predicciones.</p>
         <p class="ej">Will you come to class tomorrow?</p>
       </div>
 
       <div class="tense" data-tense="future-going-to" data-fam="future" data-asp="0">
-        <h3 data-i18n-html="tFutureGoing">Futuro con «going to» 🧱🧱</h3>
+        <h3 data-i18n-html="tFutureGoing">Futuro con «going to» <span class="hint">· dos piezas</span></h3>
         <div class="pat"><span class="mini aux">Am / Is / Are</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini semiaux">going to</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uFutureGoing">Planes e intenciones ya decididos. El «be» es el auxiliar oficial; «going to» es su ayudante (semi-aux).</p>
         <p class="ej">What are you going to do this weekend?</p>
       </div>
 
       <div class="tense" data-tense="used-to" data-fam="past" data-asp="0">
-        <h3 data-i18n-html="tUsedTo">Hábito pasado con «used to» 🧱</h3>
+        <h3 data-i18n-html="tUsedTo">Hábito pasado con «used to» <span class="hint">· una pieza</span></h3>
         <div class="pat"><span class="mini aux">Did</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini semiaux">use to</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uUsedTo">Hábitos o estados del pasado que ya no ocurren. En positivo el semi-aux recupera la carga temporal: I <b>used to</b> play football.</p>
         <p class="ej">Did you use to play football as a child?</p>
       </div>
 
       <div class="tense" data-cefr="basico2" data-fam="modal" data-asp="0">
-        <h3 data-i18n-html="tModals">Modales 🧱🧱 <span class="hint">(can, could, should, would…)</span></h3>
+        <h3 data-i18n-html="tModals">Modales <span class="hint">· dos piezas</span> <span class="hint">(can, could, should, would…)</span></h3>
         <div class="pat"><span class="mini aux">Can / Should…</span><span class="mini subj" data-i18n="mSubj">sujeto</span><span class="mini verb" data-i18n="mBase">verbo base</span><span class="mini comp">…?</span></div>
         <p class="uso" data-i18n-html="uModals">Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.</p>
         <p class="ej">Can you swim?</p>
@@ -767,13 +774,13 @@
   <div class="panel" id="progress">
     <button class="pback pmain" data-goto="analyze">← <span data-i18n="navAnalyze">Analiza</span></button>
     <div class="card">
-      <h2 data-i18n="progressTitle">📊 Progreso</h2>
+      <h2 data-i18n="progressTitle">Progreso</h2>
       <div id="progressBody"></div>
     </div>
   </div>
 </div>
 
-<footer data-i18n="footer">Herramienta pedagógica de análisis por reglas — puede equivocarse con preguntas muy complejas. 🇨🇱</footer>
+<footer data-i18n="footer">Herramienta pedagógica de análisis por reglas; puede equivocarse con preguntas muy complejas. 🇨🇱</footer>
 </div>
 
 <nav class="tabbar" id="tabbar" aria-label="Secciones">
@@ -981,7 +988,7 @@ function analyze(raw){
   const tokens = q.replace(/[?.!,;:¿¡]+/g," ").trim().split(/\s+/).filter(Boolean);
   const lower = tokens.map(t=>t.toLowerCase());
   const n = tokens.length;
-  if(n < 2) return {ok:false, error: lang==="en" ? "The question is too short — it needs at least an auxiliary and a subject." : "La pregunta es muy corta — necesita al menos un auxiliar y un sujeto."};
+  if(n < 2) return {ok:false, error: lang==="en" ? "The question is too short: it needs at least an auxiliary and a subject." : "La pregunta es muy corta: necesita al menos un auxiliar y un sujeto."};
 
   // 1. Wh-word (1 o 2 palabras)
   let whLen = 0, whText = "";
@@ -1022,8 +1029,8 @@ function analyze(raw){
         parts.push({role:"subj", text:tokens.slice(whLen).join(" "), label:"sujeto"});
       }
       const note = lang==="en"
-        ? `After the wh-word comes the <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span>, then the subject: <i>${whText} <b>do/does/did</b> ${tokens.slice(whLen).join(" ")}?</i> — check which one fits.`
-        : `Después de la wh-word va el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> y luego el sujeto: <i>${whText} <b>do/does/did</b> ${tokens.slice(whLen).join(" ")}?</i> — revisa cuál corresponde.`;
+        ? `After the wh-word comes the <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span>, then the subject: <i>${whText} <b>do/does/did</b> ${tokens.slice(whLen).join(" ")}?</i>. Check which one fits.`
+        : `Después de la wh-word va el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> y luego el sujeto: <i>${whText} <b>do/does/did</b> ${tokens.slice(whLen).join(" ")}?</i>. Revisa cuál corresponde.`;
       return incompleteResult(parts, [note]);
     } else if(sIdx < n && isVerbCandidate(lower[sIdx]) && ["who","what","which","whose","how"].includes(lower[0])){
       return analyzeSubjectQ(tokens, lower, whText, extra, sIdx, warnings);
@@ -1091,13 +1098,13 @@ function analyze(raw){
       const flippedSubj = tokens.slice(auxIdx+1)
         .map(t => ({you:"I", your:"my", yours:"mine"}[t.toLowerCase()] || t)).join(" ");
       const hint2 = whHint(whText.toLowerCase());
-      const relAnswer = {kind:"open", lines:[{icon:"💬", pieces:[
+      const relAnswer = {kind:"open", lines:[{pieces:[
         {role:"subj", text:cap(flippedSubj), label:"sujeto + cláusula"},
         {role:"verb", text:tokens[auxIdx].toLowerCase(), label:"verbo to be ⭐"},
         {role:"new", text:"+ " + hint2, label:"info nueva"}
       ], caption:"Estructura de la respuesta"}]};
       const beTense = (["was","were"].includes(aux) ? "Pasado" : "Presente") + " Simple (to be)";
-      return {ok:true, type:"Abierta (Wh-question) — con cláusula relativa", qtipo:"open", negative:false,
+      return {ok:true, type:"Abierta (Wh-question) con cláusula relativa", qtipo:"open", negative:false,
         tense:beTense, parts:parts2, answer:relAnswer, warnings, notes:relNotes};
     }
   }
@@ -1279,7 +1286,7 @@ function analyze(raw){
   // 5. Tiempo gramatical
   let tense = "", tenseNote = "";
   if(aux === "do" || aux === "does"){ tense = "Presente Simple"; }
-  else if(aux === "did"){ tense = usedTo ? "Pasado — hábito con «used to»" : "Pasado Simple"; }
+  else if(aux === "did"){ tense = usedTo ? "Pasado (hábito con «used to»)" : "Pasado Simple"; }
   else if(["am","is","are"].includes(aux)){
     if(goingTo) tense = "Futuro con «going to»";
     else if(verbForm === "ing") tense = "Presente Continuo";
@@ -1307,7 +1314,7 @@ function analyze(raw){
   }
   else if(MODALS.includes(aux)){
     tense = `Verbo modal («${aux}»)`;
-    tenseNote = "Los modales no marcan el tiempo por sí solos — el contexto lo hace.";
+    tenseNote = "Los modales no marcan el tiempo por sí solos: el contexto lo hace.";
   }
 
   // 6. Concordancia sujeto-auxiliar (pedagógico)
@@ -1318,8 +1325,14 @@ function analyze(raw){
   const parts = [];
   // En la pregunta de sujeto la wh-word ES el sujeto: una sola pieza, no dos.
   if(isOpen) parts.push({role:"wh", text:whText, label: whEsSujeto ? "wh = sujeto" : "wh-word"});
+  /* El rótulo dice el nombre GRAMATICAL, como el resto de las piezas (sujeto,
+     verbo, complemento). Decía «conectora prestada», que es lenguaje de la
+     analogía y en el chip aparece SOLO, sin la Guía al lado que lo explique.
+     «Prestado» se queda porque ahí está lo que hay que aprender —do/does/did se
+     piden prestados y el sello del tiempo se les pasa—, pero ahora cuelga de un
+     sustantivo que el alumno reconoce aunque no haya leído la analogía. */
   let auxLabel = beMain ? "verbo to be ⭐"
-    : ["do","does","did"].includes(aux) ? "conectora prestada 🧱"
+    : ["do","does","did"].includes(aux) ? "auxiliar prestado"
     : "auxiliar";
   if(negative) auxLabel += " ⛔";
   // Si el "not" venía separado ("did … not"), lo mostramos junto al auxiliar
@@ -1333,7 +1346,7 @@ function analyze(raw){
   if(!beMain && verbTokens.length){
     if(verbForm === "perfCont" && verbTokens.length >= 2){
       // Perfecto continuo: "been" es parte del auxiliar (have/has/had been), no del verbo
-      parts.push({role:"aux", text:verbTokens[0], label:"auxiliar (be) 🧱"});
+      parts.push({role:"aux", text:verbTokens[0], label:"auxiliar (be)"});
       parts.push({role:"verb", text:verbTokens.slice(1).join(" "), label:"verbo -ing"});
     } else {
       parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
@@ -1348,18 +1361,18 @@ function analyze(raw){
   if(beLike) notes.push("«What + be + sujeto + <b>like</b>?» es un molde fijo para pedir <b>descripciones</b> (¿cómo es/era…?). Ese «like» no es el verbo gustar: hace pareja con el «what», y en la respuesta <b>desaparece</b>: «She was friendly and a bit shy».");
 
   if(negative && !isOpen) notes.push("Pregunta <b>negativa</b>: expresa sorpresa o busca confirmación («¿No te gusta…?»). En inglés respondes según la <b>realidad</b>, sin importar el «not»: «Yes, I do» = sí me gusta · «No, I don't» = no me gusta.");
-  if(negative && isOpen) notes.push("Pregunta <b>negativa</b>: la respuesta devuelve la negación tal cual. El auxiliar negativo conserva el <b>sello del tiempo</b> 🧱, así que el verbo se queda en forma base: «He <b>didn't like</b> it because…».");
+  if(negative && isOpen) notes.push("Pregunta <b>negativa</b>: la respuesta devuelve la negación tal cual. El auxiliar negativo conserva el <b>sello del tiempo</b>, así que el verbo se queda en forma base: «He <b>didn't like</b> it because…».");
 
   if(goingTo) notes.push("Aquí el <b>be</b> es el auxiliar oficial <span class=\"cdot\" style=\"background:var(--aux)\"></span> (él hace la pregunta y la negación) y «going to» es su <b>ayudante</b> (semi-auxiliar): juntos forman el futuro. El verbo principal queda en forma base.");
   if(usedTo) notes.push("«used to» = hábitos del pasado que ya no ocurren. Funciona como <b>semi-auxiliar</b>: en la pregunta, «did» se lleva la carga temporal y queda «use to»; al responder en positivo, sueltas el «did» y su carga <b>pasa al semi-auxiliar</b>: «I <b>used to</b> play…».");
 
-  if(beMain) notes.push("El verbo <b>to be</b> es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. Es la pieza que <b>se conecta sola</b>, no le pide prestado a nadie — él mismo pregunta, niega y responde: «Yes, she <b>is</b>».");
+  if(beMain) notes.push("El verbo <b>to be</b> es el punki 🎸, el rey 👑, la estrella ⭐ de los verbos: rompe todas las reglas y hace el trabajo duro él solito. Es la pieza que <b>se conecta sola</b>, no le pide prestado a nadie. Él mismo pregunta, niega y responde: «Yes, she <b>is</b>».");
   if(!isOpen && ["do","does","did"].includes(aux)){
     const exSubj = aux === "does" ? "she" : "I";
     const exVerb = aux === "does" ? "likes" : "like";
-    notes.push(`Tiempo simple = una sola pieza 🧱. Para preguntar tuvo que <b>pedir prestada una conectora</b> («${aux}»), y el sello del tiempo se pasó a ella. En la respuesta <b>corta</b> la conectora se queda («Yes, ${exSubj} <b>${aux}</b>»); en la <b>larga</b> ya no hace falta — la devuelves y el sello vuelve al verbo: «Yes, ${exSubj} <b>${exVerb}</b> coffee a lot».`);
+    notes.push(`Tiempo simple = una sola pieza. Para preguntar tuvo que <b>pedir prestado un auxiliar</b> («${aux}»), y el sello del tiempo se pasó a ella. En la respuesta <b>corta</b> el auxiliar se queda («Yes, ${exSubj} <b>${aux}</b>»); en la <b>larga</b> ya no hace falta, así que la devuelves y el sello vuelve al verbo: «Yes, ${exSubj} <b>${exVerb}</b> coffee a lot».`);
   }
-  if(!isOpen && !beMain && ["have","has","had","am","is","are","was","were","will"].includes(aux)) notes.push("Tiempo compuesto = dos piezas 🧱🧱: la conectora «" + aux + "» viene <b>de fábrica</b>, no se pide prestada a nadie. La respuesta corta siempre devuelve esa primera pieza (el auxiliar).");
+  if(!isOpen && !beMain && ["have","has","had","am","is","are","was","were","will"].includes(aux)) notes.push("Tiempo compuesto = dos piezas: el auxiliar «" + aux + "» viene <b>de fábrica</b>, no se pide prestada a nadie. La respuesta corta siempre devuelve esa primera pieza (el auxiliar).");
   if(tenseNote) notes.push(tenseNote);
 
   /* Pregunta de sujeto: la respuesta NO agrega un dato al final, NOMBRA al
@@ -1376,17 +1389,17 @@ function analyze(raw){
     if(verbTokens.length) largas.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
     if(compTokens.length) largas.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
     answerFinal = {kind:"subject", lines:[
-      {icon:"💬", pieces:[
+      {pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
         {role:"aux", text:auxCorto + ".", label:"auxiliar"}
       ], caption:"Respuesta corta"},
-      {icon:"💬", pieces:largas, caption:"Respuesta larga"}
+      {pieces:largas, caption:"Respuesta larga"}
     ]};
     notes.unshift(
-      `<b>Pregunta de sujeto</b>: «${whText}» no pide un dato al final — <b>ES el sujeto</b>. Por eso entre «${tokens[auxIdx]}» y «${verbTokens.join(" ")}» no hay nadie: el hueco no está vacío por error, lo ocupa la wh-word.`,
+      `<b>Pregunta de sujeto</b>: «${whText}» no pide un dato al final: <b>ES el sujeto</b>. Por eso entre «${tokens[auxIdx]}» y «${verbTokens.join(" ")}» no hay nadie: el hueco no está vacío por error, lo ocupa la wh-word.`,
       `Se responde <b>nombrando</b> a quien hace la acción: «Ana ${auxCorto}${compTokens.length || verbTokens.length ? " " + [semiAuxText, verbTokens.join(" "), compTokens.join(" ")].filter(Boolean).join(" ") : ""}». En español pasa igual: «¿Quién viene?» → «Viene Ana», no «Ana viene alguien».`
     );
-    typeStr = "Abierta — de sujeto";
+    typeStr = "Abierta (de sujeto)";
   } else {
     typeStr = isOpen ? "Abierta (Wh-question)" : "Cerrada (Yes/No)";
   }
@@ -1417,18 +1430,18 @@ function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
   const answer = {
     kind:"subject",
     lines:[
-      {icon:"💬", pieces:[
+      {pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
         {role: auxIsMainVerb ? "verb" : "aux", text:auxShort+".", label:"auxiliar"}
       ], caption:"Respuesta corta"},
-      {icon:"💬", pieces:[
+      {pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
         {role:"verb", text:tokens[vIdx], label:"verbo"},
         ...(compTokens.length ? [{role:"comp", text:compTokens.join(" "), label:"complemento"}] : [])
       ], caption:"Respuesta larga"}
     ]
   };
-  return {ok:true, type:"Abierta — de sujeto (¡sin auxiliar!)", qtipo:"open", negative:false,
+  return {ok:true, type:"Abierta (de sujeto, ¡sin auxiliar!)", qtipo:"open", negative:false,
     tense, parts, answer, warnings, notes};
 }
 
@@ -1436,16 +1449,16 @@ function checkAgreement(aux, subj){
   const third = ["he","she","it"];
   const notThird = ["i","you","we","they"];
   const g = (es, en) => lang==="en" ? en : es;
-  if(aux==="does" && notThird.includes(subj)) return g(`Ojo 👀: «does» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «do».`, `Careful 👀: "does" is used with <b>he/she/it</b>. With "${subj}" you need "do".`);
-  if(aux==="do" && third.includes(subj)) return g(`Ojo 👀: «do» se usa con <b>I/you/we/they</b>. Con «${subj}» corresponde «does».`, `Careful 👀: "do" is used with <b>I/you/we/they</b>. With "${subj}" you need "does".`);
-  if(aux==="is" && ["you","we","they"].includes(subj)) return g(`Ojo 👀: «is» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «are».`, `Careful 👀: "is" is used with <b>he/she/it</b>. With "${subj}" you need "are".`);
-  if(aux==="is" && subj==="i") return g("Ojo 👀: con «I» corresponde «am».", `Careful 👀: with "I" you need "am".`);
-  if(aux==="are" && [...third,"i"].includes(subj)) return g(`Ojo 👀: «are» se usa con <b>you/we/they</b>.`, `Careful 👀: "are" is used with <b>you/we/they</b>.`);
-  if(aux==="am" && subj!=="i") return g("Ojo 👀: «am» solo se usa con «I».", `Careful 👀: "am" is only used with "I".`);
-  if(aux==="was" && ["you","we","they"].includes(subj)) return g(`Ojo 👀: «was» se usa con <b>I/he/she/it</b>. Con «${subj}» corresponde «were».`, `Careful 👀: "was" is used with <b>I/he/she/it</b>. With "${subj}" you need "were".`);
-  if(aux==="were" && [...third,"i"].includes(subj)) return g(`Ojo 👀: «were» se usa con <b>you/we/they</b>.`, `Careful 👀: "were" is used with <b>you/we/they</b>.`);
-  if(aux==="has" && notThird.includes(subj)) return g(`Ojo 👀: «has» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «have».`, `Careful 👀: "has" is used with <b>he/she/it</b>. With "${subj}" you need "have".`);
-  if(aux==="have" && third.includes(subj)) return g(`Ojo 👀: como auxiliar, «have» va con <b>I/you/we/they</b>; con «${subj}» corresponde «has».`, `Careful 👀: as an auxiliary, "have" goes with <b>I/you/we/they</b>; with "${subj}" you need "has".`);
+  if(aux==="does" && notThird.includes(subj)) return g(`Ojo: «does» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «do».`, `Careful: "does" is used with <b>he/she/it</b>. With "${subj}" you need "do".`);
+  if(aux==="do" && third.includes(subj)) return g(`Ojo: «do» se usa con <b>I/you/we/they</b>. Con «${subj}» corresponde «does».`, `Careful: "do" is used with <b>I/you/we/they</b>. With "${subj}" you need "does".`);
+  if(aux==="is" && ["you","we","they"].includes(subj)) return g(`Ojo: «is» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «are».`, `Careful: "is" is used with <b>he/she/it</b>. With "${subj}" you need "are".`);
+  if(aux==="is" && subj==="i") return g("Ojo: con «I» corresponde «am».", `Careful: with "I" you need "am".`);
+  if(aux==="are" && [...third,"i"].includes(subj)) return g(`Ojo: «are» se usa con <b>you/we/they</b>.`, `Careful: "are" is used with <b>you/we/they</b>.`);
+  if(aux==="am" && subj!=="i") return g("Ojo: «am» solo se usa con «I».", `Careful: "am" is only used with "I".`);
+  if(aux==="was" && ["you","we","they"].includes(subj)) return g(`Ojo: «was» se usa con <b>I/he/she/it</b>. Con «${subj}» corresponde «were».`, `Careful: "was" is used with <b>I/he/she/it</b>. With "${subj}" you need "were".`);
+  if(aux==="were" && [...third,"i"].includes(subj)) return g(`Ojo: «were» se usa con <b>you/we/they</b>.`, `Careful: "were" is used with <b>you/we/they</b>.`);
+  if(aux==="has" && notThird.includes(subj)) return g(`Ojo: «has» se usa con <b>he/she/it</b>. Con «${subj}» corresponde «have».`, `Careful: "has" is used with <b>he/she/it</b>. With "${subj}" you need "have".`);
+  if(aux==="have" && third.includes(subj)) return g(`Ojo: como auxiliar, «have» va con <b>I/you/we/they</b>; con «${subj}» corresponde «has».`, `Careful: as an auxiliary, "have" goes with <b>I/you/we/they</b>; with "${subj}" you need "has".`);
   return null;
 }
 
@@ -1498,7 +1511,7 @@ function buildAnswer(ctx){
     // Si "be" es el verbo principal, esta pieza pinta y se etiqueta como verbo, no como auxiliar
     const auxRole = beMain ? "verb" : "aux";
     const auxPieceLabel = beMain ? "verbo to be ⭐" : "auxiliar";
-    const yesLine = {icon:"✅", pieces:[
+    const yesLine = {signo:"affirmative", pieces:[
       {role:"new", text:"Yes,", label:"info nueva"},
       {role:"subj", text:cap(newSubj), label:"sujeto"},
       {role:auxRole, text:newAux+".", label:auxPieceLabel}
@@ -1513,7 +1526,7 @@ function buildAnswer(ctx){
         {role:"subj", text:cap(newSubj), label:"sujeto"},
         {role:auxRole, text:newNeg+".", label:auxPieceLabel}];
     }
-    const lines = [yesLine, {icon:"❌", pieces:noPieces, caption:"Negativa"}];
+    const lines = [yesLine, {signo:"negative", pieces:noPieces, caption:"Negativa"}];
     return {kind:"closed", lines, subjNote};
   }
 
@@ -1563,7 +1576,7 @@ function buildAnswer(ctx){
       verbPhrase = [{role:"aux", text:newAux, label:"auxiliar"},
         {role:"new", text:"[la acción: travel, study…]", label:"verbo nuevo"}];
     }
-    notes2.push("Excepción del <b>do</b> como verbo principal: la pieza «do» no se devuelve — se reemplaza por el verbo de la acción que se hizo, hace o hará: «What did you <b>do</b>?» → «I <b>played</b> football».");
+    notes2.push("Excepción del <b>do</b> como verbo principal: la pieza «do» no se devuelve: se reemplaza por el verbo de la acción que se hizo, hace o hará: «What did you <b>do</b>?» → «I <b>played</b> football».");
   } else if(beMain){
     verbPhrase = [{role:"verb", text:newAux, label:"verbo to be ⭐"}];
   } else if(aux === "do"){
@@ -1624,11 +1637,11 @@ function buildAnswer(ctx){
     pieces = [subjPiece, ...verbPhrase, ...(compPiece ? [compPiece] : []), newPiece];
   }
   if(gapAfterVerb && !beLike) notes2.push(`Tu respuesta ocupa el <b>hueco</b> que dejó «${whText}»: como preguntaba por el objeto del verbo, la info nueva va justo después del verbo, antes del complemento.`);
-  if(!doMain && !usedTo && !negative && aux==="did") notes2.push(`Devuelves la conectora prestada 🧱: «did» ya no hace falta, y el sello del tiempo que llevaba vuelve al verbo: «did … ${mainBase}» → «${pastOf(mainBase)}».`);
-  if(!doMain && usedTo && !negative) notes2.push("Devuelves la conectora prestada 🧱: «did» ya no hace falta, y el sello del tiempo que llevaba pasa al semi-auxiliar: «did … use to» → «used to».");
-  if(!doMain && !negative && aux==="does") notes2.push("Devuelves la conectora prestada 🧱: «does» ya no hace falta, y la «-s» de tercera persona que llevaba vuelve al verbo.");
-  if(!doMain && !negative && aux==="do") notes2.push("Devuelves la conectora prestada 🧱: en la respuesta afirmativa el «do» ya no hace falta — queda solo el verbo.");
-  return {kind:"open", lines:[{icon:"💬", pieces, caption:"Estructura de la respuesta"}], subjNote, extraNotes:notes2};
+  if(!doMain && !usedTo && !negative && aux==="did") notes2.push(`Devuelves el auxiliar prestado: «did» ya no hace falta, y el sello del tiempo que llevaba vuelve al verbo: «did … ${mainBase}» → «${pastOf(mainBase)}».`);
+  if(!doMain && usedTo && !negative) notes2.push("Devuelves el auxiliar prestado: «did» ya no hace falta, y el sello del tiempo que llevaba pasa al semi-auxiliar: «did … use to» → «used to».");
+  if(!doMain && !negative && aux==="does") notes2.push("Devuelves el auxiliar prestado: «does» ya no hace falta, y la «-s» de tercera persona que llevaba vuelve al verbo.");
+  if(!doMain && !negative && aux==="do") notes2.push("Devuelves el auxiliar prestado: en la respuesta afirmativa el «do» ya no hace falta: queda solo el verbo.");
+  return {kind:"open", lines:[{pieces, caption:"Estructura de la respuesta"}], subjNote, extraNotes:notes2};
 }
 
 function cap(s){ return s === "I" ? "I" : s.charAt(0).toUpperCase()+s.slice(1); }
@@ -1669,7 +1682,7 @@ function renderProgress(){
   const cur = k => { try{ return parseInt(localStorage.getItem(k)||"0",10)||0; }catch(e){ return 0; } };
   let bests = {}; try{ bests = JSON.parse(localStorage.getItem("ql_best_streaks")||"{}"); }catch(e){}
   const modeRows = [
-    { k:"b",  icon:"🧱", name:t("navBuild"),    now:cur("ql_streak") },
+    { k:"b",  icon:'<svg class="lego" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="currentColor"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/></svg>', name:t("navBuild"),    now:cur("ql_streak") },
     { k:"id", icon:"🎯", name:t("navIdentify"), now:cur("ql_id_streak") },
     { k:"r",  icon:"💬", name:t("navRespond"),  now:cur("ql_r_streak") },
   ].map(m => {
@@ -1693,7 +1706,7 @@ function renderProgress(){
     return `<div class="pbadge ${on ? "on" : ""}"><span class="pbi" aria-hidden="true">${on ? b.icon : "🔒"}</span>`
       + `<div class="pbt"><b>${esc(name)}</b><small>${esc(where || desc)}</small></div></div>`;
   }).join("");
-  el.innerHTML = streakCard + modesCard + `<p class="hint" style="margin:.9rem 0 .4rem">${esc(t("progBadges"))} — ${unlocked}/${G.BADGES.length}</p><div class="pbadges">${grid}</div>`;
+  el.innerHTML = streakCard + modesCard + `<p class="hint" style="margin:.9rem 0 .4rem">${esc(t("progBadges"))}: ${unlocked}/${G.BADGES.length}</p><div class="pbadges">${grid}</div>`;
 }
 
 // Ejemplos REPRESENTATIVOS del nivel (no acumulativos): 2-3 por nivel.
@@ -1740,7 +1753,7 @@ function gapPart(gapRole, es, en){
 function incompleteResult(parts, notes){
   return {ok:true, incomplete:true,
     type: lang==="en" ? "Incomplete question" : "Pregunta incompleta",
-    tense:"—", parts, answer:null, warnings:[], notes:notes||[]};
+    tense: lang==="en" ? "no tense yet" : "sin tiempo aún", parts, answer:null, warnings:[], notes:notes||[]};
 }
 /* Chip de los dos ejes. Las clases y los colores vienen generados en tokens.css
    desde design-tokens; aquí solo se decide QUÉ signos van.
@@ -1748,6 +1761,17 @@ function incompleteResult(parts, notes){
    y el `+` no aparece nunca: la afirmativa es el caso por defecto y marcarla no
    diría nada. La negativa sí se marca, porque es el caso marcado — antes era el
    texto «· negativa ⛔» pegado dentro del badge de tipo. */
+/* Las respuestas a una pregunta cerrada van marcadas con el MISMO signo que usa
+   el chip de forma: la de «Yes» es afirmativa y la de «No» es negativa, que es
+   exactamente lo que ese eje significa. Antes llevaban ✅ y ❌, o sea dos emoji
+   diciendo con otro idioma lo que el rótulo de la línea («Afirmativa» /
+   «Negativa») y las propias piezas («Yes,» / «No,») ya decían.
+   Las respuestas abiertas no llevan signo: no son ni una cosa ni la otra. */
+function lineSign(line){
+  if(!line.signo) return "";
+  return `<span class="tag ghf__g" data-form="${line.signo}" aria-hidden="true">`
+       + (line.signo === "negative" ? "−" : "+") + `</span>`;
+}
 function formChip(r){
   if(!r) return "";
   const signo = f => `<span class="ghf__g" data-form="${f}" aria-hidden="true">${f === "negative" ? "−" : "?"}</span>`;
@@ -1789,7 +1813,7 @@ function renderResult(r, container){
   }
   for(const line of r.answer.lines){
     html += `<p class="hint" style="margin-top:.4rem">${esc(trCap(line.caption))}:</p>
-      <div class="ansline"><span class="tag">${line.icon}</span>${line.pieces.map(blockHTML).join("")}</div>`;
+      <div class="ansline">${lineSign(line)}${line.pieces.map(blockHTML).join("")}</div>`;
   }
   if(r.answer.subjNote) html += `<p class="hint" style="margin-top:.4rem">💡 ${esc(r.answer.subjNote)}</p>`;
   html += `</div>`;
@@ -2204,57 +2228,57 @@ window.addEventListener("message", e=>{
 const I18N = {
   es: {
     subtitle:"Arma preguntas en inglés pieza por pieza. Respóndelas con las mismas piezas.",
-    lvl:"📊 Nivel",
+    lvl:"Nivel",
     navAnalyze:"Analiza", navBuild:"Construye", navIdentify:"Identifica", navRespond:"Responde", navGuide:"Guía",
     navPractice:"Práctica", navProgress:"Progreso",
-    practiceTitle:"🎯 Práctica", practiceIntro:"Elige un modo para practicar:",
+    practiceTitle:"Práctica", practiceIntro:"Elige un modo para practicar:",
     pdBuild:"Ordena las piezas para armar la pregunta.",
     pdIdentify:"Reconoce si es abierta/cerrada y qué tiempo verbal es.",
     pdRespond:"Devuelve las piezas de la pregunta y agrega la tuya.",
-    progressTitle:"📊 Progreso", progDays:"días de racha", progBest:"Mejor", progBadges:"Insignias", progModes:"Rachas por modo", progEmpty:"Empieza a practicar para sumar racha e insignias 🌱",
+    progressTitle:"Progreso", progDays:"días de racha", progBest:"Mejor", progBadges:"Insignias", progModes:"Rachas por modo", progEmpty:"Empieza a practicar para sumar racha e insignias 🌱",
     legendSummary:"¿Qué significa cada pieza?",
     pWh:"Wh-word", pWhD:"Lo que se pregunta (el tipo de pregunta).",
-    pAux:"Auxiliar", pAuxD:"Verbo ayudante — lleva la información de tiempo.",
+    pAux:"Auxiliar", pAuxD:"Verbo ayudante: lleva la información de tiempo.",
     pSemi:"Semi-aux", pSemiD:"Ayuda extra para ciertos casos (going to, used to).",
     pSubj:"Sujeto", pSubjD:"De quién se habla, o quién hace la acción.",
     pVerb:"Verbo principal", pVerbD:"Acción o estado que se realiza.",
     pComp:"Complemento", pCompD:"Información adicional de la oración.",
     pAdv:"Adverbio", pAdvD:"Modifica al verbo (ever, never, always, often…).",
-    pNew:"+ Info nueva", pNewD:"Lo que tú agregas al responder — no viene de la pregunta.",
+    pNew:"+ Info nueva", pNewD:"Lo que tú agregas al responder: no viene de la pregunta.",
     analyzeTitle:"Escribe una pregunta en inglés",
     btnAnalyze:"Analizar", btnReset:"Borrar", btnSkip:"Saltar →",
-    footer:"Herramienta pedagógica de análisis por reglas — puede equivocarse con preguntas muy complejas. 🇨🇱",
+    footer:"Herramienta pedagógica de análisis por reglas; puede equivocarse con preguntas muy complejas. 🇨🇱",
     whH2:`<span class="cdot" style="background:var(--wh)"></span> Wh-words: la pieza que pregunta`,
     tensesH2:"⏱️ Tiempos: cuándo se usa cada uno",
     gPiezasSum:"Qué piezas se devuelven al responder",
-    gPiezasP1:`Una conversación se construye <b>entre dos</b>. La pregunta te pasa unas piezas; al responder devuelves esas mismas y <b>agregas la tuya</b> — la que el otro no tenía.`,
-    gPiezasP2:`Las piezas que <b>vuelven</b> de la pregunta a la respuesta son: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces — en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.`,
-    gPiezasP3:`La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no vuelve</b>: nunca aparece en la respuesta. Es la <b>etiqueta del hueco vacío</b> — te dice qué tipo de pieza va ahí: un lugar si preguntó «where», una persona si preguntó «who».`,
+    gPiezasP1:`Una conversación se construye <b>entre dos</b>. La pregunta te pasa unas piezas; al responder devuelves esas mismas y <b>agregas la tuya</b>: la que el otro no tenía.`,
+    gPiezasP2:`Las piezas que <b>vuelven</b> de la pregunta a la respuesta son: el <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> (aunque cambie de persona: <i>you → I</i>), el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span>, el <b>auxiliar</b> <span class="cdot" style="background:var(--aux)"></span> (a veces: en las cerradas siempre, en las abiertas solo si el tiempo es compuesto) y el <b>complemento</b> <span class="cdot" style="background:var(--comp)"></span>.`,
+    gPiezasP3:`La <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>no vuelve</b>: nunca aparece en la respuesta. Es la <b>etiqueta del hueco vacío</b>; te dice qué tipo de pieza va ahí: un lugar si preguntó «where», una persona si preguntó «who».`,
     gPiezasP4:`Esa pieza nueva 🆕 es la única que <b>no viene de la pregunta</b>: es tu aporte, lo que tú sabes y el otro no.`,
     gSelloSum:"Dónde va el sello del tiempo: simple o compuesto",
     gSelloP1:`Todo tiempo verbal lleva su <b>sello</b> estampado en alguna pieza. La diferencia entre simple y compuesto es <b>en cuál</b>.`,
     gSelloP2:`En los <b>simples</b> hay una sola pieza y el sello va en ella: <i>work → work<b>s</b></i>, <i>play → play<b>ed</b></i>.`,
-    gSelloP3:`Pero en <b>negativo</b> e <b>interrogativo</b> esa pieza no se sostiene sola: hay que <b>pedir prestada una pieza conectora</b> — <b>do / does / did</b> — y el <b>sello se pasa a ella</b>. Por eso el verbo vuelve a su forma base: <i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>. Al responder en positivo <b>devuelves</b> la conectora y el sello vuelve al verbo: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i>`,
-    gSelloP4:`Los <b>compuestos</b> traen su conectora <b>de fábrica</b> y no la sueltan nunca — está en positivo, negativo e interrogativo. El sello va en esa primera pieza y el verbo se queda en su forma fija: <i>She <b>is</b> sleeping. / She <b>isn't</b> sleeping. / <b>Is</b> she sleeping?</i>`,
-    gSelloP5:`¿Y el verbo <b>to be</b>? Es la pieza que <b>se conecta sola</b> 🎸: no le pide prestado a nadie, pregunta y responde por su cuenta. <i>Is she a doctor? — Yes, she <b>is</b>.</i>`,
+    gSelloP3:`Pero en <b>negativo</b> e <b>interrogativo</b> esa pieza no se sostiene sola: hay que <b>pedir prestada una pieza</b>, un <b>auxiliar</b> (<b>do / does / did</b>), y el <b>sello se pasa a ella</b>. Por eso el verbo vuelve a su forma base: <i>did</i> se lleva el pasado, <i>does</i> se lleva la <i>-s</i>. Al responder en positivo <b>devuelves</b> ese auxiliar y el sello vuelve al verbo: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i>`,
+    gSelloP4:`Los <b>compuestos</b> traen su auxiliar <b>de fábrica</b> y no lo sueltan nunca: está en positivo, negativo e interrogativo. El sello va en esa primera pieza y el verbo se queda en su forma fija: <i>She <b>is</b> sleeping. / She <b>isn't</b> sleeping. / <b>Is</b> she sleeping?</i>`,
+    gSelloP5:`¿Y el verbo <b>to be</b>? Es la pieza que <b>se conecta sola</b> 🎸: no le pide prestado a nadie, pregunta y responde por su cuenta. <i>Is she a doctor?</i> → <i>Yes, she <b>is</b>.</i>`,
     wd_what:"cosas, ideas, acciones", wd_where:"lugares", wd_when:"tiempo, fechas",
     wd_why:"razones (→ because…)", wd_who:"personas", wd_whose:"posesión (¿de quién?)",
     wd_which:"opción entre pocas", wd_how:"manera, estado", wd_howmany:"cantidad (contable)",
     wd_howmuch:"cantidad (incontable), precio", wd_howoften:"frecuencia", wd_howlong:"duración",
     wd_howold:"edad", wd_whattime:"hora exacta",
     mSubj:"sujeto", mBase:"verbo base", mIng:"verbo-ing", mPart:"participio", mConj:"verbo conjugado",
-    tSimplePresent:`Presente Simple 🧱 <span class="hint">(pide conectora prestada)</span>`,
+    tSimplePresent:`Presente Simple <span class="hint">· una pieza · pide un auxiliar prestado</span>`,
     tToBePresent:`Presente de «to be» 👑 <span class="hint">(el punki: no pide prestado)</span>`,
-    tPresentCont:"Presente Continuo 🧱🧱",
-    tSimplePast:`Pasado Simple 🧱 <span class="hint">(pide conectora prestada)</span>`,
+    tPresentCont:`Presente Continuo <span class="hint">· dos piezas</span>`,
+    tSimplePast:`Pasado Simple <span class="hint">· una pieza · pide un auxiliar prestado</span>`,
     tToBePast:"Pasado de «to be» 👑",
-    tPastCont:"Pasado Continuo 🧱🧱",
-    tPresentPerfect:"Presente Perfecto 🧱🧱",
-    tPastPerfect:"Pasado Perfecto 🧱🧱",
-    tFutureWill:`Futuro con «will» 🧱🧱`,
-    tFutureGoing:`Futuro con «going to» 🧱🧱`,
-    tUsedTo:`Hábito pasado con «used to» 🧱`,
-    tModals:`Modales 🧱🧱 <span class="hint">(can, could, should, would…)</span>`,
+    tPastCont:`Pasado Continuo <span class="hint">· dos piezas</span>`,
+    tPresentPerfect:`Presente Perfecto <span class="hint">· dos piezas</span>`,
+    tPastPerfect:`Pasado Perfecto <span class="hint">· dos piezas</span>`,
+    tFutureWill:`Futuro con «will» <span class="hint">· dos piezas</span>`,
+    tFutureGoing:`Futuro con «going to» <span class="hint">· dos piezas</span>`,
+    tUsedTo:`Hábito pasado con «used to» <span class="hint">· una pieza</span>`,
+    tModals:`Modales <span class="hint">· dos piezas</span> <span class="hint">(can, could, should, would…)</span>`,
     tSubjectQ:`Pregunta de sujeto 🕵️ <span class="hint">(la excepción sin auxiliar)</span>`,
     uSimplePresent:"Rutinas, hábitos, hechos generales, gustos.",
     uToBePresent:"Identidad, estados, descripciones, nacionalidad, profesión.",
@@ -2269,10 +2293,10 @@ const I18N = {
     uUsedTo:"Hábitos o estados del pasado que ya no ocurren. En positivo el semi-aux recupera la carga temporal: I <b>used to</b> play football.",
     uModals:"Habilidad, permiso, consejos, posibilidad, cortesía. No marcan tiempo por sí solos.",
     uSubjectQ:"Cuando la wh-word ES el sujeto, no se usa auxiliar y el verbo va conjugado.",
-    piecesTitle:"🧩 Piezas de tu pregunta",
-    answerHeading:"💬 Qué piezas se devuelven — así se responde:",
-    renderHint:`<span class="cdot" style="background:var(--wh)"></span> La wh-word <b>no vuelve</b> — es la <b>etiqueta del hueco</b>: dice qué tipo de pieza nueva agregar. Las que sí vuelven: <span class="cdot" style="background:var(--subj)"></span> sujeto, <span class="cdot" style="background:var(--verb)"></span> verbo, <span class="cdot" style="background:var(--aux)"></span> auxiliar (a veces) y <span class="cdot" style="background:var(--comp)"></span> complemento.`,
-    recipeHint:`Recuerda la receta: <b>(Wh) + Auxiliar + Sujeto + Verbo + Complemento</b> 🧩`,
+    piecesTitle:"Piezas de tu pregunta",
+    answerHeading:"Qué piezas se devuelven al responder:",
+    renderHint:`<span class="cdot" style="background:var(--wh)"></span> La wh-word <b>no vuelve</b>. Es la <b>etiqueta del hueco</b>: dice qué tipo de pieza nueva agregar. Las que sí vuelven: <span class="cdot" style="background:var(--subj)"></span> sujeto, <span class="cdot" style="background:var(--verb)"></span> verbo, <span class="cdot" style="background:var(--aux)"></span> auxiliar (a veces) y <span class="cdot" style="background:var(--comp)"></span> complemento.`,
+    recipeHint:`Recuerda la receta: <b>(Wh) + Auxiliar + Sujeto + Verbo + Complemento</b>`,
     buildOk:"🎉 ¡Perfecto! Ahora mira cómo se responde…",
     buildBad:"Casi… el orden no es el correcto. Recuerda: (Wh) + Auxiliar + Sujeto + Verbo + Complemento. Toca una pieza para devolverla.",
     emptyBuild:"Toca las piezas en orden para armar la pregunta…",
@@ -2285,7 +2309,7 @@ const I18N = {
     formNegative:"negativa",
     idEmpty:"No hay preguntas en este nivel todavía.",
     achievement:"¡Logro!",
-    exHint:"💡 O prueba con una de estas:",
+    exHint:"O prueba con una de estas:",
     rHint:"Devuelve las piezas: escribe la respuesta corta (Yes / No).",
     rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien armada!",
     rTry:"Casi… mira la respuesta correcta abajo.",
@@ -2296,57 +2320,57 @@ const I18N = {
   },
   en: {
     subtitle:"Build questions in English piece by piece. Answer them with the same pieces.",
-    lvl:"📊 Level",
+    lvl:"Level",
     navAnalyze:"Analyze", navBuild:"Build", navIdentify:"Identify", navRespond:"Respond", navGuide:"Guide",
     navPractice:"Practice", navProgress:"Progress",
-    practiceTitle:"🎯 Practice", practiceIntro:"Choose a mode to practice:",
+    practiceTitle:"Practice", practiceIntro:"Choose a mode to practice:",
     pdBuild:"Arrange the pieces to build the question.",
     pdIdentify:"Tell if it's open/closed and which tense it is.",
     pdRespond:"Send back the question's pieces and add your own.",
-    progressTitle:"📊 Progress", progDays:"day streak", progBest:"Best", progBadges:"Badges", progModes:"Streaks by mode", progEmpty:"Start practising to build your streak and badges 🌱",
+    progressTitle:"Progress", progDays:"day streak", progBest:"Best", progBadges:"Badges", progModes:"Streaks by mode", progEmpty:"Start practising to build your streak and badges 🌱",
     legendSummary:"What does each piece mean?",
     pWh:"Wh-word", pWhD:"What is being asked (the type of question).",
-    pAux:"Auxiliary", pAuxD:"Helper verb — it carries the tense information.",
+    pAux:"Auxiliary", pAuxD:"Helper verb: it carries the tense information.",
     pSemi:"Semi-aux", pSemiD:"Extra helper for certain cases (going to, used to).",
     pSubj:"Subject", pSubjD:"Who is being talked about, or who does the action.",
     pVerb:"Main verb", pVerbD:"The action or state taking place.",
     pComp:"Complement", pCompD:"Additional information in the sentence.",
     pAdv:"Adverb", pAdvD:"Modifies the verb (ever, never, always, often…).",
-    pNew:"+ New info", pNewD:"What you add when answering — it doesn't come from the question.",
+    pNew:"+ New info", pNewD:"What you add when answering: it doesn't come from the question.",
     analyzeTitle:"Write a question in English",
     btnAnalyze:"Analyze", btnReset:"Clear", btnSkip:"Skip →",
-    footer:"Rule-based analysis teaching tool — it may get very complex questions wrong. 🇨🇱",
+    footer:"Rule-based analysis teaching tool; it may get very complex questions wrong. 🇨🇱",
     whH2:`<span class="cdot" style="background:var(--wh)"></span> Wh-words: the piece that asks`,
     tensesH2:"⏱️ Tenses: when to use each one",
     gPiezasSum:"Which pieces come back in the answer",
-    gPiezasP1:`A conversation is built <b>by two people</b>. The question hands you some pieces; when you answer you hand those back and <b>add your own</b> — the one the other person did not have.`,
-    gPiezasP2:`The pieces that <b>come back</b> from question to answer are: the <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> (even if the person changes: <i>you → I</i>), the <b>main verb</b> <span class="cdot" style="background:var(--verb)"></span>, the <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span> (sometimes — always in closed questions, in open ones only if the tense is compound) and the <b>complement</b> <span class="cdot" style="background:var(--comp)"></span>.`,
-    gPiezasP3:`The <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>does not come back</b>: it never shows up in the answer. It is the <b>label on the empty slot</b> — it tells you what kind of piece goes there: a place if it asked "where", a person if it asked "who".`,
+    gPiezasP1:`A conversation is built <b>by two people</b>. The question hands you some pieces; when you answer you hand those back and <b>add your own</b>: the one the other person did not have.`,
+    gPiezasP2:`The pieces that <b>come back</b> from question to answer are: the <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> (even if the person changes: <i>you → I</i>), the <b>main verb</b> <span class="cdot" style="background:var(--verb)"></span>, the <b>auxiliary</b> <span class="cdot" style="background:var(--aux)"></span> (sometimes: always in closed questions, in open ones only if the tense is compound) and the <b>complement</b> <span class="cdot" style="background:var(--comp)"></span>.`,
+    gPiezasP3:`The <b>wh-word</b> <span class="cdot" style="background:var(--wh)"></span> <b>does not come back</b>: it never shows up in the answer. It is the <b>label on the empty slot</b>; it tells you what kind of piece goes there: a place if it asked "where", a person if it asked "who".`,
     gPiezasP4:`That new piece 🆕 is the only one that <b>does not come from the question</b>: it is your contribution, what you know and the other person does not.`,
     gSelloSum:"Where the tense stamp goes: simple or compound",
     gSelloP1:`Every tense carries its <b>stamp</b> on one of the pieces. The difference between simple and compound is <b>which one</b>.`,
     gSelloP2:`In <b>simple</b> tenses there is one piece and the stamp is on it: <i>work → work<b>s</b></i>, <i>play → play<b>ed</b></i>.`,
-    gSelloP3:`But in the <b>negative</b> and the <b>question</b> that piece cannot stand on its own: you have to <b>borrow a connector piece</b> — <b>do / does / did</b> — and the <b>stamp moves onto it</b>. That is why the verb goes back to its base form: <i>did</i> takes the past, <i>does</i> takes the <i>-s</i>. When you answer in the positive you <b>give the connector back</b> and the stamp returns to the verb: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i>`,
-    gSelloP4:`<b>Compound</b> tenses come with their connector <b>built in</b> and never let it go — it is there in the positive, the negative and the question. The stamp goes on that first piece and the verb stays in its fixed form: <i>She <b>is</b> sleeping. / She <b>isn't</b> sleeping. / <b>Is</b> she sleeping?</i>`,
-    gSelloP5:`And the verb <b>to be</b>? It is the piece that <b>connects on its own</b> 🎸: it borrows from nobody, it asks and answers by itself. <i>Is she a doctor? — Yes, she <b>is</b>.</i>`,
+    gSelloP3:`But in the <b>negative</b> and the <b>question</b> that piece cannot stand on its own: you have to <b>borrow a piece</b>, an <b>auxiliary</b> (<b>do / does / did</b>), and the <b>stamp moves onto it</b>. That is why the verb goes back to its base form: <i>did</i> takes the past, <i>does</i> takes the <i>-s</i>. When you answer in the positive you <b>give that auxiliary back</b> and the stamp returns to the verb: <i>When <b>did</b> they arrive?</i> → <i>They arriv<b>ed</b>…</i>`,
+    gSelloP4:`<b>Compound</b> tenses come with their auxiliary <b>built in</b> and never let it go: it is there in the positive, the negative and the question. The stamp goes on that first piece and the verb stays in its fixed form: <i>She <b>is</b> sleeping. / She <b>isn't</b> sleeping. / <b>Is</b> she sleeping?</i>`,
+    gSelloP5:`And the verb <b>to be</b>? It is the piece that <b>connects on its own</b> 🎸: it borrows from nobody, it asks and answers by itself. <i>Is she a doctor?</i> → <i>Yes, she <b>is</b>.</i>`,
     wd_what:"things, ideas, actions", wd_where:"places", wd_when:"time, dates",
     wd_why:"reasons (→ because…)", wd_who:"people", wd_whose:"possession (whose?)",
     wd_which:"choice among a few", wd_how:"manner, state", wd_howmany:"quantity (countable)",
     wd_howmuch:"quantity (uncountable), price", wd_howoften:"frequency", wd_howlong:"duration",
     wd_howold:"age", wd_whattime:"exact time",
     mSubj:"subject", mBase:"base verb", mIng:"verb-ing", mPart:"participle", mConj:"conjugated verb",
-    tSimplePresent:`Simple Present 🧱 <span class="hint">(borrows a connector)</span>`,
+    tSimplePresent:`Simple Present <span class="hint">· one piece · borrows an auxiliary</span>`,
     tToBePresent:`Present of "to be" 👑 <span class="hint">(the punk: never borrows)</span>`,
-    tPresentCont:"Present Continuous 🧱🧱",
-    tSimplePast:`Simple Past 🧱 <span class="hint">(borrows a connector)</span>`,
+    tPresentCont:`Present Continuous <span class="hint">· two pieces</span>`,
+    tSimplePast:`Simple Past <span class="hint">· one piece · borrows an auxiliary</span>`,
     tToBePast:`Past of "to be" 👑`,
-    tPastCont:"Past Continuous 🧱🧱",
-    tPresentPerfect:"Present Perfect 🧱🧱",
-    tPastPerfect:"Past Perfect 🧱🧱",
-    tFutureWill:`Future with "will" 🧱🧱`,
-    tFutureGoing:`Future with "going to" 🧱🧱`,
-    tUsedTo:`Past habit with "used to" 🧱`,
-    tModals:`Modals 🧱🧱 <span class="hint">(can, could, should, would…)</span>`,
+    tPastCont:`Past Continuous <span class="hint">· two pieces</span>`,
+    tPresentPerfect:`Present Perfect <span class="hint">· two pieces</span>`,
+    tPastPerfect:`Past Perfect <span class="hint">· two pieces</span>`,
+    tFutureWill:`Future with "will" <span class="hint">· two pieces</span>`,
+    tFutureGoing:`Future with "going to" <span class="hint">· two pieces</span>`,
+    tUsedTo:`Past habit with "used to" <span class="hint">· one piece</span>`,
+    tModals:`Modals <span class="hint">· two pieces</span> <span class="hint">(can, could, should, would…)</span>`,
     tSubjectQ:`Subject question 🕵️ <span class="hint">(the no-auxiliary exception)</span>`,
     uSimplePresent:"Routines, habits, general facts, likes.",
     uToBePresent:"Identity, states, descriptions, nationality, profession.",
@@ -2361,10 +2385,10 @@ const I18N = {
     uUsedTo:"Past habits or states that no longer happen. In the positive, the semi-aux takes back the tense: I <b>used to</b> play football.",
     uModals:"Ability, permission, advice, possibility, politeness. They don't mark tense on their own.",
     uSubjectQ:"When the wh-word IS the subject, no auxiliary is used and the verb is conjugated.",
-    piecesTitle:"🧩 Pieces of your question",
-    answerHeading:"💬 Which pieces go back — this is how you answer:",
-    renderHint:`<span class="cdot" style="background:var(--wh)"></span> The wh-word <b>doesn't go back</b> — it's the <b>label on the gap</b>: it tells you what kind of new piece to add. The ones that do go back: <span class="cdot" style="background:var(--subj)"></span> subject, <span class="cdot" style="background:var(--verb)"></span> verb, <span class="cdot" style="background:var(--aux)"></span> auxiliary (sometimes) and <span class="cdot" style="background:var(--comp)"></span> complement.`,
-    recipeHint:`Remember the recipe: <b>(Wh) + Auxiliary + Subject + Verb + Complement</b> 🧩`,
+    piecesTitle:"Pieces of your question",
+    answerHeading:"Which pieces come back in the answer:",
+    renderHint:`<span class="cdot" style="background:var(--wh)"></span> The wh-word <b>doesn't go back</b>. It's the <b>label on the gap</b>: it tells you what kind of new piece to add. The ones that do go back: <span class="cdot" style="background:var(--subj)"></span> subject, <span class="cdot" style="background:var(--verb)"></span> verb, <span class="cdot" style="background:var(--aux)"></span> auxiliary (sometimes) and <span class="cdot" style="background:var(--comp)"></span> complement.`,
+    recipeHint:`Remember the recipe: <b>(Wh) + Auxiliary + Subject + Verb + Complement</b>`,
     buildOk:"🎉 Perfect! Now see how it's answered…",
     buildBad:"Almost… the order isn't right. Remember: (Wh) + Auxiliary + Subject + Verb + Complement. Tap a piece to send it back.",
     emptyBuild:"Tap the pieces in order to build the question…",
@@ -2378,7 +2402,7 @@ const I18N = {
     formNegative:"negative",
     idEmpty:"No questions at this level yet.",
     achievement:"Achievement!",
-    exHint:"💡 Or try one of these:",
+    exHint:"Or try one of these:",
     rHint:"Send the pieces back: type the short answer (Yes / No).",
     rWrite:"Type your answer.", rGood:"🎉 Nicely built!",
     rTry:"Almost… see the correct answer below.",
@@ -2396,7 +2420,7 @@ function t(k){ return (I18N[lang] && I18N[lang][k]) || I18N.es[k] || k; }
 /* Traducción de la salida del análisis: etiquetas de piezas, captions, tiempo,
    tipo y wh-hints. Las NOTAS largas y las metáforas quedan en español. */
 const LBL = { "wh-word":"wh-word", "wh = sujeto":"wh = subject", "auxiliar":"auxiliary",
-  "conectora prestada 🧱":"borrowed connector 🧱", "auxiliar (be) 🧱":"auxiliary (be) 🧱",
+  "auxiliar prestado":"borrowed auxiliary", "auxiliar (be)":"auxiliary (be)",
   "verbo to be ⭐":"'to be' verb ⭐", "semi-aux":"semi-aux",
   "verbo":"verb", "verbo conjugado":"conjugated verb", "verbo base":"base verb",
   "verbo en pasado":"past verb", "sujeto":"subject", "sujeto + cláusula relativa":"subject + relative clause",
@@ -2406,7 +2430,7 @@ const LBL = { "wh-word":"wh-word", "wh = sujeto":"wh = subject", "auxiliar":"aux
 const CAP = { "Afirmativa":"Affirmative", "Negativa":"Negative", "Respuesta corta":"Short answer",
   "Respuesta larga":"Long answer", "Estructura de la respuesta":"Answer structure" };
 const TENSE_TR = { "Presente Simple":"Simple Present", "Pasado Simple":"Simple Past",
-  "Pasado — hábito con «used to»":"Past — 'used to' habit", "Presente Continuo":"Present Continuous",
+  "Pasado (hábito con «used to»)":"Past (\'used to\' habit)", "Presente Continuo":"Present Continuous",
   "Presente Simple (to be)":"Simple Present (to be)", "Pasado Continuo":"Past Continuous",
   "Pasado Simple (to be)":"Simple Past (to be)", "Presente Perfecto":"Present Perfect",
   "Presente Perfecto Continuo":"Present Perfect Continuous", "Pasado Perfecto":"Past Perfect",
@@ -2421,13 +2445,15 @@ const WH_HINTS_EN = { where:"a place 📍", when:"a time 🕐", who:"a person �
 function trLabel(s){ if(lang==="es") return s; let suf=""; if(s.endsWith(" ⛔")){ suf=" ⛔"; s=s.slice(0,-2); } return (LBL[s]||s)+suf; }
 function trCap(s){ return lang==="es" ? s : (CAP[s]||s); }
 function trTense(s){ if(lang==="es") return s; const m=s.match(/^Verbo modal \(«(.+)»\)$/); if(m) return `Modal verb ("${m[1]}")`; return TENSE_TR[s]||s; }
+/* El orden importa SOLO en el par de «Wh-question»: la corta es prefijo de la
+   larga, así que si subiera se comería el prefijo y dejaría «con cláusula
+   relativa» en español. En «de sujeto» ya da igual desde que el matiz va entre
+   paréntesis: «Abierta (de sujeto)» dejó de ser prefijo de la variante larga. */
 function trType(s){ if(lang==="es") return s;
-  return s.replace("Abierta (Wh-question) — con cláusula relativa","Open (Wh-question) — with relative clause")
-          .replace("Abierta — de sujeto (¡sin auxiliar!)","Open — subject question (no auxiliary!)")
+  return s.replace("Abierta (Wh-question) con cláusula relativa","Open (Wh-question) with relative clause")
           .replace("Abierta (Wh-question)","Open (Wh-question)")
-          /* El orden importa: la variante con «(¡sin auxiliar!)» va arriba, si no
-             esta le comería el prefijo y dejaría el paréntesis en español. */
-          .replace("Abierta — de sujeto","Open — subject question")
+          .replace("Abierta (de sujeto, ¡sin auxiliar!)","Open (subject question, no auxiliary!)")
+          .replace("Abierta (de sujeto)","Open (subject question)")
           .replace("Cerrada (Yes/No)","Closed (Yes/No)"); }
 function whHint(k){ const H = lang==="en" ? WH_HINTS_EN : WH_HINTS; return H[k] || (lang==="en" ? "your info 💬" : "tu información 💬"); }
 function levelLabel(id){ const L = CEFR.labels[id]; return (L && (L[lang] || L.es)) || id; }
