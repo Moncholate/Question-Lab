@@ -149,6 +149,19 @@ console.log('\n5 · condicionales: la condición es pieza propia, no bloque gris
   }
 }
 
+console.log('\n   sin verbo principal AVISA, en vez de tomar el de la condición');
+{
+  /* «What would you if you won the lottery?» daba sujeto «you if you» y verbo
+     «won»: una estructura inventada. Peor que no analizar, porque enseña algo
+     falso en vez de decir qué falta. El verbo principal va ANTES del `if`. */
+  for (const q of ['What would you if you won the lottery?', 'What would you if I left?', 'Would you if I asked?']) {
+    const r = analyze(q);
+    const bien = r.ok && r.incomplete && r.parts.some(p => p.role === 'gap');
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  ${r.ok ? (r.incomplete ? 'incompleta, con hueco' : 'la da por buena') : 'error'}`);
+  }
+}
+
 console.log('\n   el infinitivo perfecto no se desarma («would have done»)');
 {
   /* Fallaba en TODA la app, no solo en la 3ª condicional: tomaba `have` como

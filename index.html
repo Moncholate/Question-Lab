@@ -1085,7 +1085,18 @@ function analyze(raw){
   let vIdx = -1;
   const esVerboEn = i => isVerbCandidate(lower[i]) && !DETS.includes(lower[i])
                          && !adjEnIng(lower, i, auxIdx, aux, n);
-  for(let i = auxIdx+1; i < n; i++){
+  /* El verbo principal está ANTES de cualquier subordinada: lo que viene después
+     de «if» es el verbo de OTRA oración. Sin este corte, «What would you if you
+     won the lottery?» —a la que le falta el verbo— tomaba el `won` de la
+     condición y armaba una estructura inventada: sujeto «you if you», verbo
+     «won». Peor que no analizar, porque enseñaba algo falso en vez de avisar de
+     lo que faltaba. Con el corte cae al camino de «pregunta incompleta», que ya
+     existía y dice exactamente qué falta. */
+  const finPrincipal = (() => {
+    for(let i = auxIdx+1; i < n; i++) if(CONJ_SUBORD.includes(lower[i])) return i;
+    return n;
+  })();
+  for(let i = auxIdx+1; i < finPrincipal; i++){
     if(!esVerboEn(i)) continue;
     /* Sustantivo deverbal DENTRO del sujeto: «Is the plan working?» daba
        sujeto=«the» y complemento=«plan working», que además se ve en pantalla.
