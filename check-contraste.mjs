@@ -97,7 +97,11 @@ const resolverFondo = (valor, vars, superficie) => {
    así que cada bloque se delimita solo. Las cabeceras de @media se quitan para
    que sus reglas interiores también entren. */
 const reglas = [];
-const planas = cssApp.replace(/@(?:media|supports)[^{]*\{/g, '');
+/* tokens.css no trae solo variables: también reglas generadas (el chip `.ghf`).
+   Si no entran aquí, sus pares no se miden nunca y el chequeo da «✓» sin haber
+   mirado. Los bloques `:root` no aportan reglas — declaran custom properties,
+   que no son `color:` ni `background:` — así que se cuelan sin ensuciar nada. */
+const planas = (cssApp + '\n' + tokens).replace(/@(?:media|supports)[^{]*\{/g, '');
 for (const m of planas.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
   const cuerpo = m[2];
   /* Un ::before/::after con `content:""` no pinta texto: es una barra, un punto
@@ -133,7 +137,16 @@ for (const r of reglas) {
     if (b) color = colorDe.get(b);
   }
   if (!color) continue;
-  if (r.fondo) { pares.push({ sel: r.sel, color, fondo: r.fondo }); continue; }
+  if (r.fondo) {
+    /* Un fondo translúcido (`color-mix(… transparent)`) no cae sobre la página
+       si alguna clase del selector ya declara fondo propio: cae sobre ESE. Es lo
+       que pasa con `.ghf .ghf__slot[data-type]`, cuyo tinte se apoya en la
+       cápsula. Sin esto se medía contra `--card` y el tipo `closed` salía a
+       5,66:1 cuando de verdad da 4,43:1 — el chequeo aprobaba un fallo. */
+    const anc = clases.find(c => fondoDe.has(c) && fondoDe.get(c) !== r.fondo);
+    pares.push({ sel: r.sel, color, fondo: r.fondo, base: anc ? fondoDe.get(anc) : null });
+    continue;
+  }
   /* Regla que solo pinta TEXTO. Si alguna de sus clases ya trae fondo propio,
      ese es el fondo; si no, lo pone el padre y se mide contra las superficies
      reales de la app — eso es lo que faltaba para ver la pestaña activa y el
@@ -168,8 +181,10 @@ for (const p of pares) {
     if (!c) continue;
     // Cada superficie posible: la declarada, o las de la app si el fondo es del padre
     const sups = SUPERFICIES.map(v => resolver(`var(${v})`, tema[t])).filter(Boolean);
+    // `base` = el fondo del ancestro, cuando el selector dice cuál es
+    const bases = p.base ? [resolver(p.base, tema[t])].filter(Boolean) : sups;
     const fondos = p.superficies ? sups
-      : sups.map(s => resolverFondo(p.fondo, tema[t], s)).filter(Boolean);
+      : bases.map(s => resolverFondo(p.fondo, tema[t], s)).filter(Boolean);
     for (const f of [...new Set(fondos)]) {
       medidos++;
       const r = ratio(c, f);

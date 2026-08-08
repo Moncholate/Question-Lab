@@ -294,10 +294,9 @@
     background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent-ink);
     border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   }
-  /* `-ontint`: el rol como texto sobre su propio tinte. Con `--wh` a secas
-     daban 4,19:1. Ver `onTintNote` en tokens.json. */
-  .badge.type{background:color-mix(in srgb, var(--wh) 14%, transparent); color:var(--wh-ontint);
-    border-color:color-mix(in srgb, var(--wh) 35%, transparent);}
+  /* `.badge.type` (el badge teal del tipo de pregunta) se fue: pintaba de teal
+     TAMBIÉN las cerradas, y una Yes/No no tiene wh-word — el color afirmaba algo
+     falso. Lo reemplaza `.ghf`, generado en tokens.css. */
 
   .answerbox{margin-top:.9rem; padding-top:.9rem; border-top:1px dashed var(--border);}
   .answerbox h3{font-size:.95rem; margin-bottom:.55rem;}
@@ -1098,8 +1097,8 @@ function analyze(raw){
         {role:"new", text:"+ " + hint2, label:"info nueva"}
       ], caption:"Estructura de la respuesta"}]};
       const beTense = (["was","were"].includes(aux) ? "Pasado" : "Presente") + " Simple (to be)";
-      return {ok:true, type:"Abierta (Wh-question) — con cláusula relativa", tense:beTense,
-        parts:parts2, answer:relAnswer, warnings, notes:relNotes};
+      return {ok:true, type:"Abierta (Wh-question) — con cláusula relativa", qtipo:"open", negative:false,
+        tense:beTense, parts:parts2, answer:relAnswer, warnings, notes:relNotes};
     }
   }
   let subjTokens, verbTokens = [], compTokens = [];
@@ -1387,11 +1386,14 @@ function analyze(raw){
       `<b>Pregunta de sujeto</b>: «${whText}» no pide un dato al final — <b>ES el sujeto</b>. Por eso entre «${tokens[auxIdx]}» y «${verbTokens.join(" ")}» no hay nadie: el hueco no está vacío por error, lo ocupa la wh-word.`,
       `Se responde <b>nombrando</b> a quien hace la acción: «Ana ${auxCorto}${compTokens.length || verbTokens.length ? " " + [semiAuxText, verbTokens.join(" "), compTokens.join(" ")].filter(Boolean).join(" ") : ""}». En español pasa igual: «¿Quién viene?» → «Viene Ana», no «Ana viene alguien».`
     );
-    typeStr = "Abierta — de sujeto" + (negative ? " · negativa ⛔" : "");
+    typeStr = "Abierta — de sujeto";
   } else {
-    typeStr = (isOpen ? "Abierta (Wh-question)" : "Cerrada (Yes/No)") + (negative ? " · negativa ⛔" : "");
+    typeStr = isOpen ? "Abierta (Wh-question)" : "Cerrada (Yes/No)";
   }
-  return {ok:true, type: typeStr, tense, parts, answer: answerFinal, warnings, notes};
+  /* La negativa ya no se pega al texto del tipo («· negativa ⛔»): son dos ejes
+     distintos y ahora cada uno tiene su ranura en el chip. */
+  return {ok:true, type: typeStr, qtipo: isOpen ? "open" : "closed", negative,
+    tense, parts, answer: answerFinal, warnings, notes};
 }
 
 function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
@@ -1426,7 +1428,8 @@ function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
       ], caption:"Respuesta larga"}
     ]
   };
-  return {ok:true, type:"Abierta — de sujeto (¡sin auxiliar!)", tense, parts, answer, warnings, notes};
+  return {ok:true, type:"Abierta — de sujeto (¡sin auxiliar!)", qtipo:"open", negative:false,
+    tense, parts, answer, warnings, notes};
 }
 
 function checkAgreement(aux, subj){
@@ -1739,6 +1742,24 @@ function incompleteResult(parts, notes){
     type: lang==="en" ? "Incomplete question" : "Pregunta incompleta",
     tense:"—", parts, answer:null, warnings:[], notes:notes||[]};
 }
+/* Chip de los dos ejes. Las clases y los colores vienen generados en tokens.css
+   desde design-tokens; aquí solo se decide QUÉ signos van.
+   En Question Lab todo lo analizado es una pregunta, así que el `?` siempre está
+   y el `+` no aparece nunca: la afirmativa es el caso por defecto y marcarla no
+   diría nada. La negativa sí se marca, porque es el caso marcado — antes era el
+   texto «· negativa ⛔» pegado dentro del badge de tipo. */
+function formChip(r){
+  if(!r) return "";
+  const signo = f => `<span class="ghf__g" data-form="${f}" aria-hidden="true">${f === "negative" ? "−" : "?"}</span>`;
+  const signos = [signo("interrogative")].concat(r.negative ? [signo("negative")] : []);
+  /* Sin `qtipo` (pregunta incompleta) el tramo va NEUTRO: todavía es una
+     pregunta, pero aún no se sabe si abierta o cerrada, y pintarla de un color
+     que significa «la abre tal pieza» sería afirmar lo que no se sabe. */
+  const tipo = r.qtipo ? ` data-type="${esc(r.qtipo)}"` : "";
+  const rotulo = trType(r.type) + (r.negative ? ` · ${t("formNegative")}` : "");
+  return `<span class="ghf"><span class="ghf__sign">${signos.join("")}</span>`
+       + `<span class="ghf__slot"${tipo}>${esc(rotulo)}</span></span>`;
+}
 function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function renderResult(r, container){
@@ -1749,7 +1770,7 @@ function renderResult(r, container){
   }
   let html = `<div class="card">
     <div class="badges">
-      <span class="badge type">${esc(trType(r.type))}</span>
+      ${formChip(r)}
       <span class="badge">${esc(trTense(r.tense))}</span>
     </div>
     <h2>${t('piecesTitle')}</h2>
@@ -2261,6 +2282,7 @@ const I18N = {
     idPickFam:"Elige primero una familia ↑", idCheck:"Comprobar", idNext:"Siguiente →",
     idPickBoth:"Marca las dos: tipo y tiempo.", idCorrect:"🎉 ¡Correcto!", idWrong:"Casi… mira la corrección abajo.",
     idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
+    formNegative:"negativa",
     idEmpty:"No hay preguntas en este nivel todavía.",
     achievement:"¡Logro!",
     exHint:"💡 O prueba con una de estas:",
@@ -2353,6 +2375,7 @@ const I18N = {
     idCheck:"Check", idNext:"Next →",
     idPickBoth:"Pick both: type and tense.", idCorrect:"🎉 Correct!", idWrong:"Almost… see the breakdown below.",
     idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
+    formNegative:"negative",
     idEmpty:"No questions at this level yet.",
     achievement:"Achievement!",
     exHint:"💡 Or try one of these:",
@@ -2402,8 +2425,10 @@ function trType(s){ if(lang==="es") return s;
   return s.replace("Abierta (Wh-question) — con cláusula relativa","Open (Wh-question) — with relative clause")
           .replace("Abierta — de sujeto (¡sin auxiliar!)","Open — subject question (no auxiliary!)")
           .replace("Abierta (Wh-question)","Open (Wh-question)")
-          .replace("Cerrada (Yes/No)","Closed (Yes/No)")
-          .replace(" · negativa ⛔"," · negative ⛔"); }
+          /* El orden importa: la variante con «(¡sin auxiliar!)» va arriba, si no
+             esta le comería el prefijo y dejaría el paréntesis en español. */
+          .replace("Abierta — de sujeto","Open — subject question")
+          .replace("Cerrada (Yes/No)","Closed (Yes/No)"); }
 function whHint(k){ const H = lang==="en" ? WH_HINTS_EN : WH_HINTS; return H[k] || (lang==="en" ? "your info 💬" : "tu información 💬"); }
 function levelLabel(id){ const L = CEFR.labels[id]; return (L && (L[lang] || L.es)) || id; }
 function populateLevelSel(){
@@ -2569,8 +2594,11 @@ function buildIdPool(){
     if(!visibleAt(lvl)) continue;                 // acumulativo: niveles <= nivel actual
     for(const q of (bank[lvl] || [])){
       const r = analyze(q);
-      if(!r.ok) continue;
-      idPool.push({ q, type: r.type.includes("Abierta") ? "open" : "closed", tid: tenseIdOf(r.tense) });
+      /* `incompleteResult` devuelve ok:true, así que sin pedir `qtipo` una
+         pregunta incompleta entraba igual — y como su texto no dice «Abierta»,
+         la vieja clasificación por subcadena la daba por CERRADA en silencio. */
+      if(!r.ok || !r.qtipo) continue;
+      idPool.push({ q, type: r.qtipo, tid: tenseIdOf(r.tense) });
     }
   }
 }
@@ -2619,7 +2647,7 @@ function renderId(pickNew){
   renderIdTenses();
 }
 function idDiagnostic(r){
-  const why = r.type.includes("Abierta") ? t("idWhyOpen") : t("idWhyClosed");
+  const why = r.qtipo === "open" ? t("idWhyOpen") : t("idWhyClosed");
   const h = ID_HINT[tenseIdOf(r.tense)];
   return why + (h ? " · " + (lang === "en" ? h.en : h.es) : "");
 }
@@ -2660,7 +2688,7 @@ function checkId(){
   const r = analyze(idCurrent.q);
   if(r.ok){
     const tid = idCurrent.tid;
-    $("idReveal").innerHTML = `<div class="card"><div class="badges"><span class="badge type">${esc(trType(r.type))}</span><span class="badge fam" style="${famInline(tid)}"><span class="asp">${aspIcon(tid)}</span>${esc(trTense(r.tense))}</span></div>`
+    $("idReveal").innerHTML = `<div class="card"><div class="badges">${formChip(r)}<span class="badge fam" style="${famInline(tid)}"><span class="asp">${aspIcon(tid)}</span>${esc(trTense(r.tense))}</span></div>`
       + `<div class="blocks">${r.parts.map(blockHTML).join("")}</div>`
       + `<div class="note">📌 ${idDiagnostic(r)}</div></div>`;
   }
@@ -2698,8 +2726,8 @@ function buildRPool(){
     if(!visibleAt(lvl)) continue;
     for(const q of (bank[lvl]||[])){
       const r = analyze(q);
-      if(!r.ok) continue;
-      rPool.push({ q, tid: tenseIdOf(r.tense), type: r.type.includes("Abierta") ? "open" : "closed" });
+      if(!r.ok || !r.qtipo) continue;
+      rPool.push({ q, tid: tenseIdOf(r.tense), type: r.qtipo });
     }
   }
 }

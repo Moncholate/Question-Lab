@@ -21,16 +21,28 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const html = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'index.html'), 'utf8');
+const aquí = dirname(fileURLToPath(import.meta.url));
+const html = readFileSync(join(aquí, 'index.html'), 'utf8');
 const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
   .map(m => m[1]).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
 const cuerpo = html.slice(html.indexOf('<body'));
+/* tokens.css lo genera design-tokens y trae reglas propias (el anillo de foco,
+   el chip `.ghf`). Sin leerlo, toda clase generada se denunciaba como «no pinta
+   nada» — que era mentira. Va en un conjunto APARTE porque el reporte de reglas
+   huérfanas no puede tocarlo: que Question Lab no use una clase compartida no es
+   un error de Question Lab, y borrarla de aquí no la borraría de ninguna parte. */
+const generado = readFileSync(join(aquí, 'tokens.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 
 /* ---- definidas: toda clase que aparezca en un selector ---- */
+const reglas = (fuente, sink) => {
+  for (const m of fuente.matchAll(/(?:^|[};])\s*([^{};@]+?)\s*\{/g))
+    for (const c of m[1].matchAll(/\.([A-Za-z_][\w-]*)/g))
+      if (!sink.has(c[1])) sink.set(c[1], m[1].trim().split('\n')[0].slice(0, 46));
+};
 const definidas = new Map();               // clase -> primer selector donde sale
-for (const m of css.matchAll(/(?:^|[};])\s*([^{};@]+?)\s*\{/g))
-  for (const c of m[1].matchAll(/\.([A-Za-z_][\w-]*)/g))
-    if (!definidas.has(c[1])) definidas.set(c[1], m[1].trim().split('\n')[0].slice(0, 46));
+const compartidas = new Map();             // las de tokens.css (generadas)
+reglas(css, definidas);
+reglas(generado, compartidas);
 
 /* ---- usadas ---- */
 const usadas = new Set();
@@ -51,10 +63,10 @@ for (const m of cuerpo.matchAll(/(?:querySelector(?:All)?|closest|matches)\(\s*[
   for (const c of limpio(m[1]).matchAll(/\.([A-Za-z_][\w-]*)/g)) { usadas.add(c[1]); ganchosJS.add(c[1]); }
 
 /* ---- informe ---- */
-const sinRegla = [...usadas].filter(c => !definidas.has(c) && !ganchosJS.has(c)).sort();
+const sinRegla = [...usadas].filter(c => !definidas.has(c) && !compartidas.has(c) && !ganchosJS.has(c)).sort();
 const sinUso = [...definidas.keys()].filter(c => !usadas.has(c)).sort();
 
-console.log(`CSS de Question Lab · ${definidas.size} clases con regla · ${usadas.size} usadas\n`);
+console.log(`CSS de Question Lab · ${definidas.size} clases con regla · ${compartidas.size} generadas en tokens.css · ${usadas.size} usadas\n`);
 let fallos = 0;
 
 if (sinRegla.length) {
