@@ -132,7 +132,60 @@ console.log('\n   la respuesta NOMBRA al sujeto, no agrega un dato al final');
   console.log(`  ${bien ? '✓' : '✗'} Who is coming tonight? → ${largo}`);
 }
 
-console.log('\n5 · el banco entero sigue analizándose');
+console.log('\n5 · condicionales: la condición es pieza propia, no bloque gris');
+{
+  const casos = [
+    ['What would you do if you won the lottery?', 'if you won the lottery'],
+    ['Would you travel if you were rich?',        'if you were rich'],
+    ['What would you have done if she had called?', 'if she had called'],
+    ['If it rains, will you stay?',               'If it rains'],   // condición al frente
+  ];
+  for (const [q, esperada] of casos) {
+    const r = analyze(q);
+    const c = r.ok && r.parts.find(p => p.role === 'cond');
+    const bien = c && c.text === esperada;
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  ${c ? '«' + c.text + '»' : 'sin pieza de condición'}`);
+  }
+}
+
+console.log('\n   el infinitivo perfecto no se desarma («would have done»)');
+{
+  /* Fallaba en TODA la app, no solo en la 3ª condicional: tomaba `have` como
+     verbo principal y dejaba el participio en el complemento. */
+  const casos = [['What would you have done?', 'done'], ['Where would she have gone?', 'gone'],
+                 ['Should you have called?', 'called'], ['What have you done?', 'done']];
+  for (const [q, verbo] of casos) {
+    const r = analyze(q);
+    const v = r.ok && r.parts.find(p => p.role === 'verb');
+    const sinResto = r.ok && !r.parts.some(p => p.role === 'comp');
+    const bien = v && v.text === verbo && sinResto;
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  verbo «${v ? v.text : '—'}»`);
+  }
+}
+
+console.log('\n   el sujeto de la subordinada se voltea POR SU CUENTA');
+{
+  /* «What would you do if I left?» se responde «…if YOU left»: el `I` de la
+     condición es quien pregunta. Sin esto salían «if I left» y, peor,
+     «if I call me». Vale para cualquier subordinada, no solo para `if`. */
+  const casos = [
+    ['What would you do if I left?',        'if you left'],
+    ['What will you do if I call you?',     'if you call me'],
+    ['Where do you go when I am busy?',     'when you are busy'],
+    ['What would you do if you were rich?', 'if I were rich'],   // subjuntivo intacto
+  ];
+  for (const [q, esperado] of casos) {
+    const r = analyze(q);
+    const texto = r.ok && r.answer ? r.answer.lines.map(l => l.pieces.map(p => p.text).join(' ')).join(' ') : '';
+    const bien = texto.includes(esperado);
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  ${texto || 'sin respuesta'}`);
+  }
+}
+
+console.log('\n6 · el banco entero sigue analizándose');
 const todas = Object.values(BANK).flat();
 const rotas = todas.filter(q => !analyze(q).ok);
 rotas.forEach(q => console.log('  ✗ ' + q));

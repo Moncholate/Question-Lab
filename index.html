@@ -282,6 +282,13 @@
   .block.semiaux{--c:var(--aux);}
   .block.subj{--c:var(--subj);} .block.verb{--c:var(--verb);}
   .block.comp{--c:var(--comp);} .block.adv{--c:var(--adv);}
+  /* La condición usa la familia `conditional` de tokens.json, la misma que
+     Grammaster: el rosado que se eligió midiendo separación perceptual contra
+     el violeta del pasado. No es un rol gramatical nuevo, es la marca de que
+     esa pieza es la condición de una condicional. */
+  /* `-solid` y no el tono base: la pieza es un bloque RELLENO con tinta blanca,
+     y ahí el pink-600 daba 4,41:1 sobre la cara superior. Ver `solidNote`. */
+  .block.cond{--c:var(--t-conditional-solid);}
   /* En oscuro los colores de rol se aclaran y el texto blanco quedaba entre
      1,48:1 y 3,76:1 — ilegible. La tinta pasa a oscura: 5,3 a 12,4:1. */
   :root[data-theme="dark"] .block{color:#141826;}
@@ -629,6 +636,7 @@
         <li><span class="block verb" data-i18n="pVerb">Verbo principal</span><span class="pdesc" data-i18n="pVerbD">Acción o estado que se realiza.</span></li>
         <li><span class="block comp" data-i18n="pComp">Complemento</span><span class="pdesc" data-i18n="pCompD">Información adicional de la oración.</span></li>
         <li><span class="block adv" data-i18n="pAdv">Adverbio</span><span class="pdesc" data-i18n="pAdvD">Modifica al verbo (ever, never, always, often…).</span></li>
+        <li><span class="block cond" data-i18n="pCond">Condición</span><span class="pdesc" data-i18n="pCondD">La cláusula con «if»: de qué depende el resultado. Fija el tiempo de las dos mitades.</span></li>
         <li><span class="block new" data-i18n="pNew">+ Info nueva</span><span class="pdesc" data-i18n="pNewD">Lo que tú agregas al responder: no viene de la pregunta.</span></li>
       </ol>
     </details>
@@ -985,6 +993,33 @@ function analyze(raw){
   if(!q) return {ok:false, error: lang==="en" ? "Type a question first. 😊" : "Escribe una pregunta primero. 😊"};
   if(!/\?\s*$/.test(q)) warnings.push(lang==="en" ? "Tip: questions in English end with \"?\"." : "Tip: las preguntas en inglés terminan con «?».");
 
+  /* CONDICIÓN AL FRENTE: «If it rains, will you stay?». La pregunta de verdad es
+     la SEGUNDA cláusula; el analizador miraba «If» al inicio, no encontraba ni
+     wh-word ni auxiliar, y rechazaba la oración entera.
+     En vez de abrir un camino paralelo, se reescribe con la condición al final y
+     se analiza eso: así el volteo de pronombres y la respuesta salen del mismo
+     código de siempre. Solo la pieza se mueve al frente para dibujarla en el
+     orden en que se escribió. */
+  const alFrente = q.match(RE_SUBORD_FRENTE);
+  if(alFrente){
+    const condTexto = (alFrente[1] + alFrente[2]).trim();
+    /* La conjunción va en minúscula para el análisis: al reescribirla al final
+       queda a mitad de frase, y la respuesta la copia tal cual — sin esto salía
+       «I would viajar If I won the lottery». Cuando la pieza vuelve al frente se
+       le devuelve la mayúscula, que es como se escribió. */
+    const condMin = condTexto.charAt(0).toLowerCase() + condTexto.slice(1);
+    const principal = alFrente[3].replace(/\s*\?+\s*$/, "");
+    const r = analyze(principal + " " + condMin + "?");
+    if(!r.ok || !r.parts) return r;
+    const i = r.parts.findIndex(p => p.role === "cond" || p.label === "cláusula subordinada");
+    if(i > 0){
+      const p = r.parts.splice(i, 1)[0];
+      p.text = p.text.charAt(0).toUpperCase() + p.text.slice(1);
+      r.parts.unshift(p);
+    }
+    return r;
+  }
+
   const tokens = q.replace(/[?.!,;:¿¡]+/g," ").trim().split(/\s+/).filter(Boolean);
   const lower = tokens.map(t=>t.toLowerCase());
   const n = tokens.length;
@@ -1109,7 +1144,7 @@ function analyze(raw){
     }
   }
   let subjTokens, verbTokens = [], compTokens = [];
-  let beMain = false, verbForm = null, mainBase = null, goingTo = false;
+  let beMain = false, verbForm = null, mainBase = null, goingTo = false, perfInf = false;
   let semiAuxText = null, usedTo = false, beLike = false, beLikeText = "";
 
   /* PREGUNTA DE SUJETO con tiempo compuesto: «Who is coming?», «What has
@@ -1263,6 +1298,20 @@ function analyze(raw){
       beLikeText = tokens[vIdx];
       verbTokens = [];
       compTokens = tokens.slice(vIdx+1);
+    } else if(v === "have" && MODALS.includes(aux) && lower[vIdx+1]
+              && (PART_FORMS.has(lower[vIdx+1]) || lower[vIdx+1].endsWith("ed"))){
+      /* INFINITIVO PERFECTO: modal + have + participio («would have done»).
+         Sin esto el analizador tomaba «have» como verbo principal y dejaba el
+         participio en el complemento: «[verbo] have [comp] done». Roto en TODA
+         la app, no solo en la 3ª condicional — «Where would she have gone?»
+         daba lo mismo. El presente perfecto («What have you done?») nunca falló
+         porque ahí `have` SÍ es el auxiliar; el caso que faltaba es cuando ya
+         hay un modal delante y `have` pasa a formar parte del grupo auxiliar. */
+      perfInf = true;
+      verbTokens = [tokens[vIdx+1]];
+      mainBase = baseOf(lower[vIdx+1]);
+      verbForm = "part";
+      compTokens = tokens.slice(vIdx+2);
     } else if(v === "been" && lower[vIdx+1] && lower[vIdx+1].endsWith("ing")){
       verbTokens = tokens.slice(vIdx, vIdx+2);
       mainBase = baseOf(lower[vIdx+1]);
@@ -1308,9 +1357,20 @@ function analyze(raw){
   }
   else if(aux === "had"){ tense = "Pasado Perfecto"; }
   else if(aux === "will"){ tense = verbForm === "willCont" ? "Futuro Continuo" : "Futuro Simple (will)"; }
+  else if(aux === "would" && perfInf){
+    /* «would have + participio» es el resultado de la 3ª condicional: habla de
+       algo que YA no puede pasar. Merece nombre propio y no el de «would» a
+       secas, que es el de la 2ª. */
+    tense = "Would have (3ª condicional)";
+    tenseNote = "«Would have» + participio: el resultado de una condición que ya no puede cumplirse. «What would you have done?»";
+  }
   else if(aux === "would"){
     tense = "Would (ofrecimientos / condicional)";
     tenseNote = "«Would» para ofrecer/invitar (Would you like…?) y para el 2º condicional.";
+  }
+  else if(MODALS.includes(aux) && perfInf){
+    tense = `Modal perfecto («${aux} have»)`;
+    tenseNote = "Modal + have + participio: mira hacia atrás y opina sobre algo que ya pasó. «You should have called».";
   }
   else if(MODALS.includes(aux)){
     tense = `Verbo modal («${aux}»)`;
@@ -1336,7 +1396,13 @@ function analyze(raw){
     : "auxiliar";
   if(negative) auxLabel += " ⛔";
   // Si el "not" venía separado ("did … not"), lo mostramos junto al auxiliar
-  const auxText = negative && !NEG_AUX[lower[auxIdx]] ? tokens[auxIdx] + " … not" : tokens[auxIdx];
+  /* Con el infinitivo perfecto, el `have` es parte del GRUPO auxiliar: la pieza
+     lo recoge en vez de dejarlo sin dueño. Va con «…» porque en una pregunta el
+     sujeto SE METE EN MEDIO («Would you have helped?»), y escribirlo pegado
+     enseñaría un orden de palabras que no existe. Es la misma convención que ya
+     usa el «did … not» de la negativa separada. */
+  const auxBase = perfInf ? tokens[auxIdx] + " … " + tokens[vIdx] : tokens[auxIdx];
+  const auxText = negative && !NEG_AUX[lower[auxIdx]] ? auxBase + " … not" : auxBase;
   // Cuando "be" es el verbo principal (no hay otro verbo), pinta como verbo, no como auxiliar
   parts.push({role: beMain ? "verb" : "aux", text:auxText, label: auxLabel});
   if(!whEsSujeto) parts.push({role:"subj", text:subjText, label:"sujeto"});
@@ -1352,11 +1418,22 @@ function analyze(raw){
       parts.push({role:"verb", text:verbTokens.join(" "), label:"verbo"});
     }
   }
-  if(compTokens.length) parts.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
+  /* La subordinada sale del bloque gris y es su propia pieza. Antes «if you won
+     the lottery» quedaba dentro del complemento y el alumno no veía ni que era
+     una condición ni qué tiempo llevaba — justo lo que la condicional enseña. */
+  const sub = partirSubordinada(compTokens, mainBase);
+  if(sub){
+    if(sub.antes.length) parts.push({role:"comp", text:sub.antes.join(" "), label:"complemento"});
+    parts.push({role: sub.esCondicion ? "cond" : "comp",
+                text: sub.conj + " " + sub.sub.join(" "),
+                label: sub.esCondicion ? "condición" : "cláusula subordinada"});
+  } else if(compTokens.length){
+    parts.push({role:"comp", text:compTokens.join(" "), label:"complemento"});
+  }
 
   // 8. Respuesta: qué piezas vuelven
   const answer = buildAnswer({isOpen, whText: whText.toLowerCase(), aux, subjLower, subjText,
-    beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens, notes});
+    beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens, perfInf, notes});
 
   if(beLike) notes.push("«What + be + sujeto + <b>like</b>?» es un molde fijo para pedir <b>descripciones</b> (¿cómo es/era…?). Ese «like» no es el verbo gustar: hace pareja con el «what», y en la respuesta <b>desaparece</b>: «She was friendly and a bit shy».");
 
@@ -1476,15 +1553,80 @@ const WH_HINTS = {
   "what time":"una hora 🕒", "what kind":"un tipo 🏷️", "what color":"un color 🎨", "what colour":"un color 🎨"
 };
 
+/* SUBORDINADAS dentro del complemento.
+   `if`/`unless` abren una CONDICIÓN y se explican: son el contenido que se
+   enseña (1ª, 2ª y 3ª condicional). Las demás se detectan pero se presentan sin
+   desarrollo — decisión del docente: verlas por encima, sin el detalle de
+   cláusulas que sí lleva el `if`. Si algún día se quiere explicarlas, el sitio
+   es este: basta con darles rótulo y nota propios.
+
+   Detectarlas TODAS no es opcional aunque solo se explique el `if`: el volteo de
+   pronombres de la respuesta necesita saber dónde empieza otra oración con su
+   propio sujeto. Sin eso, «when I am busy» se quedaba tal cual y «if I call you»
+   salía como «if I call me». */
+const CONJ_CONDICION = ["if", "unless"];
+const CONJ_SUBORD = [...CONJ_CONDICION, "when", "while", "because", "before", "after", "until", "since", "although"];
+/* Una sola regla para «cláusula subordinada al frente, coma, y luego la
+   pregunta de verdad». La usan `analyze` y `whBaseOf`: si cada uno tuviera la
+   suya, el análisis y la pista de Responde podrían discrepar. */
+const RE_SUBORD_FRENTE = new RegExp("^\\s*(" + CONJ_SUBORD.join("|") + ")\\b([^,]*),\\s*(.+)$", "i");
+/* «Do you know IF he is coming?» — aquí `if` es «whether» y NO es condición: es
+   el objeto del verbo. Mismo criterio que Desgramatizador. */
+/* `say` NO está aquí: «What would you say if I left?» es una condición de manual,
+   y meterlo hacía que la app no la reconociera. La lista es corta a propósito. */
+const VERBOS_WHETHER = ["know", "ask", "wonder", "check", "remember", "forget", "decide"];
+
+function partirSubordinada(compTokens, mainBase){
+  const i = compTokens.findIndex(t => CONJ_SUBORD.includes(t.toLowerCase()));
+  if(i === -1) return null;
+  const conj = compTokens[i].toLowerCase();
+  const sub = compTokens.slice(i + 1);
+  if(!sub.length) return null;                         // «…if» suelto no es cláusula
+  /* El guardia del «whether» cambia la ETIQUETA, no impide el corte. Cortar
+     siempre es lo que hace que el volteo de pronombres funcione, y eso hace
+     falta igual en «Do you know if I am late?» → «…if you are late». */
+  const whether = CONJ_CONDICION.includes(conj)
+    && VERBOS_WHETHER.includes(String(mainBase || "").toLowerCase());
+  return { antes: compTokens.slice(0, i), conj: compTokens[i], sub,
+           esCondicion: CONJ_CONDICION.includes(conj) && !whether };
+}
+
+const flipObjetos = ts => ts.map(t => FLIP_COMP[t.toLowerCase()] || t);
+
+/* Voltea UNA cláusula subordinada: su sujeto es suyo, no el de la principal.
+   «What would you do if I left?» se responde «I would … if YOU left», no «if I
+   left»: el `I` de la condición es quien pregunta, así que al responder pasa a
+   ser `you`. Y la concordancia lo sigue: «when I am busy» → «when you ARE busy». */
+function flipClausula(ts, esCondicion){
+  if(!ts.length) return ts;
+  const primero = ts[0].toLowerCase();
+  if(!PRONOUNS.includes(primero)) return flipObjetos(ts);   // sujeto no pronominal: no cambia
+  const nuevoSujeto = primero === "i" ? "you" : FLIP_SUBJ[primero];
+  const resto = ts.slice(1);
+  if(resto.length){
+    const v = resto[0].toLowerCase();
+    /* El `were` del subjuntivo NO se toca en una condición: «If I were rich» es
+       la forma que se enseña, y bajarlo a «was» enseñaría lo contrario. */
+    const dejarWere = esCondicion && v === "were";
+    if(!dejarWere){
+      if(nuevoSujeto === "I" && FLIP_AUX_TO_I[v]) resto[0] = FLIP_AUX_TO_I[v];
+      else if(nuevoSujeto === "you" && FLIP_AUX_TO_YOU[v]) resto[0] = FLIP_AUX_TO_YOU[v];
+    }
+  }
+  return [nuevoSujeto, ...flipObjetos(resto)];
+}
+
 function flipComp(compTokens){
-  return compTokens.map(t=>{
-    const l = t.toLowerCase();
-    return FLIP_COMP[l] ? FLIP_COMP[l] : t;
-  }).join(" ");
+  /* Sin `mainBase`: aquí da igual si el `if` es condición o «whether». Lo que
+     importa es que después de la conjunción empieza otra oración con su propio
+     sujeto, y eso vale para las dos. */
+  const p = partirSubordinada(compTokens, null);
+  if(!p) return flipObjetos(compTokens).join(" ");
+  return [...flipObjetos(p.antes), p.conj, ...flipClausula(p.sub, p.esCondicion)].join(" ");
 }
 
 function buildAnswer(ctx){
-  const {isOpen, whText, aux, subjLower, subjText, beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens} = ctx;
+  const {isOpen, whText, aux, subjLower, subjText, beMain, goingTo, usedTo, semiAuxText, negative, beLike, verbForm, mainBase, verbTokens, compTokens, perfInf} = ctx;
 
   // Nuevo sujeto (flip de pronombres)
   let newSubj, subjNote = "";
@@ -1544,7 +1686,8 @@ function buildAnswer(ctx){
     } else {
       const perfC = verbForm === "perfCont" && verbTokens.length >= 2;
       verbPhrase = [
-        {role:"aux", text:negAuxText, label:"aux negativo"},
+        // Igual en negativo: «wouldn't have done», no «wouldn't done».
+        {role:"aux", text: perfInf ? negAuxText + " have" : negAuxText, label:"aux negativo"},
         ...(usedTo ? [{role:"semiaux", text:"use to", label:"semi-aux"}] : []),
         ...(goingTo ? [{role:"semiaux", text:"going to", label:"semi-aux"}] : []),
         ...(perfC ? [{role:"aux", text:verbTokens[0].toLowerCase(), label:"auxiliar (be)"}] : []),
@@ -1602,7 +1745,10 @@ function buildAnswer(ctx){
   } else {
     // be continuo, perfecto, will, modales: aux (+ semi-aux) + verbo tal cual
     verbPhrase = [
-      {role:"aux", text:newAux, label:"auxiliar"},
+      /* Con el infinitivo perfecto el `have` VUELVE en la respuesta: «What would
+         you have done?» → «I would HAVE done…». En la pregunta el sujeto lo
+         separaba del modal; aquí van juntos, y sin esto salía «I would done». */
+      {role:"aux", text: perfInf ? newAux + " have" : newAux, label:"auxiliar"},
       ...(semiAuxText && goingTo ? [{role:"semiaux", text:"going to", label:"semi-aux"}] : []),
       {role:"verb", text:verbTokens.join(" "), label:"verbo"}
     ];
@@ -2244,6 +2390,7 @@ const I18N = {
     pVerb:"Verbo principal", pVerbD:"Acción o estado que se realiza.",
     pComp:"Complemento", pCompD:"Información adicional de la oración.",
     pAdv:"Adverbio", pAdvD:"Modifica al verbo (ever, never, always, often…).",
+    pCond:"Condición", pCondD:"La cláusula con «if»: de qué depende el resultado. Fija el tiempo de las dos mitades.",
     pNew:"+ Info nueva", pNewD:"Lo que tú agregas al responder: no viene de la pregunta.",
     analyzeTitle:"Escribe una pregunta en inglés",
     btnAnalyze:"Analizar", btnReset:"Borrar", btnSkip:"Saltar →",
@@ -2336,6 +2483,7 @@ const I18N = {
     pVerb:"Main verb", pVerbD:"The action or state taking place.",
     pComp:"Complement", pCompD:"Additional information in the sentence.",
     pAdv:"Adverb", pAdvD:"Modifies the verb (ever, never, always, often…).",
+    pCond:"Condition", pCondD:"The «if» clause: what the result depends on. It fixes the tense of both halves.",
     pNew:"+ New info", pNewD:"What you add when answering: it doesn't come from the question.",
     analyzeTitle:"Write a question in English",
     btnAnalyze:"Analyze", btnReset:"Clear", btnSkip:"Skip →",
@@ -2425,6 +2573,7 @@ const LBL = { "wh-word":"wh-word", "wh = sujeto":"wh = subject", "auxiliar":"aux
   "verbo":"verb", "verbo conjugado":"conjugated verb", "verbo base":"base verb",
   "verbo en pasado":"past verb", "sujeto":"subject", "sujeto + cláusula relativa":"subject + relative clause",
   "sujeto + cláusula":"subject + clause", "complemento":"complement", "adverbio":"adverb", "info nueva":"new info",
+  "condición":"condition", "cláusula subordinada":"subordinate clause",
   "pareja del what":"pair of 'what'", "be negativo":"negative be", "aux negativo":"negative aux",
   "verbo nuevo":"new verb" };
 const CAP = { "Afirmativa":"Affirmative", "Negativa":"Negative", "Respuesta corta":"Short answer",
@@ -2783,6 +2932,11 @@ function expectedAnswers(r){
    Como el comodín es el único que no sale de WH_HINTS, quedaba de regalo entre
    los distractores. Y son las preguntas más naturales del nivel básico. */
 function whBaseOf(q){
+  /* Con la condición al frente la wh está en la SEGUNDA cláusula: «If I had
+     told you, WHAT would you have said?». Sin esto la pista de Responde buscaba
+     «if» en la tabla, no lo encontraba y caía al comodín «tu información». */
+  const fr = q.match(RE_SUBORD_FRENTE);
+  if(fr) return whBaseOf(fr[3]);
   const s = q.toLowerCase().replace(/[¿?]/g, "").trim()
              .replace(/\b(what|where|who|when|how|why|which)['’]s\b/g, "$1 is");
   const keys = Object.keys(WH_HINTS).sort((a, b) => b.length - a.length);

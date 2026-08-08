@@ -323,7 +323,14 @@ window.QUESTION_BANK = {
     "What did you use to eat for breakfast?",
     "Who did you use to sit with?",
     "How often did you use to travel?",
-    "Where did your family use to go in summer?"
+    "Where did your family use to go in summer?",
+    // Condicionales 1ª y 2ª — la condición es pieza propia y fija los dos tiempos
+    "What will you do if it rains?",
+    "Where will you go if you have time?",
+    "If I call you, will you answer?",
+    "What would you do if you won the lottery?",
+    "Would you help me if I asked?",
+    "What would you say if I left?"
   ],
   avanzado: [
     // Presente perfecto continuo — cerradas
@@ -349,6 +356,11 @@ window.QUESTION_BANK = {
     "How many hours have you been waiting?",
     "Who have you been talking to?",
     "What have they been saying?",
-    "How long has it been raining?"
+    "How long has it been raining?",
+    // 3ª condicional — would have + participio, sobre algo que ya no puede pasar
+    "What would you have done if she had called?",
+    "Would you have helped me if I had asked?",
+    "Where would you have gone if you had had the money?",
+    "If I had told you, what would you have said?"
   ]
 };
