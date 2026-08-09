@@ -1903,10 +1903,10 @@ const EXAMPLES = [
   {q:"What are you doing right now?", c:"basico2"},
   {q:"Why didn't he like the class?", c:"basico2"},
   {q:"Can you swim?", c:"basico2"},
-  // Elemental I — comparativos, have to, would
+  {q:"Would you like a coffee?", c:"basico2"},
+  // Elemental I — comparativos, have to
   {q:"Is English more difficult than Spanish?", c:"elemental1"},
   {q:"Do you have to wear a uniform?", c:"elemental1"},
-  {q:"Would you like a coffee?", c:"elemental1"},
   // Elemental II — going to, presente perfecto
   {q:"What are you going to do this weekend?", c:"elemental2"},
   {q:"Have you ever visited Chiloé?", c:"elemental2"},
@@ -2703,7 +2703,9 @@ const ID_TENSES = [
   { id:"simple-past",   cefr:"basico2",     es:"Pasado Simple",         en:"Simple Past" },
   { id:"to-be-past",    cefr:"basico2",     es:"Pasado Simple (to be)", en:"Simple Past (to be)" },
   { id:"modal",         cefr:"basico2",     es:"Verbo modal (can, could…)",en:"Modal verb (can, could…)" },
-  { id:"would",         cefr:"elemental1",  es:"Would (ofrecimientos / condicional)",en:"Would (offers / conditional)" },
+  /* Básico II, no Elemental I: sale de Practical English tras la 9B, dato del
+     profesor (2026-08-08). Ver syllabus-aef.md, que antes decía Elemental. */
+  { id:"would",         cefr:"basico2",     es:"Would (ofrecimientos / condicional)",en:"Would (offers / conditional)" },
   { id:"future-going-to",cefr:"elemental2", es:"Futuro (going to)",     en:"Future (going to)" },
   { id:"present-perfect",cefr:"elemental2", es:"Presente Perfecto",     en:"Present Perfect" },
   { id:"past-continuous",cefr:"intermedio1",es:"Pasado Continuo",       en:"Past Continuous" },
