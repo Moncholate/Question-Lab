@@ -1175,23 +1175,49 @@ function analyze(raw){
     && (
       (["am","is","are","was","were"].includes(aux) && lower[vIdx].endsWith("ing")) ||
       (["have","has","had"].includes(aux) &&
-        (lower[vIdx] === "been" || PART_FORMS.has(lower[vIdx]) || lower[vIdx].endsWith("ed")))
-    );
+        (lower[vIdx] === "been" || PART_FORMS.has(lower[vIdx]) || lower[vIdx].endsWith("ed"))) ||
+      /* Con MODAL: «Who will come?», «What will happen?», «Who can help?». La
+         wh-word es el sujeto y el verbo va en base. Faltaba, y sin esto el
+         guardia de «falta el sujeto» —que ahora sí cubre los modales— las
+         denunciaba a todas. */
+      (MODALS.includes(aux) && isVerbCandidate(lower[vIdx]))
+    )
+    /* «What would do?» es «What would YOU do?» sin sujeto, y «What would do if
+       you won the lottery?» igual. Estructuralmente son idénticas a «What would
+       happen?», que sí es pregunta de sujeto, así que la forma no las separa.
+       Lo que las separa es `do`: como verbo principal EXIGE objeto («What would
+       do the job?»). Sin nada detrás, el sujeto es lo que falta.
+       Es una regla estrecha a propósito: solo `do`, y solo cuando no lleva
+       complemento. Los demás verbos no se pueden distinguir y no se intenta. */
+    && !(["do","does","did"].includes(lower[vIdx]) && vIdx + 1 >= finPrincipal);
 
   if(!whEsSujeto && vIdx === auxIdx+1 && ["is","are","am","was","were","do","does","did","have","has","had","will","can","could","would","should","may","might","must"].includes(aux)){
     // El token justo después del aux parece verbo pero debería ser sujeto (nombres como "work" o error)
     // Solo lo tratamos como sujeto si NO hay más verbos después; si hay, era sujeto-nombre.
     // No aplica a la pregunta de sujeto: ahí «going to» y «been» son parte del
     // verbo, y sin el guardia se los llevaba al sujeto.
+    /* La rebusca se detiene en la subordinada por el mismo motivo que la
+       primera: el verbo de la condición no puede justificar que la palabra
+       pegada al auxiliar sea un sujeto-nombre. Sin el corte, «What would do if
+       you won the lottery?» tomaba el `won` del `if` y armaba el sujeto
+       «do if you». */
     let v2 = -1;
-    for(let i = vIdx+1; i < n; i++){ if(isVerbCandidate(lower[i])){ v2 = i; break; } }
+    for(let i = vIdx+1; i < finPrincipal; i++){ if(isVerbCandidate(lower[i])){ v2 = i; break; } }
     if(v2 > 0){ vIdx = v2; } // "Does work start at 8?" -> subj = work
   }
 
-  // Falta el sujeto: tras un aux "prestado" (do/have/did) viene el verbo pegado,
-  // sin sujeto en medio y sin otro verbo después → la pregunta perdió el sujeto.
-  // (Las preguntas bien armadas siempre llevan el sujeto entre el aux y el verbo.)
-  if(!whEsSujeto && vIdx === auxIdx+1 && ["do","does","did","have","has","had"].includes(aux)){
+  /* Falta el sujeto: tras el auxiliar viene el verbo pegado, sin sujeto en medio
+     y sin otro verbo después → la pregunta perdió el sujeto. Las preguntas bien
+     armadas siempre llevan el sujeto entre el auxiliar y el verbo.
+     LOS MODALES FALTABAN en esta lista, así que «What would do?» se daba por
+     buena: caía al camino de «modal como verbo principal» y convertía el verbo
+     en sujeto. Con `do/does/did` sí avisaba, y esa incoherencia es la que
+     reportó el docente.
+     No se lleva por delante el sujeto en gerundio («Would swimming help?»):
+     cuando hay otro verbo después, la rebusca de arriba ya movió `vIdx` y este
+     guardia no llega a dispararse. */
+  if(!whEsSujeto && vIdx === auxIdx+1
+     && (["do","does","did","have","has","had"].includes(aux) || MODALS.includes(aux))){
     const auxW = tokens[auxIdx], vW = tokens[vIdx];
     const parts = [];
     if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
@@ -2913,6 +2939,10 @@ function buildRPool(){
     for(const q of (bank[lvl]||[])){
       const r = analyze(q);
       if(!r.ok || !r.qtipo) continue;
+      /* Las preguntas de sujeto NO entran en Responde: su respuesta empieza por
+         un nombre libre («Ana will.»), así que no hay un inicio esperado contra
+         el que corregir. Sí se analizan y sí entran en Identifica. */
+      if(r.answer && r.answer.kind === "subject") continue;
       rPool.push({ q, tid: tenseIdOf(r.tense), type: r.qtipo });
     }
   }

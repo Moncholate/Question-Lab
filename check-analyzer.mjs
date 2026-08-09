@@ -162,6 +162,38 @@ console.log('\n   sin verbo principal AVISA, en vez de tomar el de la condición
   }
 }
 
+console.log('\n   sin sujeto AVISA, también con modal');
+{
+  /* Los modales faltaban en el guardia: «What would do?» se daba por buena y
+     convertía el verbo en sujeto, mientras que «Where do go?» sí avisaba. */
+  const faltaSujeto = ['What would do?', 'What would do if you won the lottery?',
+                       'Would travel if you were rich?', 'Where do go?'];
+  for (const q of faltaSujeto) {
+    const r = analyze(q);
+    const bien = r.ok && r.incomplete && r.parts.some(p => p.role === 'gap' && /sujeto|subject/.test(p.label));
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  ${r.ok ? (r.incomplete ? 'avisa' : 'la da por buena') : 'error'}`);
+  }
+  /* Y NO se lleva por delante las preguntas de SUJETO con modal, que tienen la
+     misma forma: «What will happen?» es válida y «What would do?» no. Lo único
+     que las separa es que `do` como verbo principal exige objeto. */
+  for (const q of ['Who will come?', 'What will happen?', 'Who can help?',
+                   'What would happen if you won the lottery?', 'What would do the job?']) {
+    const r = analyze(q);
+    const bien = r.ok && !r.incomplete && /sujeto|subject/.test(r.type);
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  ${r.ok ? (r.incomplete ? 'avisa de más' : r.type) : 'error'}`);
+  }
+  /* Ni los sujetos que parecen verbo: si hay otro verbo después, la palabra
+     pegada al auxiliar era el sujeto. */
+  for (const q of ['Would swimming help?', 'Does work start at eight?', 'Is the plan working?']) {
+    const r = analyze(q);
+    const bien = r.ok && !r.incomplete;
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q}  →  ${r.ok && !r.incomplete ? 'la analiza (correcto)' : 'avisa de más'}`);
+  }
+}
+
 console.log('\n   el infinitivo perfecto no se desarma («would have done»)');
 {
   /* Fallaba en TODA la app, no solo en la 3ª condicional: tomaba `have` como

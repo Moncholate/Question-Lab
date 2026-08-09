@@ -59,7 +59,12 @@ for (const nivel of LV) {
 
     /* Responde necesita saber qué se devuelve. */
     if (abierta) {
-      if (!openExpected(r)) fila(nivel, q, 'abierta sin inicio de respuesta esperado → Responde no la puede corregir');
+      /* La pregunta de SUJETO no se corrige en Responde y no es un fallo: su
+         respuesta empieza por un nombre libre («Ana will.»), así que no hay
+         inicio esperado. La app la deja fuera de ese modo a propósito; aquí se
+         exime para que el aviso no enseñe a ignorar el informe. */
+      const deSujeto = r.answer && r.answer.kind === 'subject';
+      if (!deSujeto && !openExpected(r)) fila(nivel, q, 'abierta sin inicio de respuesta esperado → Responde no la puede corregir');
       const base = whBaseOf(q);
       if (!WH_HINTS[base]) fila(nivel, q, `el wh «${base}» no está en WH_HINTS → Responde cae al comodín "tu información"`);
     } else if (!expectedAnswers(r).length) {
