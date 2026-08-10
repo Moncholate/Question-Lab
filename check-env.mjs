@@ -56,8 +56,14 @@ for (const f of ['bank.js', 'gamification.generated.js', 'cefr.generated.js'])
 const html = readFileSync(dir + 'index.html', 'utf8');
 const bloques = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 
-export const QL = new Function(bloques[bloques.length - 1] +
-  '\n;return {analyze, tenseIdOf, ID_TENSES, LV, setLevel, expectedAnswers, openExpected, whBaseOf, WH_HINTS};'
+/* Los pozos (`idPool`, `rPool`, `activeChallenges`) se REASIGNAN, así que se
+   exponen como funciones: devolver el array una vez daría siempre el primero. */
+export const QL = new Function(bloques[bloques.length - 1] + `
+;return {analyze, tenseIdOf, ID_TENSES, LV, setLevel, expectedAnswers, openExpected, whBaseOf, WH_HINTS,
+         setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
+         buildIdPool, buildRPool, refilterChallenges,
+         getIdPool: () => idPool, getRPool: () => rPool, getChallenges: () => activeChallenges,
+         getUnidad: () => curUnidad};`
 ).call(globalThis);
 
 export const BANK = globalThis.window.QUESTION_BANK;

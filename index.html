@@ -90,6 +90,24 @@
   .lvlwrap select{padding:.32rem .55rem; border-radius:8px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:.82rem; cursor:pointer;}
   @media (max-width:430px){ .brandtext p{display:none;} }
+  /* UNIDAD DEL CURSO — vive en el menú de práctica, no en la cabecera.
+     El nivel hace falta en toda la app; la unidad solo cambia algo donde se
+     CORRIGE y PUNTÚA. Preguntarla arriba sería una barrera para quien entra
+     solo a analizar una pregunta.
+     Dos estados con el MISMO control: la primera vez, una tarjeta que explica
+     por qué se pregunta; después, una línea. El curso avanza cada semana, así
+     que el dato se queda viejo y tiene que ser fácil de mover.
+     Es un `select` y no fichas: Elemental II tiene 18 unidades, que en un
+     teléfono son cinco filas. Así ocupa una y sigue a la vista. */
+  .unitask{padding:.7rem .8rem; border-radius:12px; margin-bottom:.8rem;
+    border:2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    background:color-mix(in srgb, var(--accent) 7%, var(--card));}
+  .unitask b{display:block; font-size:.88rem; color:var(--text);}
+  .unitask small{display:block; font-size:.76rem; color:var(--muted); margin:.2rem 0 .5rem;}
+  .unitline{display:flex; align-items:center; flex-wrap:wrap; gap:.4rem;
+    font-size:.78rem; color:var(--muted); margin-bottom:.8rem;}
+  .unitsel{padding:.3rem .5rem; border-radius:8px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:.8rem; font-weight:700; cursor:pointer;}
   .langtog{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
   .langtog button{border:none; background:var(--card); color:var(--muted); font-size:.78rem;
     font-weight:700; padding:.28rem .5rem; cursor:pointer;}
@@ -539,6 +557,9 @@
     <div class="card">
       <h2 data-i18n="practiceTitle">Práctica</h2>
       <p class="hint" data-i18n="practiceIntro">Elige un modo para practicar:</p>
+      <!-- Unidad del curso: se pinta desde JS porque tiene dos estados y la
+           lista de unidades depende del nivel. Ver `renderUnitUI`. -->
+      <div id="unitBox"></div>
       <div class="pmenu">
         <button class="pmode" data-goto="build"><span class="pmi" aria-hidden="true"><svg class="lego" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="currentColor"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/></svg></span><span class="pmt"><b data-i18n="navBuild">Construye</b><small data-i18n="pdBuild">Ordena las piezas para armar la pregunta.</small></span></button>
         <button class="pmode" data-goto="identify"><span class="pmi" aria-hidden="true">🎯</span><span class="pmt"><b data-i18n="navIdentify">Identifica</b><small data-i18n="pdIdentify">Reconoce si es abierta/cerrada y qué tiempo verbal es.</small></span></button>
@@ -2061,11 +2082,14 @@ const CHALLENGES = [
    blocks:[["What","wh"],["are","aux"],["you","subj"],["going to","semiaux"],["do","verb"],["this weekend?","comp"]]},
   {t:"present-perfect", prompt:"🏝️ Pregúntale si ha visitado Chiloé.", pe:"🏝️ Ask if they've visited Chiloé.",
    blocks:[["Have","aux"],["you","subj"],["visited","verb"],["Chiloé?","comp"]]},
-  {c:"basico2", prompt:"🏊 Pregúntale si sabe nadar.", pe:"🏊 Ask if they can swim.",
+  /* Estos tres iban con `c:` (nivel literal) en vez de `t:` (contenido). Con el
+     nivel bastaba; con la UNIDAD no, porque un nivel suelto no dice de qué
+     contenido es el desafío y no se puede saber si la clase ya lo vio. */
+  {t:"modal", prompt:"🏊 Pregúntale si sabe nadar.", pe:"🏊 Ask if they can swim.",
    blocks:[["Can","aux"],["you","subj"],["swim?","verb"]]},
-  {c:"basico1", prompt:"🩺 Pregunta si ella es doctora (¡be es aux y verbo a la vez!).", pe:"🩺 Ask if she is a doctor (be is aux and verb at once!).",
+  {t:"to-be-pres", prompt:"🩺 Pregunta si ella es doctora (¡be es aux y verbo a la vez!).", pe:"🩺 Ask if she is a doctor (be is aux and verb at once!).",
    blocks:[["Is","aux"],["she","subj"],["a doctor?","comp"]]},
-  {c:"intermedio2", prompt:"🎨 Pregunta quién pintó la Mona Lisa (¡ojo: sin auxiliar!).", pe:"🎨 Ask who painted the Mona Lisa (careful: no auxiliary!).",
+  {t:"subject-question", prompt:"🎨 Pregunta quién pintó la Mona Lisa (¡ojo: sin auxiliar!).", pe:"🎨 Ask who painted the Mona Lisa (careful: no auxiliary!).",
    blocks:[["Who","wh"],["painted","verb"],["the Mona Lisa?","comp"]]},
   {t:"present-perfect", prompt:"📖 Pregúntale cuánto tiempo ha estudiado inglés.", pe:"📖 Ask how long they've studied English.",
    blocks:[["How long","wh"],["have","aux"],["you","subj"],["studied","verb"],["English?","comp"]]},
@@ -2185,6 +2209,14 @@ function shuffle(a){
   return r;
 }
 function loadChallenge(){
+  if(!activeChallenges.length){
+    curCh = null;
+    $("bPrompt").textContent = t("bEmpty");
+    $("bSlots").innerHTML = ""; $("bPool").innerHTML = "";
+    $("bMsg").textContent = ""; $("bMsg").className = "buildmsg";
+    $("bResult").innerHTML = "";
+    return;
+  }
   const ch = activeChallenges[bIdx % activeChallenges.length];
   curCh = ch;
   bPlaced = []; bFailed = false; bScored = false;
@@ -2294,14 +2326,76 @@ let curLevel = LV[LV.length-1];                        // standalone: por defect
 try{ const s = localStorage.getItem("gh_level") || localStorage.getItem("ql_level"); if(s && LV.includes(s)) curLevel = s; }catch(e){}
 const visibleAt = c => !c || cefrIdx(c) <= cefrIdx(curLevel);
 
+/* ══════════════ UNIDAD DEL CURSO ══════════════
+   El nivel solo no basta. Un alumno de Intermedio II en la semana 3 recibía
+   Pasado Perfecto, que es la 12A: fallaba, PERDÍA LA RACHA y no sumaba
+   insignia. La gamificación lo castigaba por no saber algo que nadie le había
+   enseñado. Un curso avanza ~una unidad por clase y casi todos tienen dos
+   clases por semana, así que entre la semana 3 y la 6 hay media asignatura.
+
+   Solo acota la PRÁCTICA. Analiza y la Guía siguen enteros: ahí el alumno mira
+   lo que quiera y nadie le corrige. La diferencia es que la práctica puntúa.
+
+   `gh_unidad` es clave compartida con las otras apps de la suite, igual que
+   `gh_level`. `null` = todavía no ha contestado; "" = todo el curso. */
+const UNITS = CEFR.units || {};
+const CONTENT = CEFR.content || {};
+let curUnidad = null;
+try{ const u = localStorage.getItem("gh_unidad"); if(u !== null) curUnidad = u; }catch(e){}
+/* Orden DENTRO del curso: comparar como texto daría «10A» < «9B». Sin unidad
+   devuelve -1 = disponible desde el principio. */
+const unidadIndice = u => { const m = /^(\d+)([A-Z])$/.exec(String(u || ""));
+  return m ? Number(m[1]) * 10 + (m[2].charCodeAt(0) - 65) : -1; };
+const unidadTope = () => (curUnidad ? unidadIndice(curUnidad) : Infinity);
+
+/* La unidad que le toca a un contenido EN QUESTION LAB. Aquí todo es una
+   pregunta, así que del presente simple no vale la 5A —donde solo se ven (+) y
+   (−)— sino la 5B, que es cuando el libro enseña a preguntar. Esa distinción no
+   existe en Grammaster, donde también se practica la afirmativa. */
+const unidadDe = tid => { const c = CONTENT[tid]; if(!c) return null;
+  return c.unitQuestions || c.unit || null; };
+/* Un contenido está VISTO si es de un curso anterior (entero) o del actual y su
+   unidad no pasa de donde va la clase. */
+function visto(tid){
+  const c = CONTENT[tid];
+  if(!c) return true;                                   // sin datos, no se estorba
+  const i = cefrIdx(c.level), actual = cefrIdx(curLevel);
+  if(i < actual) return true;                           // curso anterior: visto entero
+  if(i > actual) return false;
+  return unidadIndice(unidadDe(tid)) <= unidadTope();
+}
+/* La tercera persona del singular es una clase aparte (6A). Entre la 5B y la 6A
+   el alumno pregunta con `do`, no con `does`, así que las del banco que lo usan
+   se quedan fuera un par de clases. Se mira el texto porque es donde está el
+   dato: `does`/`doesn't` solo aparece en presente simple 3ª persona. */
+function terceraPersonaPendiente(tid){
+  const c = CONTENT[tid];
+  return !!(c && c.unitThirdPerson && cefrIdx(c.level) === cefrIdx(curLevel)
+            && unidadIndice(c.unitThirdPerson) > unidadTope());
+}
+const usaTercera = q => /\bdoes(n't)?\b/i.test(q);
+/* Filtro único para las tres actividades. `q` es opcional: sin texto solo mira
+   el contenido; con texto mira también la etapa de la 3ª persona.
+   `esSujeto` gatea «Who painted the Mona Lisa?», que es la 12C de Int. II: sin
+   esto, un alumno de Intermedio II en la 8A recibía preguntas sin auxiliar. */
+function vistoEjercicio(tid, q, esSujeto){
+  if(!visto(tid)) return false;
+  if(esSujeto && !visto("subject-question")) return false;
+  if(q && usaTercera(q) && terceraPersonaPendiente(tid)) return false;
+  return true;
+}
+
 function renderExamples(){
   $("examples").innerHTML = EXAMPLES.filter(o=>itemCefr(o) === curLevel)
     .map(o=>`<button class="chip">${o.q}</button>`).join("");
   const w=$("exWrap"); if(w) w.style.display="";
 }
 function refilterChallenges(){
-  activeChallenges = CHALLENGES.filter(o=>visibleAt(itemCefr(o)));
-  if(!activeChallenges.length) activeChallenges = CHALLENGES;   // seguridad
+  /* Ya no hay red de seguridad «si queda vacío, muéstralo todo»: con el nivel
+     solo, vacío era imposible; con la unidad sí puede pasar (Básico I unidad 1A
+     todavía no ha visto nada). Y volver a mostrarlo todo sería justo lo que
+     esto viene a impedir, en silencio. Vacío se dice, no se rellena. */
+  activeChallenges = CHALLENGES.filter(o => o.t ? visto(o.t) : visibleAt(o.c));
   bIdx = 0; loadChallenge();
 }
 /* Guía — agrupa las tarjetas de tiempo en secciones colapsables por familia.
@@ -2363,6 +2457,7 @@ function applyLevel(){
   });
   updateGuideAccordion();
   renderExamples();
+  renderUnitUI();
   refilterChallenges();
   /* Cambiar de nivel cambia el banco de ejercicios, así que la ronda en curso
      deja de tener sentido: se reinician las tres y se cierra cualquier resumen
@@ -2377,10 +2472,42 @@ function applyLevel(){
 }
 function setLevel(id){
   if(!LV.includes(id)) return;
+  /* Cambiar de curso reinicia la unidad: «9A» de Intermedio II no significa
+     nada en Básico I, y arrastrarla dejaría un filtro silencioso y falso.
+     Pero SOLO si cambia de verdad: el Hub reenvía el nivel por postMessage cada
+     vez que carga el iframe, y sin esta guarda cada visita desde el Hub
+     borraría la unidad — el alumno la pone y desaparece sola. */
+  if(id !== curLevel){
+    curUnidad = null;
+    try{ localStorage.removeItem("gh_unidad"); }catch(e){}
+  }
   curLevel = id;
   try{ localStorage.setItem("gh_level", id); localStorage.setItem("ql_level", id); }catch(e){}
   if($("levelSel")) $("levelSel").value = id;
   applyLevel();
+}
+/* La unidad se pregunta UNA vez y después queda como una línea: el curso avanza
+   cada semana, así que el dato se queda viejo y tiene que ser fácil de mover.
+   "" = todo el curso; null = todavía no ha contestado. */
+function setUnidad(u){
+  curUnidad = u;
+  try{ localStorage.setItem("gh_unidad", u); }catch(e){}
+  applyLevel();
+}
+function renderUnitUI(){
+  const box = $("unitBox"); if(!box) return;
+  const sinResponder = curUnidad === null;
+  const lista = UNITS[curLevel] || [];
+  const opciones = `<option value="">${esc(t("unidadTodo"))}</option>` +
+    lista.map(u => `<option value="${u}"${u === curUnidad ? " selected" : ""}>${u}</option>`).join("");
+  const sel = `<select class="unitsel" id="unitSel" aria-label="${esc(t("unidadPregunta"))}">` +
+    (sinResponder ? `<option value="__" selected disabled>${esc(t("unidadElige"))}</option>` : "") +
+    opciones + `</select>`;
+  box.innerHTML = sinResponder
+    ? `<div class="unitask"><b>${esc(t("unidadPregunta"))}</b><small>${esc(t("unidadPorQue"))}</small>${sel}</div>`
+    : `<div class="unitline"><span>${esc(curUnidad ? t("unidadVas") : t("unidadTodoCurso"))}</span>${sel}</div>`;
+  const s = $("unitSel");
+  if(s) s.addEventListener("change", () => { if(s.value !== "__") setUnidad(s.value); });
 }
 /* Selector standalone — se oculta dentro del hub, que controla el nivel */
 (function initLevelUI(){
@@ -2491,13 +2618,22 @@ const I18N = {
     idPickBoth:"Marca las dos: tipo y tiempo.", idCorrect:"🎉 ¡Correcto!", idWrong:"Casi… mira la corrección abajo.",
     idWhyOpen:"Empieza con wh-word → abierta", idWhyClosed:"Empieza con auxiliar → cerrada",
     formNegative:"negativa",
-    idEmpty:"No hay preguntas en este nivel todavía.",
+    idEmpty:"Todavía no hay preguntas de lo que han visto en clase.",
+    /* Unidad del curso. Mismo texto que Grammaster: es la misma pregunta y el
+       alumno la ve en las dos apps. */
+    unidadPregunta:"¿Hasta qué unidad han llegado en clase?",
+    unidadPorQue:"La práctica corrige y puntúa, así que solo pregunta por lo que ya viste. Puedes cambiarlo cuando avance el curso.",
+    unidadElige:"Elige la unidad…",
+    unidadTodo:"Todo el curso",
+    unidadTodoCurso:"Practicando todo el curso",
+    unidadVas:"Practicando hasta la unidad",
+    bEmpty:"Todavía no hay desafíos de lo que han visto en clase.",
     achievement:"¡Logro!",
     exHint:"O prueba con una de estas:",
     rHint:"Devuelve las piezas: escribe la respuesta corta (Yes / No).",
     rWrite:"Escribe tu respuesta.", rGood:"🎉 ¡Bien armada!",
     rTry:"Casi… mira la respuesta correcta abajo.",
-    rEmpty:"No hay preguntas en este nivel todavía.",
+    rEmpty:"Todavía no hay preguntas de lo que han visto en clase.",
     rTypeQ:"¿Qué tipo de información pide?",
     rHintOpen:"Escribe la respuesta: empieza con el sujeto + verbo correctos (el resto es libre).",
     rPickType:"Elige el tipo de información."
@@ -2585,13 +2721,20 @@ const I18N = {
     idPickBoth:"Pick both: type and tense.", idCorrect:"🎉 Correct!", idWrong:"Almost… see the breakdown below.",
     idWhyOpen:"Starts with a wh-word → open", idWhyClosed:"Starts with an auxiliary → closed",
     formNegative:"negative",
-    idEmpty:"No questions at this level yet.",
+    idEmpty:"No questions yet from what you've covered in class.",
+    unidadPregunta:"How far have you gotten in class?",
+    unidadPorQue:"Practice marks and scores your answers, so it only asks about what you have already covered. You can change this as the course moves on.",
+    unidadElige:"Pick the unit…",
+    unidadTodo:"Whole course",
+    unidadTodoCurso:"Practising the whole course",
+    unidadVas:"Practising up to unit",
+    bEmpty:"No challenges yet from what you've covered in class.",
     achievement:"Achievement!",
     exHint:"Or try one of these:",
     rHint:"Send the pieces back: type the short answer (Yes / No).",
     rWrite:"Type your answer.", rGood:"🎉 Nicely built!",
     rTry:"Almost… see the correct answer below.",
-    rEmpty:"No questions at this level yet.",
+    rEmpty:"No questions yet from what you've covered in class.",
     rTypeQ:"What type of information does it ask for?",
     rHintOpen:"Type the answer: start with the correct subject + verb (the rest is free).",
     rPickType:"Pick the type of information."
@@ -2654,6 +2797,7 @@ function applyI18n(){
   document.querySelectorAll("[data-i18n-html]").forEach(el=>{ el.innerHTML = t(el.dataset.i18nHtml); });
   document.querySelectorAll("[data-i18n-title]").forEach(el=>{ const s = t(el.dataset.i18nTitle); el.title = s; el.setAttribute("aria-label", s); });
   populateLevelSel();
+  renderUnitUI();   // se pinta desde JS, así que `data-i18n` no lo alcanza
   document.querySelectorAll("#langTog button").forEach(b=> b.classList.toggle("on", b.dataset.lang === lang));
 }
 function setLang(l){
@@ -2696,24 +2840,26 @@ if(window.matchMedia){ const mq = window.matchMedia("(prefers-color-scheme: dark
 /* ================================================================
    IDENTIFICA — identificar tipo (abierta/cerrada) + tiempo
 ================================================================ */
+/* El NIVEL ya no se escribe aquí: sale de `CEFR.tenses`, que genera
+   `Grammar HUB/curriculum.json`. Estaba a mano en esta lista Y en Grammaster, y
+   así fue como `would` acabó un curso y medio tarde en las dos a la vez: quien
+   lo corrigiera en una no tocaba la otra. Aquí quedan solo los nombres. */
 const ID_TENSES = [
-  { id:"to-be-pres",    cefr:"basico1",     es:"Presente Simple (to be)",en:"Simple Present (to be)" },
-  { id:"simple-present",cefr:"basico1",     es:"Presente Simple",       en:"Simple Present" },
-  { id:"present-continuous",cefr:"basico2", es:"Presente Continuo",     en:"Present Continuous" },
-  { id:"simple-past",   cefr:"basico2",     es:"Pasado Simple",         en:"Simple Past" },
-  { id:"to-be-past",    cefr:"basico2",     es:"Pasado Simple (to be)", en:"Simple Past (to be)" },
-  { id:"modal",         cefr:"basico2",     es:"Verbo modal (can, could…)",en:"Modal verb (can, could…)" },
-  /* Básico II, no Elemental I: sale de Practical English tras la 9B, dato del
-     profesor (2026-08-08). Ver syllabus-aef.md, que antes decía Elemental. */
-  { id:"would",         cefr:"basico2",     es:"Would (ofrecimientos / condicional)",en:"Would (offers / conditional)" },
-  { id:"future-going-to",cefr:"elemental2", es:"Futuro (going to)",     en:"Future (going to)" },
-  { id:"present-perfect",cefr:"elemental2", es:"Presente Perfecto",     en:"Present Perfect" },
-  { id:"past-continuous",cefr:"intermedio1",es:"Pasado Continuo",       en:"Past Continuous" },
-  { id:"simple-future", cefr:"intermedio1", es:"Futuro (will)",         en:"Future (will)" },
-  { id:"past-perfect",  cefr:"intermedio2", es:"Pasado Perfecto",       en:"Past Perfect" },
-  { id:"used-to",       cefr:"intermedio2", es:"Used to",               en:"Used to" },
-  { id:"present-perfect-continuous",cefr:"avanzado",es:"Pres. Perf. Continuo",en:"Present Perfect Continuous" }
-];
+  { id:"to-be-pres",     es:"Presente Simple (to be)",en:"Simple Present (to be)" },
+  { id:"simple-present", es:"Presente Simple",       en:"Simple Present" },
+  { id:"present-continuous", es:"Presente Continuo", en:"Present Continuous" },
+  { id:"simple-past",    es:"Pasado Simple",         en:"Simple Past" },
+  { id:"to-be-past",     es:"Pasado Simple (to be)", en:"Simple Past (to be)" },
+  { id:"modal",          es:"Verbo modal (can, could…)",en:"Modal verb (can, could…)" },
+  { id:"would",          es:"Would (ofrecimientos / condicional)",en:"Would (offers / conditional)" },
+  { id:"future-going-to",es:"Futuro (going to)",     en:"Future (going to)" },
+  { id:"present-perfect",es:"Presente Perfecto",     en:"Present Perfect" },
+  { id:"past-continuous",es:"Pasado Continuo",       en:"Past Continuous" },
+  { id:"simple-future",  es:"Futuro (will)",         en:"Future (will)" },
+  { id:"past-perfect",   es:"Pasado Perfecto",       en:"Past Perfect" },
+  { id:"used-to",        es:"Used to",               en:"Used to" },
+  { id:"present-perfect-continuous", es:"Pres. Perf. Continuo",en:"Present Perfect Continuous" }
+].map(o => ({ ...o, cefr: CEFR.tenses[o.id] }));
 const ID_HINT = {
   "to-be-pres":{es:"El verbo to be hace el trabajo solo (am/is/are).",en:"The verb to be does it alone (am/is/are)."},
   "to-be-past":{es:"to be en pasado (was/were).",en:"to be in the past (was/were)."},
@@ -2754,7 +2900,7 @@ const FAM_LABEL = {
 function famChipInline(fam){ return `--f:var(--t-${fam}); --fbg:var(--t-${fam}-1); --fink:var(--t-${fam}-ink)`; }
 /* familias que tienen ≥1 tiempo visible en el nivel actual */
 function visibleFams(){
-  const set = new Set(ID_TENSES.filter(o => visibleAt(o.cefr)).map(o => famOf(o.id).fam));
+  const set = new Set(ID_TENSES.filter(o => visto(o.id)).map(o => famOf(o.id).fam));
   return FAM_ORDER.filter(f => set.has(f));
 }
 /* Racha vibrante: pill con acento cálido --play cuando hay racha (>0) */
@@ -2812,7 +2958,9 @@ function buildIdPool(){
          pregunta incompleta entraba igual — y como su texto no dice «Abierta»,
          la vieja clasificación por subcadena la daba por CERRADA en silencio. */
       if(!r.ok || !r.qtipo) continue;
-      idPool.push({ q, type: r.qtipo, tid: tenseIdOf(r.tense) });
+      const tid = tenseIdOf(r.tense);
+      if(!vistoEjercicio(tid, q, r.answer && r.answer.kind === "subject")) continue;
+      idPool.push({ q, type: r.qtipo, tid });
     }
   }
 }
@@ -2838,7 +2986,9 @@ function renderIdFams(){
 function renderIdTenses(){
   const box = $("idTenseOpts");
   if(!idFam){ box.innerHTML = `<span class="idhint">${t("idPickFam")}</span>`; return; }
-  box.innerHTML = ID_TENSES.filter(o => visibleAt(o.cefr) && famOf(o.id).fam === idFam)
+  /* Las opciones son las VISTAS, no las del nivel: ofrecer como alternativa un
+     tiempo que la clase no ha dado convierte el ejercicio en adivinanza. */
+  box.innerHTML = ID_TENSES.filter(o => visto(o.id) && famOf(o.id).fam === idFam)
     .map(o => `<button class="idopt fam" data-tense="${o.id}" style="${famInline(o.id)}"><span class="asp">${aspIcon(o.id)}</span>${lang === "en" ? o.en : o.es}</button>`).join("");
 }
 function renderId(pickNew){
@@ -2945,7 +3095,9 @@ function buildRPool(){
          un nombre libre («Ana will.»), así que no hay un inicio esperado contra
          el que corregir. Sí se analizan y sí entran en Identifica. */
       if(r.answer && r.answer.kind === "subject") continue;
-      rPool.push({ q, tid: tenseIdOf(r.tense), type: r.qtipo });
+      const tid = tenseIdOf(r.tense);
+      if(!vistoEjercicio(tid, q, false)) continue;
+      rPool.push({ q, tid, type: r.qtipo });
     }
   }
 }
