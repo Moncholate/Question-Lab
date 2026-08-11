@@ -118,6 +118,38 @@
     border:1px solid var(--border); background:color-mix(in srgb, var(--text) 6%, var(--card)); color:var(--text);
     font-size:.85rem; font-weight:700; line-height:1.2; cursor:pointer; transition:all .12s; white-space:nowrap;}
   .themebtn:hover{background:var(--card);}
+  /* REPORTAR. Misma silueta que el botón de tema para que la cabecera no se
+     desordene, pero en ámbar: tiene que encontrarse a la primera, y con la piel
+     gris de los demás controles se perdía. El ámbar es el color de aviso que ya
+     usa la suite, así que no estrena significado.
+     Los tonos se calculan sobre `--adv`, que YA cambia por tema: así el par
+     tinta/fondo no puede quedar oscuro sobre oscuro, que es el error clásico de
+     pintar un aviso con un hex fijo. */
+  .reportbtn{display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .6rem;
+    border-radius:8px; cursor:pointer; font-size:.85rem; font-weight:700; line-height:1.2;
+    white-space:nowrap; transition:all .12s;
+    border:1px solid color-mix(in srgb, var(--adv) 45%, transparent);
+    background:color-mix(in srgb, var(--adv) 12%, var(--card)); color:var(--adv);}
+  .reportbtn:hover{background:color-mix(in srgb, var(--adv) 22%, var(--card));}
+  /* La regla base va fuera de la media query a propósito: `check-css` solo mira
+     las de nivel superior, y sin ella la clase figura como que no pinta nada. */
+  .rlabel{display:inline;}
+  @media (max-width:560px){ .reportbtn .rlabel{display:none;} }
+
+  /* Panel del reporte. `dialog` nativo no: hay que mantener el mismo aspecto en
+     los cuatro navegadores del laboratorio y su polyfill no lo garantiza. */
+  .rmask{position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center;
+    padding:.8rem; background:rgba(0,0,0,.45);}
+  .rbox{background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:1rem 1.1rem; width:100%; max-width:34rem; display:flex; flex-direction:column; gap:.7rem;
+    max-height:92vh; overflow:auto;}
+  .rbox h3{font-size:1.05rem;}
+  .rsteps{margin:0; padding-left:1.2rem; font-size:.82rem; color:var(--text);}
+  .rsteps li{margin:.15rem 0;}
+  .rbox textarea{width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.75rem;
+    padding:.6rem; border:1px solid var(--border); border-radius:10px;
+    background:var(--bg); color:var(--text); resize:vertical;}
+  .rbtns{display:flex; flex-wrap:wrap; gap:.5rem;}
 
   /* Tabs */
   /* Barra de secciones inferior (fija, estilo app) */
@@ -527,6 +559,12 @@
       <span class="lvlwrap" id="lvlWrap"><span data-i18n="lvl">📊 Nivel</span><select id="levelSel" aria-label="Nivel CEFR"></select></span>
       <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
       <button type="button" class="themebtn" id="themeTog">🌗</button>
+      <!-- Reportar. En ámbar y no en gris: si se viste como los demás controles
+           de la cabecera, se pierde entre ellos, que fue lo que pasó la primera
+           vez en Grammaster. El rótulo se oculta en pantalla chica. -->
+      <button type="button" class="reportbtn" id="reportTog">
+        <span aria-hidden="true">⚠️</span><span class="rlabel" data-i18n="reportarCorto">Reportar</span>
+      </button>
     </div>
   </div>
 </header>
@@ -1854,6 +1892,11 @@ function cap(s){ return s === "I" ? "I" : s.charAt(0).toUpperCase()+s.slice(1); 
    RENDER — ANALIZA
 ================================================================ */
 const $ = id => document.getElementById(id);
+/* Versión para el reporte de errores. `document.lastModified` es la fecha del
+   propio index.html servido, así que no hay nada que subir a mano: una
+   constante escrita se queda vieja el primer día que nadie se acuerda, y
+   entonces MIENTE, que es peor que no estar. */
+const APP_BUILD = document.lastModified;
 
 /* Tabs — se registran primero para que siempre funcionen */
 /* Navegación: Analizar (default) · Guía · Práctica (menú → modos) · Progreso.
@@ -2627,6 +2670,14 @@ const I18N = {
     unidadTodo:"Todo el curso",
     unidadTodoCurso:"Practicando todo el curso",
     unidadVas:"Practicando hasta la unidad",
+    /* Reportar. Mismo texto que Grammaster: es el mismo trámite y el alumno lo
+       ve en las dos apps. */
+    reportar:"Reportar un problema", reportarCorto:"Reportar",
+    reporteAyuda:"Cuéntame qué esperabas que hiciera la app. Lo de abajo se rellena solo: dice en qué estado estaba cuando falló.",
+    reportePaso1:"Copia el informe",
+    reportePaso2:"Escribe abajo del todo qué esperabas",
+    reportePaso3:"Mándamelo por correo",
+    copiar:"Copiar", copiado:"Copiado", abrirCorreo:"Abrir correo", cerrar:"Cerrar",
     bEmpty:"Todavía no hay desafíos de lo que han visto en clase.",
     achievement:"¡Logro!",
     exHint:"O prueba con una de estas:",
@@ -2728,6 +2779,12 @@ const I18N = {
     unidadTodo:"Whole course",
     unidadTodoCurso:"Practising the whole course",
     unidadVas:"Practising up to unit",
+    reportar:"Report a problem", reportarCorto:"Report",
+    reporteAyuda:"Tell me what you expected the app to do. The part below fills in on its own: it says what state the app was in when it failed.",
+    reportePaso1:"Copy the report",
+    reportePaso2:"Write what you expected at the bottom",
+    reportePaso3:"Send it to me by email",
+    copiar:"Copy", copiado:"Copied", abrirCorreo:"Open email", cerrar:"Close",
     bEmpty:"No challenges yet from what you've covered in class.",
     achievement:"Achievement!",
     exHint:"Or try one of these:",
@@ -2786,6 +2843,91 @@ function trType(s){ if(lang==="es") return s;
           .replace("Cerrada (Yes/No)","Closed (Yes/No)"); }
 function whHint(k){ const H = lang==="en" ? WH_HINTS_EN : WH_HINTS; return H[k] || (lang==="en" ? "your info 💬" : "tu información 💬"); }
 function levelLabel(id){ const L = CEFR.labels[id]; return (L && (L[lang] || L.es)) || id; }
+
+/* ══════════════ REPORTAR UN PROBLEMA ══════════════
+   Igual que en Grammaster. La app es un archivo estático en GitHub Pages: no
+   hay servidor, así que no puede enviar nada por su cuenta. Lo que sí puede es
+   volcar el ESTADO EXACTO con el que falló, que se pega tal cual en un test.
+   El panel que está abierto decide qué datos importan: en Analiza, lo que
+   escribió el alumno; en cada modo de práctica, el ejercicio que tenía delante. */
+const panelActivo = () => {
+  const p = document.querySelector(".panel.active");
+  return p ? p.id : "?";
+};
+function construirReporte(){
+  const linea = (k, v) => (v === null || v === undefined || v === "" ? null : `${k}: ${v}`);
+  const p = panelActivo();
+  const filas = [
+    `Question Lab ${APP_BUILD}`,
+    linea("Curso", curLevel),
+    linea("Unidad", curUnidad || (curUnidad === "" ? "todo el curso" : "sin responder")),
+    linea("Idioma", lang),
+    `— ${p.toUpperCase()} —`,
+  ];
+  if(p === "analyze")  filas.push(linea("Escrito", ($("qin") || {}).value));
+  if(p === "build" && curCh) filas.push(
+    linea("Desafío", curCh.t || curCh.c),
+    linea("Consigna", lang === "en" && curCh.pe ? curCh.pe : curCh.prompt),
+    linea("Puesto", bPlaced.map(b => b.text).join(" ")));
+  if(p === "build" && !curCh) filas.push(linea("Desafío", "ninguno: el pozo salió vacío"));
+  if(p === "identify") filas.push(
+    linea("Pregunta", idCurrent && idCurrent.q),
+    linea("Es", idCurrent && `${idCurrent.type} · ${idCurrent.tid}`),
+    linea("Marcó", `${idType || "—"} · ${idTense || "—"}`));
+  if(p === "respond") filas.push(
+    linea("Pregunta", rCurrent && rCurrent.q),
+    linea("Es", rCurrent && `${rCurrent.type} · ${rCurrent.tid}`),
+    linea("Respondió", ($("rInput") || {}).value));
+  filas.push("—", linea("Navegador", navigator.userAgent), "",
+             lang === "en" ? "What I expected instead:" : "Qué esperaba en vez de eso:", "");
+  return filas.filter(Boolean).join("\n");
+}
+function abrirReporte(){
+  const texto = construirReporte();
+  const box = document.createElement("div");
+  box.className = "rmask";
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  box.setAttribute("aria-label", t("reportar"));
+  box.innerHTML =
+    `<div class="rbox">
+       <h3>${esc(t("reportar"))}</h3>
+       <p class="hint">${esc(t("reporteAyuda"))}</p>
+       <ol class="rsteps">
+         <li>${esc(t("reportePaso1"))}</li>
+         <li>${esc(t("reportePaso2"))}</li>
+         <li>${esc(t("reportePaso3"))}</li>
+       </ol>
+       <textarea rows="11" readonly>${esc(texto)}</textarea>
+       <div class="rbtns">
+         <button type="button" class="primary" data-r="copy">${esc(t("copiar"))}</button>
+         <button type="button" class="ghost" data-r="mail">${esc(t("abrirCorreo"))}</button>
+         <button type="button" class="ghost" data-r="close">${esc(t("cerrar"))}</button>
+       </div>
+     </div>`;
+  const cerrar = () => box.remove();
+  box.addEventListener("click", e => {
+    if(e.target === box) return cerrar();           // clic fuera
+    const b = e.target.closest("[data-r]"); if(!b) return;
+    if(b.dataset.r === "close") return cerrar();
+    if(b.dataset.r === "copy"){
+      navigator.clipboard.writeText(texto)
+        .then(() => { b.textContent = t("copiado"); })
+        .catch(() => { box.querySelector("textarea").select(); });
+      return;
+    }
+    /* La dirección se arma aquí y NO está escrita entera en el HTML publicado:
+       los rastreadores de spam leen el código de las páginas. */
+    const destino = ["v.moralesm", "profesor.duoc.cl"].join("@");
+    const asunto = lang === "en" ? "Question Lab: problem report" : "Question Lab: reporte de un problema";
+    location.href = `mailto:${destino}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto)}`;
+  });
+  addEventListener("keydown", function esc2(e){
+    if(e.key === "Escape"){ cerrar(); removeEventListener("keydown", esc2); }
+  });
+  document.body.appendChild(box);
+}
+if($("reportTog")) $("reportTog").addEventListener("click", abrirReporte);
 function populateLevelSel(){
   const sel = $("levelSel"); if(!sel) return;
   sel.innerHTML = LV.map(id=>`<option value="${id}">${levelLabel(id)}</option>`).join("");
