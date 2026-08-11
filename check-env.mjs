@@ -50,7 +50,7 @@ globalThis.addEventListener = () => {}; globalThis.removeEventListener = () => {
 globalThis.requestAnimationFrame = f => f();
 globalThis.setTimeout = () => 0;
 
-for (const f of ['bank.js', 'gamification.generated.js', 'cefr.generated.js'])
+for (const f of ['bank.js', 'answers.js', 'gamification.generated.js', 'cefr.generated.js'])
   try { new Function(readFileSync(dir + f, 'utf8')).call(globalThis); } catch (e) {}
 
 const html = readFileSync(dir + 'index.html', 'utf8');
@@ -63,7 +63,8 @@ export const QL = new Function(bloques[bloques.length - 1] + `
          setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
          buildIdPool, buildRPool, refilterChallenges,
          getIdPool: () => idPool, getRPool: () => rPool, getChallenges: () => activeChallenges,
-         getUnidad: () => curUnidad};`
+         getUnidad: () => curUnidad,
+         buildFPool, FALTA, getFPool: (k) => fEstado[k].pool};`
 ).call(globalThis);
 
 export const BANK = globalThis.window.QUESTION_BANK;

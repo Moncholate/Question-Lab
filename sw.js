@@ -13,6 +13,7 @@ const urlsToCache = [
   `${BASE}tokens.css`,
   `${BASE}cefr.generated.js`,
   `${BASE}bank.js`,
+  `${BASE}answers.js`,
   `${BASE}gamification.generated.js`,
   `${BASE}fonts/Lexend.woff2`,
   `${BASE}fonts/AtkinsonHyperlegible-Regular.woff2`,

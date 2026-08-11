@@ -19,8 +19,14 @@
 import { QL } from './check-env.mjs';
 
 const { ID_TENSES, LV, CONTENT, UNITS, CHALLENGES, setLevel, setUnidad,
-        unidadDe, unidadIndice, buildIdPool, buildRPool,
-        getIdPool, getRPool, getChallenges } = QL;
+        unidadDe, unidadIndice, buildIdPool, buildRPool, buildFPool,
+        getIdPool, getRPool, getChallenges, getFPool } = QL;
+
+/* Los cinco pozos, para no repetirlos en cada bloque. «Falta la wh» y «Falta el
+   auxiliar» también corrigen y puntúan, así que se acotan igual que los otros. */
+const rehacer = () => { buildIdPool(); buildRPool(); buildFPool('wh'); buildFPool('ax'); };
+const pozos = () => [...getIdPool(), ...getRPool(), ...getFPool('wh'), ...getFPool('ax')];
+const total = () => pozos().length + getChallenges().length;
 
 let problemas = 0;
 const fallo = (msg) => { console.log('   ✗ ' + msg); problemas++; };
@@ -89,8 +95,8 @@ for (const nivel of LV) {
   for (const u of (UNITS[nivel] || [])) {
     setUnidad(u);
     combinaciones++;
-    buildIdPool(); buildRPool();
-    for (const p of [...getIdPool(), ...getRPool()]) {
+    rehacer();
+    for (const p of pozos()) {
       const c = CONTENT[p.tid];
       if (!c || c.level !== nivel) continue;              // de curso anterior: visto entero
       if (!antes(unidadDe(p.tid), u))
@@ -115,8 +121,8 @@ for (const nivel of LV) {
   let prev = -1, prevU = null;
   for (const u of (UNITS[nivel] || [])) {
     setUnidad(u);
-    buildIdPool(); buildRPool();
-    const n = getIdPool().length + getRPool().length + getChallenges().length;
+    rehacer();
+    const n = total();
     if (prev >= 0 && n < prev) fallo(`[${nivel}] de ${prevU} a ${u} el pozo BAJA de ${prev} a ${n}`);
     prev = n; prevU = u;
   }
@@ -129,11 +135,11 @@ console.log('   ✓ el pozo crece o se queda igual en los 7 cursos');
 console.log('\n5 · «todo el curso» deja el pozo como estaba');
 for (const nivel of LV) {
   setLevel(nivel); setUnidad('');
-  buildIdPool(); buildRPool();
-  const todo = getIdPool().length + getRPool().length + getChallenges().length;
+  rehacer();
+  const todo = total();
   setUnidad((UNITS[nivel] || []).slice(-1)[0]);
-  buildIdPool(); buildRPool();
-  const ultima = getIdPool().length + getRPool().length + getChallenges().length;
+  rehacer();
+  const ultima = total();
   if (todo !== ultima) fallo(`[${nivel}] «todo el curso» da ${todo} y la última unidad ${ultima}`);
 }
 console.log('   ✓ igual que la última unidad, en los 7 cursos');
@@ -144,9 +150,9 @@ console.log('   ✓ igual que la última unidad, en los 7 cursos');
 console.log('\n6 · ningún curso se queda sin práctica');
 for (const nivel of LV) {
   setLevel(nivel); setUnidad('');
-  buildIdPool(); buildRPool();
-  const [i, r, b] = [getIdPool().length, getRPool().length, getChallenges().length];
-  if (!i || !r || !b) fallo(`[${nivel}] pozos vacíos → Identifica ${i} · Responde ${r} · Construye ${b}`);
+  rehacer();
+  const [i, r, b, w, a] = [getIdPool().length, getRPool().length, getChallenges().length, getFPool('wh').length, getFPool('ax').length];
+  if (!i || !r || !b || !w || !a) fallo(`[${nivel}] pozos vacíos → Identifica ${i} · Responde ${r} · Construye ${b} · Wh ${w} · Aux ${a}`);
 }
 if (!problemas) console.log('   ✓ los 7 cursos tienen ejercicios en los 3 modos');
 
@@ -157,13 +163,12 @@ for (const nivel of LV) {
   const us = UNITS[nivel] || [];
   let primera = null;
   for (const u of us) {
-    setUnidad(u); buildIdPool(); buildRPool();
-    if (getIdPool().length || getRPool().length || getChallenges().length) { primera = u; break; }
+    setUnidad(u); rehacer();
+    if (total()) { primera = u; break; }
   }
-  setUnidad('');
-  buildIdPool(); buildRPool();
-  const total = `${getIdPool().length} id · ${getRPool().length} resp · ${getChallenges().length} constr`;
-  console.log(`  ${nivel.padEnd(12)} desde ${String(primera || '—').padEnd(4)} (curso completo: ${total})`);
+  setUnidad(''); rehacer();
+  const detalle = `${getIdPool().length} id · ${getRPool().length} resp · ${getChallenges().length} constr · ${getFPool('wh').length} wh · ${getFPool('ax').length} aux`;
+  console.log(`  ${nivel.padEnd(12)} desde ${String(primera || '—').padEnd(4)} (curso completo: ${detalle})`);
 }
 
 console.log(problemas ? `\n✗ ${problemas} problema(s)` : '\nUNIDADES OK');

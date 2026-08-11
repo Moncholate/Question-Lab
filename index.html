@@ -40,6 +40,9 @@
 <link rel="stylesheet" href="tokens.css">
 <script src="cefr.generated.js"></script>
 <script src="bank.js"></script>
+<!-- Las respuestas del banco. Sin ellas el modo «Falta la wh» no puede existir:
+     la pregunta sola no determina la wh. Ver la cabecera de answers.js. -->
+<script src="answers.js"></script>
 <script src="gamification.generated.js"></script>
 <style>
   /* Tipografía DUA self-hosted (subset latin, cubre inglés + español) */
@@ -440,6 +443,13 @@
   .badge.fam .asp{margin-right:.15rem;}
   /* Responde */
   .rhint{font-size:.9rem; color:var(--muted); margin:.15rem 0 .5rem;}
+  /* La respuesta, en los modos donde es la EVIDENCIA y no el ejercicio. Va con
+     el tono de la wh porque es lo que revela el tipo de información pedida, que
+     es el mismo código de color que usa el resto de la app. */
+  .fanswer{font-size:1.05rem; font-weight:700; color:var(--wh); margin:.1rem 0 .5rem;}
+  /* La pista no es acierto ni error: tono neutro y no el verde ni el rojo, que
+     ya significan otra cosa en esta misma línea. */
+  .buildmsg.pista{color:var(--muted); font-weight:600;}
   .rinput{width:100%; padding:.7rem .9rem; border-radius:12px; border:1.5px solid var(--border);
     background:var(--card); color:var(--text); font-size:1.05rem; margin:.1rem 0 .5rem; min-height:var(--tap-min,44px);}
   .rinput:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);}
@@ -602,6 +612,12 @@
         <button class="pmode" data-goto="build"><span class="pmi" aria-hidden="true"><svg class="lego" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8.5" width="18" height="11" rx="1.8" fill="currentColor"/><rect x="6.6" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/><rect x="13.2" y="6.5" width="4.3" height="4.1" rx="1.2" fill="currentColor"/></svg></span><span class="pmt"><b data-i18n="navBuild">Construye</b><small data-i18n="pdBuild">Ordena las piezas para armar la pregunta.</small></span></button>
         <button class="pmode" data-goto="identify"><span class="pmi" aria-hidden="true">🎯</span><span class="pmt"><b data-i18n="navIdentify">Identifica</b><small data-i18n="pdIdentify">Reconoce si es abierta/cerrada y qué tiempo verbal es.</small></span></button>
         <button class="pmode" data-goto="respond"><span class="pmi" aria-hidden="true">💬</span><span class="pmt"><b data-i18n="navRespond">Responde</b><small data-i18n="pdRespond">Devuelve las piezas de la pregunta y agrega la tuya.</small></span></button>
+        <!-- Completa la pieza: la misma mecánica con distinta pieza oculta, y por
+             eso comparten motor. Van como DOS modos y no como uno con opciones
+             porque lo que se practica es distinto: la wh depende del significado
+             y el auxiliar de la gramática. -->
+        <button class="pmode" data-goto="fillwh"><span class="pmi" aria-hidden="true">🔍</span><span class="pmt"><b data-i18n="navFillWh">Falta la wh</b><small data-i18n="pdFillWh">Mira la respuesta y deduce con qué palabra empieza la pregunta.</small></span></button>
+        <button class="pmode" data-goto="fillaux"><span class="pmi" aria-hidden="true">🔗</span><span class="pmt"><b data-i18n="navFillAux">Falta el auxiliar</b><small data-i18n="pdFillAux">La respuesta te devuelve la pieza: escribe el auxiliar que abre la pregunta.</small></span></button>
       </div>
     </div>
   </div>
@@ -680,6 +696,57 @@
     </div>
     <div id="rReveal"></div>
     <div class="card roundend" id="rEnd" style="display:none"></div>
+  </div>
+
+  <!-- ============ FALTA LA PIEZA (wh · auxiliar) ============
+       Dos paneles calcados: el motor es el mismo y solo cambia qué pieza se
+       tapa y de dónde sale la evidencia. Se repiten en el marcado y no se
+       generan desde JS para que sigan siendo `data-i18n` normales, igual que
+       los otros tres modos. -->
+  <div class="panel" id="fillwh">
+    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
+    <div class="card" id="whCard">
+      <div class="rbar" id="whBar"><i></i></div>
+      <div class="prompt" id="whQuestion"></div>
+      <p class="fanswer" id="whAnswer"></p>
+      <p class="rhint" id="whHintTxt" data-i18n="fwHint">Escribe la palabra que falta al principio de la pregunta.</p>
+      <input id="whInput" class="rinput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Where" />
+      <div class="buildmsg" id="whMsg"></div>
+      <div class="buildbar">
+        <span class="streak" id="whStreak"></span>
+        <span class="progress" id="whProg"></span>
+        <span>
+          <button class="ghost" id="whPista" data-i18n="btnPista">Pista</button>
+          <button class="primary" id="whCheck" data-i18n="idCheck">Comprobar</button>
+          <button class="ghost" id="whNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+        </span>
+      </div>
+    </div>
+    <div id="whReveal"></div>
+    <div class="card roundend" id="whEnd" style="display:none"></div>
+  </div>
+
+  <div class="panel" id="fillaux">
+    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
+    <div class="card" id="axCard">
+      <div class="rbar" id="axBar"><i></i></div>
+      <div class="prompt" id="axQuestion"></div>
+      <p class="fanswer" id="axAnswer"></p>
+      <p class="rhint" id="axHintTxt" data-i18n="faHint">Escribe el auxiliar que falta al principio de la pregunta.</p>
+      <input id="axInput" class="rinput" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Do" />
+      <div class="buildmsg" id="axMsg"></div>
+      <div class="buildbar">
+        <span class="streak" id="axStreak"></span>
+        <span class="progress" id="axProg"></span>
+        <span>
+          <button class="ghost" id="axPista" data-i18n="btnPista">Pista</button>
+          <button class="primary" id="axCheck" data-i18n="idCheck">Comprobar</button>
+          <button class="ghost" id="axNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+        </span>
+      </div>
+    </div>
+    <div id="axReveal"></div>
+    <div class="card roundend" id="axEnd" style="display:none"></div>
   </div>
 
   <!-- ============ GUÍA ============ -->
@@ -1901,7 +1968,7 @@ const APP_BUILD = document.lastModified;
 /* Tabs — se registran primero para que siempre funcionen */
 /* Navegación: Analizar (default) · Guía · Práctica (menú → modos) · Progreso.
    Los modos de práctica (build/identify/respond) mantienen activo el nav "Práctica". */
-const NAV_OF = {analyze:"analyze", guide:"guide", practice:"practice", build:"practice", identify:"practice", respond:"practice", progress:"progress"};
+const NAV_OF = {analyze:"analyze", guide:"guide", practice:"practice", build:"practice", identify:"practice", respond:"practice", fillwh:"practice", fillaux:"practice", progress:"progress"};
 function showPanel(id){
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
   const p = $(id); if(p) p.classList.add("active");
@@ -2155,11 +2222,13 @@ const RONDA = 10;
    verificar: "Ejercicio 2 de 10" aparecía con la corrección del 1 y otra vez con
    el enunciado del 2, y la ronda parecía de 11. */
 const rondaCero = () => ({ hechos:0, ok:0, mejor:0, verificado:false });
-const rondas = { b:rondaCero(), id:rondaCero(), r:rondaCero() };
+const rondas = { b:rondaCero(), id:rondaCero(), r:rondaCero(), w:rondaCero(), a:rondaCero() };
 const MODOS = {
   b:  { ejer:"bCard",  barra:"bBar",  prog:"bProg",  fin:"bEnd",  reveal:"bResult", nombre:()=>t("navBuild"),    otra:()=>{ bIdx++; loadChallenge(); } },
   id: { ejer:"idCard", barra:"idBar", prog:"idProg", fin:"idEnd", reveal:"idReveal", nombre:()=>t("navIdentify"), otra:()=>renderId(true) },
   r:  { ejer:"rCard",  barra:"rBar",  prog:"rProg",  fin:"rEnd",  reveal:"rReveal",  nombre:()=>t("navRespond"),  otra:()=>renderR(true) },
+  w:  { ejer:"whCard", barra:"whBar", prog:"whProg", fin:"whEnd", reveal:"whReveal", nombre:()=>t("navFillWh"),   otra:()=>renderF("wh", true) },
+  a:  { ejer:"axCard", barra:"axBar", prog:"axProg", fin:"axEnd", reveal:"axReveal", nombre:()=>t("navFillAux"),  otra:()=>renderF("ax", true) },
 };
 const rondaTotal = m => m === "b" ? Math.min(RONDA, activeChallenges.length || RONDA) : RONDA;
 function rondaSuma(m, acerto, rachaActual){
@@ -2505,13 +2574,15 @@ function applyLevel(){
   /* Cambiar de nivel cambia el banco de ejercicios, así que la ronda en curso
      deja de tener sentido: se reinician las tres y se cierra cualquier resumen
      que hubiera quedado abierto. */
-  ["b","id","r"].forEach(m=>{
+  ["b","id","r","w","a"].forEach(m=>{
     rondas[m] = rondaCero();
     rondaVista(m, false);
     rondaPinta(m);   // Construye ya se redibujó arriba: sin esto su cuenta queda con el total viejo
   });
   buildIdPool(); renderId(true);
   buildRPool(); renderR(true);
+  buildFPool("wh"); renderF("wh", true);
+  buildFPool("ax"); renderF("ax", true);
 }
 function setLevel(id){
   if(!LV.includes(id)) return;
@@ -2672,6 +2743,19 @@ const I18N = {
     unidadVas:"Practicando hasta la unidad",
     /* Reportar. Mismo texto que Grammaster: es el mismo trámite y el alumno lo
        ve en las dos apps. */
+    /* Falta la pieza. «Falta la wh» y no «Adivina la wh»: no se adivina, se
+       deduce de la respuesta, que es justo lo que el modo enseña. */
+    navFillWh:"Falta la wh", navFillAux:"Falta el auxiliar",
+    pdFillWh:"Mira la respuesta y deduce con qué palabra empieza la pregunta.",
+    pdFillAux:"La respuesta te devuelve la pieza: escribe el auxiliar que abre la pregunta.",
+    fwHint:"Escribe la palabra que falta al principio de la pregunta.",
+    faHint:"Escribe el auxiliar que falta al principio de la pregunta.",
+    btnPista:"Pista",
+    fwPista:"La respuesta da {tipo}",
+    faPista:"El tiempo verbal es {tiempo}",
+    fMal:"Casi… era «{pieza}».",
+    fOtras:"También valía: {otras}",
+    fOkPista:"🎉 ¡Correcto! Con pista, así que la racha no sube.",
     reportar:"Reportar un problema", reportarCorto:"Reportar",
     reporteAyuda:"Cuéntame qué esperabas que hiciera la app. Lo de abajo se rellena solo: dice en qué estado estaba cuando falló.",
     reportePaso1:"Copia el informe",
@@ -2779,6 +2863,17 @@ const I18N = {
     unidadTodo:"Whole course",
     unidadTodoCurso:"Practising the whole course",
     unidadVas:"Practising up to unit",
+    navFillWh:"Missing wh-word", navFillAux:"Missing auxiliary",
+    pdFillWh:"Look at the answer and work out which word the question starts with.",
+    pdFillAux:"The answer gives the piece back: write the auxiliary that opens the question.",
+    fwHint:"Type the word missing at the start of the question.",
+    faHint:"Type the auxiliary missing at the start of the question.",
+    btnPista:"Hint",
+    fwPista:"The answer gives {tipo}",
+    faPista:"The tense is {tiempo}",
+    fMal:"Almost… it was “{pieza}”.",
+    fOtras:"These also worked: {otras}",
+    fOkPista:"🎉 Correct! With a hint, so the streak stays put.",
     reportar:"Report a problem", reportarCorto:"Report",
     reporteAyuda:"Tell me what you expected the app to do. The part below fills in on its own: it says what state the app was in when it failed.",
     reportePaso1:"Copy the report",
@@ -3261,7 +3356,18 @@ function normAns(s){
 }
 function expectedAnswers(r){
   if(!r.ok || !r.answer || r.answer.kind !== "closed") return [];
-  return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" "));
+  return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" ")).map(bajaSujeto);
+}
+/* «Yes, He does.» → «Yes, he does.» El sujeto que devuelve la respuesta va a
+   MITAD de oración, detrás de «Yes,» o «No,», así que ahí no lleva mayúscula.
+   Salió al montar el modo del auxiliar, donde esa línea es lo que el alumno
+   lee para deducir la pieza, pero el fallo estaba desde antes: Responde la
+   enseñaba igual como respuesta modelo, o sea enseñando una falta de
+   ortografía. Solo toca cómo se MUESTRA: el comparador ya pasa todo a
+   minúsculas, así que ninguna respuesta que antes valía deja de valer.
+   `I` se conserva, que en inglés va siempre en mayúscula. */
+function bajaSujeto(s){
+  return s.replace(/^((?:Yes|No), )([A-Z][a-z]+)\b/, (m, ini, pal) => ini + pal.toLowerCase());
 }
 /* wh-base de la pregunta (la más larga que matchee: "how many", "what time"…)
    El wh contraído se desarma primero: sin esto "What's your name?" daba la base
@@ -3361,6 +3467,188 @@ $("rTypeOpts").addEventListener("click", e => {
   rTypePick = b.textContent;
   [...$("rTypeOpts").children].forEach(x => x.classList.toggle("sel", x === b));
 });
+
+/* ================================================================
+   FALTA LA PIEZA — wh (abiertas) · auxiliar (cerradas)
+   ----------------------------------------------------------------
+   Los dos modos son la MISMA mecánica: se tapa la primera pieza de la pregunta
+   y se muestra la respuesta, que es lo que permite deducirla. Por eso comparten
+   motor y solo se declaran las diferencias en `FALTA`.
+
+   Por qué hace falta la respuesta: quitarle la wh a una pregunta NO deja un
+   ejercicio con solución única. «___ do you live?» admite where, why, how y
+   when, y las cuatro dan una pregunta buena. Se midió sobre el banco entero
+   antes de construir esto. Con la respuesta delante, la wh queda fijada.
+
+   En el auxiliar pasa lo mismo con el tiempo: «___ she a teacher?» admite Is y
+   Was. La respuesta corta lo cierra («Yes, she is»), y además enseña justo lo
+   que dice la app: la respuesta DEVUELVE la misma pieza. La alternativa era
+   marcadores temporales, idea del profesor, pero solo 11 de 119 preguntas
+   ambiguas del banco traen uno; la respuesta corta la genera la app para todas. */
+const FALTA = {
+  wh: {
+    pre:"wh", ronda:"w", modo:"fill-wh",
+    tipo:"open",
+    /* La respuesta la escribió el profesor: sin ella no hay ejercicio. */
+    respuesta: p => (window.QUESTION_ANSWERS[p.q] || {}).a,
+    /* La wh puede ser de dos palabras («how old»), así que la pieza tapada no
+       es «la primera palabra» sino la wh entera que reconoce `whBaseOf`. */
+    pieza: p => whBaseOf(p.q),
+    acepta: p => [whBaseOf(p.q), ...((window.QUESTION_ANSWERS[p.q] || {}).alt || [])],
+    /* La pista marca el trozo de la RESPUESTA que revela la pieza: es la
+       evidencia de verdad, no un adorno. Sin respuesta no habría qué marcar. */
+    pista: p => t("fwPista").replace("{tipo}", whHint(whBaseOf(p.q))),
+  },
+  ax: {
+    pre:"ax", ronda:"a", modo:"fill-aux",
+    tipo:"closed",
+    /* Aquí NO hace falta escribir nada: `expectedAnswers` ya produce el
+       «Yes, she is. / No, she isn't.» de cada cerrada. */
+    respuesta: p => (expectedAnswers(p.r) || [])[0],
+    pieza: p => p.q.split(/\s+/)[0],
+    acepta: p => [p.q.split(/\s+/)[0]],
+    pista: p => t("faPista").replace("{tiempo}", tenseLabel(p.tid)),
+  },
+};
+const tenseLabel = tid => { const o = ID_TENSES.find(x => x.id === tid);
+  return o ? (lang === "en" ? o.en : o.es) : tid; };
+
+/* Un solo estado por modo, con la misma forma. */
+const fEstado = { wh:{ pool:[], shown:{}, cur:null, checked:false, streak:0, pista:false },
+                  ax:{ pool:[], shown:{}, cur:null, checked:false, streak:0, pista:false } };
+for(const k of ["wh","ax"]){
+  try{ fEstado[k].streak = parseInt(localStorage.getItem(`ql_${k}_streak`)||"0",10)||0; }catch(e){}
+}
+
+function buildFPool(k){
+  const F = FALTA[k], S = fEstado[k];
+  S.pool = []; S.shown = {};
+  const bank = window.QUESTION_BANK || {};
+  for(const lvl of LV){
+    if(!visibleAt(lvl)) continue;
+    for(const q of (bank[lvl] || [])){
+      const r = analyze(q);
+      if(!r.ok || r.qtipo !== F.tipo) continue;
+      const tid = tenseIdOf(r.tense);
+      /* Mismo filtro por unidad que los otros modos: este también corrige y
+         puntúa, así que tampoco puede preguntar por lo que no se ha visto. */
+      if(!vistoEjercicio(tid, q, r.answer && r.answer.kind === "subject")) continue;
+      const p = { q, r, tid };
+      /* Sin respuesta no entra: preferimos que falte el ejercicio a mostrarlo
+         sin la evidencia que lo hace resoluble. `check-respuestas` impide que
+         eso ocurra por descuido. */
+      const resp = F.respuesta(p);
+      if(!resp) continue;
+      /* Y tampoco entra si la respuesta trae el comodín de sujeto desconocido
+         («Yes, he / she / it / they is»). En Responde tiene sentido, porque ahí
+         se listan todas las formas que se aceptan; aquí la respuesta es la
+         PISTA que hay que leer de un vistazo, y una barra con cuatro pronombres
+         no se lee. Se pierden unos pocos ejercicios y se gana claridad. */
+      if(resp.includes(" / ")) continue;
+      S.pool.push(p);
+    }
+  }
+}
+/* Azar equilibrado por PIEZA: sin esto salían nueve «what» seguidos, porque es
+   la wh más frecuente del banco y el sorteo plano sigue la frecuencia. */
+function pickF(k){
+  const S = fEstado[k], F = FALTA[k];
+  if(!S.pool.length) return null;
+  const pool = S.pool.length > 1 && S.cur ? S.pool.filter(p => p.q !== S.cur.q) : S.pool;
+  const min = Math.min(...pool.map(p => S.shown[F.pieza(p)] || 0));
+  const cand = pool.filter(p => (S.shown[F.pieza(p)] || 0) === min);
+  const pick = cand[Math.floor(Math.random() * cand.length)];
+  S.shown[F.pieza(pick)] = (S.shown[F.pieza(pick)] || 0) + 1;
+  return pick;
+}
+/* La pregunta con el hueco. Se quita la pieza del principio y se deja la raya:
+   el resto de la pregunta se conserva TAL CUAL, incluida la mayúscula que ya no
+   toca, porque cambiarla sería una pista de regalo. */
+function fHueco(k, p){
+  const pieza = FALTA[k].pieza(p);
+  return "____ " + p.q.slice(pieza.length).trim();
+}
+function renderF(k, nuevo){
+  const F = FALTA[k], S = fEstado[k], P = F.pre;
+  if(nuevo || !S.cur) S.cur = pickF(k);
+  S.checked = false; S.pista = false;
+  $(P+"Msg").textContent = ""; $(P+"Msg").className = "buildmsg";
+  $(P+"Reveal").innerHTML = "";
+  $(P+"Input").value = ""; $(P+"Input").disabled = false;
+  $(P+"Next").style.display = "none"; $(P+"Check").style.display = "";
+  $(P+"Pista").style.display = "";
+  setStreak($(P+"Streak"), S.streak);
+  rondaPinta(F.ronda);
+  if(!S.cur){
+    $(P+"Question").textContent = t("idEmpty");
+    $(P+"Answer").textContent = "";
+    $(P+"Input").style.display = "none"; $(P+"Check").style.display = "none"; $(P+"Pista").style.display = "none";
+    return;
+  }
+  $(P+"Input").style.display = "";
+  $(P+"Question").textContent = fHueco(k, S.cur);
+  $(P+"Answer").textContent = "— " + F.respuesta(S.cur);
+}
+function pistaF(k){
+  const S = fEstado[k];
+  if(!S.cur || S.checked) return;
+  S.pista = true;
+  $(FALTA[k].pre+"Msg").textContent = FALTA[k].pista(S.cur);
+  $(FALTA[k].pre+"Msg").className = "buildmsg pista";
+}
+function checkF(k){
+  const F = FALTA[k], S = fEstado[k], P = F.pre;
+  if(!S.cur || S.checked) return;
+  const dado = $(P+"Input").value.trim().toLowerCase().replace(/[?¿.]/g, "");
+  if(!dado){ $(P+"Msg").textContent = t("rWrite"); $(P+"Msg").className = "buildmsg bad"; return; }
+  S.checked = true;
+  const acepta = F.acepta(S.cur).map(x => x.toLowerCase());
+  const ok = acepta.includes(dado);
+  /* Usar la pista NO invalida el acierto: es material de apoyo, no una trampa.
+     Sí corta la racha, que es lo que mide hacerlo sin ayuda. */
+  if(ok && !S.pista){ S.streak++; bumpBestStreak(F.ronda, S.streak); }
+  else S.streak = 0;
+  try{ localStorage.setItem(`ql_${k}_streak`, S.streak); }catch(e){}
+  setStreak($(P+"Streak"), S.streak);
+  const correcta = F.pieza(S.cur);
+  const otras = acepta.filter(x => x !== correcta.toLowerCase());
+  if(ok){
+    /* Dos llamadas con la clave literal y no `t(cond ? a : b)`: `check-i18n`
+       busca `t("…")` en el código y con el ternario no ve ninguna de las dos. */
+    $(P+"Msg").textContent = S.pista ? t("fOkPista") : t("idCorrect");
+    $(P+"Msg").className = "buildmsg ok";
+  } else {
+    $(P+"Msg").textContent = t("fMal").replace("{pieza}", correcta);
+    $(P+"Msg").className = "buildmsg bad";
+  }
+  /* El análisis completo de la pregunta, como en los otros modos, y encima la
+     pregunta entera. Cuando había más de una wh válida se DICE: el alumno tiene
+     que saber que su «what time» también servía, o aprende que estaba mal.
+     `renderResult` reemplaza el contenido del contenedor, así que la tarjeta de
+     arriba se inserta DESPUÉS, no antes. */
+  renderResult(S.cur.r, $(P+"Reveal"));
+  const otrasHtml = otras.length ? `<p class="hint">${esc(t("fOtras").replace("{otras}", otras.join(", ")))}</p>` : "";
+  $(P+"Reveal").insertAdjacentHTML("afterbegin",
+    `<div class="card"><p class="prompt">${esc(S.cur.q)}</p>${otrasHtml}</div>`);
+  const G = window.GH_GAME;
+  if(G){
+    if(!ghProgress) ghProgress = G.loadProgress(localStorage);
+    G.recordAttempt(ghProgress, { app:"questionlab", mode:F.modo, tenseId:S.cur.tid, correct:ok, answerStreak:S.streak });
+    G.evaluateBadges(ghProgress, G.BADGES, [S.cur.tid]).newly.forEach(showBadgeToast);
+    G.saveProgress(localStorage, ghProgress);
+  }
+  rondaSuma(F.ronda, ok, S.streak);
+  rondaPinta(F.ronda);   // avanza la barra; el rótulo se queda en este ejercicio
+  $(P+"Check").style.display = "none"; $(P+"Pista").style.display = "none"; $(P+"Next").style.display = "";
+  scrollReveal($(P+"Reveal"));
+}
+for(const k of ["wh","ax"]){
+  const P = FALTA[k].pre;
+  $(P+"Check").addEventListener("click", () => checkF(k));
+  $(P+"Pista").addEventListener("click", () => pistaF(k));
+  $(P+"Next").addEventListener("click", () => rondaAvanza(FALTA[k].ronda));
+  $(P+"Input").addEventListener("keydown", e => { if(e.key === "Enter" && !fEstado[k].checked) checkF(k); });
+}
 
 applyI18n();
 buildGuideWh();          // tabla Wh-words colapsable
