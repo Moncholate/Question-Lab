@@ -85,6 +85,38 @@ else {
   else console.log('   ✓ mismo nivel la conserva, cambio de curso la reinicia');
 }
 
+/* ── 2d. La wh también tiene su unidad ──────────────────────────────────────
+   En «Falta la wh» la wh ES la respuesta del ejercicio, así que su unidad manda
+   tanto como la del tiempo verbal. El grueso es Básico I 2B, pero el libro pone
+   varias aparte y ahí estaba el agujero: Básico I en la 2B llegaba a pedir
+   «how much», que es la 9B de Elemental II. */
+console.log('\n2d · ninguna wh llega antes de su clase');
+const whsEn = (nivel, u) => { setLevel(nivel); setUnidad(u); buildFPool('wh');
+  return [...new Set(getFPool('wh').map(p => QL.FALTA.wh.pieza(p)))]; };
+const idWh = w => 'wh-' + w.replace(/\s+/g, '-');
+let whMal = 0;
+for (const nivel of LV) for (const u of (UNITS[nivel] || [])) {
+  for (const w of whsEn(nivel, u)) {
+    const c = CONTENT[idWh(w)];
+    if (!c) { fallo(`la wh «${w}» no está en curriculum.json → nunca se acota`); whMal++; continue; }
+    if (c.level !== nivel) continue;                 // curso anterior: vista entera
+    if (unidadIndice(c.unit) > unidadIndice(u)) {
+      fallo(`[${nivel} ${u}] sale «${w}», que es la ${c.unit}`); whMal++;
+    }
+  }
+}
+if (!whMal) console.log('   ✓ las 19 wh cruzadas contra el currículo, curso por curso');
+/* Y las cuatro que el temario sitúa aparte no pueden colarse antes de tiempo. */
+console.log('\n2e · las cuatro que el libro retrasa, en su sitio');
+const tarde = { 'how often': ['basico1', '6B'], whose: ['elemental1', '4A'],
+                'how much': ['elemental2', '9B'], 'how long': ['intermedio2', '9B'] };
+for (const [w, [niv, u]] of Object.entries(tarde)) {
+  const antes = (UNITS[niv] || [])[Math.max(0, (UNITS[niv] || []).indexOf(u) - 1)];
+  if (whsEn(niv, antes).includes(w)) fallo(`«${w}» ya sale en ${niv} ${antes} y es la ${u}`);
+  if (!whsEn(niv, u).includes(w)) fallo(`«${w}» NO aparece en ${niv} ${u}: el filtro la deja fuera para siempre`);
+}
+if (!problemas) console.log('   ✓ how often · whose · how much · how long aparecen justo en su unidad');
+
 /* ── 3. Ningún ejercicio se adelanta a su unidad ────────────────────────────
    El recorrido completo: cada curso, unidad por unidad, los tres pozos. */
 console.log('\n3 · nada aparece antes de su clase');

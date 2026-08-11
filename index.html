@@ -2496,6 +2496,17 @@ function vistoEjercicio(tid, q, esSujeto){
   if(q && usaTercera(q) && terceraPersonaPendiente(tid)) return false;
   return true;
 }
+/* LA WH TAMBIÉN TIENE SU UNIDAD. El grueso sale de Básico I 2B («Wh- and How
+   questions with be»), pero el libro sitúa varias aparte: `how often` con los
+   adverbios de frecuencia, `whose` con el posesivo, `how much`/`how many` con
+   los cuantificadores y `how long` con el present perfect + for/since.
+   Hace falta desde que existe el modo «Falta la wh», donde la wh ES la
+   respuesta del ejercicio: sin esto, Básico I en la 2B podía tener que escribir
+   «how much», que es la 9B de Elemental II. En Identifica no aplica —ahí se
+   pide el tiempo— pero en Responde sí, porque pregunta por el TIPO de
+   información, que es el significado de la wh. */
+const idDeWh = w => "wh-" + String(w).trim().toLowerCase().replace(/\s+/g, "-");
+const vistoWh = q => visto(idDeWh(whBaseOf(q)));
 
 function renderExamples(){
   $("examples").innerHTML = EXAMPLES.filter(o=>itemCefr(o) === curLevel)
@@ -3334,6 +3345,9 @@ function buildRPool(){
       if(r.answer && r.answer.kind === "subject") continue;
       const tid = tenseIdOf(r.tense);
       if(!vistoEjercicio(tid, q, false)) continue;
+      /* En las abiertas se pregunta por el TIPO de información, que es lo que
+         significa la wh: si la wh no se ha visto, la pregunta tampoco toca. */
+      if(r.qtipo === "open" && !vistoWh(q)) continue;
       rPool.push({ q, tid, type: r.qtipo });
     }
   }
@@ -3533,6 +3547,9 @@ function buildFPool(k){
       /* Mismo filtro por unidad que los otros modos: este también corrige y
          puntúa, así que tampoco puede preguntar por lo que no se ha visto. */
       if(!vistoEjercicio(tid, q, r.answer && r.answer.kind === "subject")) continue;
+      /* La wh es LA RESPUESTA de este modo, así que su unidad manda tanto como
+         la del tiempo verbal. Sin esto el modo pedía «how much» en Básico I. */
+      if(F.tipo === "open" && !vistoWh(q)) continue;
       const p = { q, r, tid };
       /* Sin respuesta no entra: preferimos que falte el ejercicio a mostrarlo
          sin la evidencia que lo hace resoluble. `check-respuestas` impide que

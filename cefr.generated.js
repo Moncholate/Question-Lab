@@ -274,6 +274,82 @@ window.GRAMMAR_CEFR = {
       "level": "intermedio2",
       "unit": "11B"
     },
+    "wh-what": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-where": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-who": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-whom": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-when": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-why": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-how": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-how-old": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-what-time": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-what-color": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-which": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-what-kind": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-how-far": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-how-fast": {
+      "level": "basico1",
+      "unit": "2B"
+    },
+    "wh-how-often": {
+      "level": "basico1",
+      "unit": "6B"
+    },
+    "wh-whose": {
+      "level": "elemental1",
+      "unit": "4A"
+    },
+    "wh-how-much": {
+      "level": "elemental2",
+      "unit": "9B"
+    },
+    "wh-how-many": {
+      "level": "elemental2",
+      "unit": "9B"
+    },
+    "wh-how-long": {
+      "level": "intermedio2",
+      "unit": "9B"
+    },
     "conditional-1": {
       "level": "intermedio2",
       "unit": "8B"
@@ -312,6 +388,25 @@ window.GRAMMAR_CEFR = {
     "shall": "intermedio2",
     "might": "intermedio2",
     "may": "intermedio2",
+    "wh-what": "basico1",
+    "wh-where": "basico1",
+    "wh-who": "basico1",
+    "wh-whom": "basico1",
+    "wh-when": "basico1",
+    "wh-why": "basico1",
+    "wh-how": "basico1",
+    "wh-how-old": "basico1",
+    "wh-what-time": "basico1",
+    "wh-what-color": "basico1",
+    "wh-which": "basico1",
+    "wh-what-kind": "basico1",
+    "wh-how-far": "basico1",
+    "wh-how-fast": "basico1",
+    "wh-how-often": "basico1",
+    "wh-whose": "elemental1",
+    "wh-how-much": "elemental2",
+    "wh-how-many": "elemental2",
+    "wh-how-long": "intermedio2",
     "conditional-1": "intermedio2",
     "conditional-2": "intermedio2",
     "conditional-3": "avanzado"
