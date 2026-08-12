@@ -64,11 +64,22 @@
     --font-ui:'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-read:'Atkinson Hyperlegible', system-ui, 'Segoe UI', sans-serif;
     --shadow:0 1px 3px rgba(0,0,0,.08);
+    /* Borde de «Salir del ejercicio». Neutro a propósito: una salida no es un
+       error ni un acierto, así que no puede tomar prestado el rojo ni el verde.
+       Tiene tono propio porque `--border` es el borde de reposo de toda la app y
+       ahí el botón se leería como una caja más: `--border` da 1,27:1 contra la
+       tarjeta, o sea que como MARCA no marca nada.
+       Medido contra card y bg de cada tema, peor caso 4,41 en claro y 5,80 en
+       oscuro, por encima del 3:1 que pide un elemento gráfico. */
+    --exit-line:#64748b;
   }
   /* En oscuro la tinta se invierte: clara sobre fondo oscuro. Ninguna coincide
      con un color de rol — #fbbf24 se descartó por ser exactamente --adv. */
   :root[data-theme="dark"]{ --shadow:0 1px 3px rgba(0,0,0,.4);
-    --ok-ink:#34d399; --warn-ink:#fcd34d; --err-ink:#f87171; }
+    --ok-ink:#34d399; --warn-ink:#fcd34d; --err-ink:#f87171;
+    /* Sobre fondo oscuro el mismo gris se apagaría y el borde marcado dejaría
+       de marcarse, que es exactamente el fallo que este botón viene a arreglar. */
+    --exit-line:#8b94a7; }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:var(--font-ui);
@@ -186,9 +197,12 @@
     border:1px solid var(--border); border-radius:9px; background:var(--card); color:var(--muted);
     font-size:.85rem; font-weight:700; cursor:pointer; transition:all .12s;}
   .pback:hover{color:var(--accent-ink); border-color:color-mix(in srgb, var(--accent) 40%, transparent);}
-  /* Vuelta al modo principal. Va un punto más apagada que «← Práctica» para que
-     la jerarquía se lea sola: primero sales del submodo, después de la sección.
-     Antes no existía y el único «atrás» a la vista era el del Hub. */
+  /* Vuelta al modo principal, desde el menú de Práctica y desde la Guía. Antes
+     no existía y el único «atrás» a la vista era el del Hub.
+     Va apagada a propósito, y ahora por un motivo distinto del original: dentro
+     de un ejercicio ya NO hay un «← Práctica» con el que compararla. La salida
+     del ejercicio es `.pexit`, que vive abajo con las acciones y tiene otra
+     forma justamente para que estas dos no se confundan. */
   .pmain{font-weight:600; opacity:.85;}
   .pmain:hover{opacity:1;}
   .pmenu{display:flex; flex-direction:column; gap:.6rem; margin-top:.7rem;}
@@ -416,6 +430,18 @@
     background:transparent; color:var(--muted); cursor:pointer; font-size:.9rem;
   }
   button.ghost:hover{color:var(--text);}
+  /* SALIR DEL EJERCICIO. Vive en la barra de acciones, donde están las manos, y
+     no arriba: el «← Práctica» de antes era una píldora chica y gris, del mismo
+     aspecto que el «← Analiza» del menú, así que la salida del ejercicio y la
+     salida de la sección se veían igual siendo destinos distintos.
+     Borde marcado y texto pleno: se lee como salida de verdad sin competir con
+     el relleno sólido de «Comprobar» y «Siguiente», que son la acción.
+     El tono del borde es propio y no `--border`: ese es el borde de reposo de
+     toda la app y aquí desaparecería, que es justo lo que se quería evitar. */
+  .pexit{padding:.55rem 1rem; border-radius:10px; border:2px solid var(--exit-line);
+    background:transparent; color:var(--text); font-size:.9rem; font-weight:700;
+    cursor:pointer; transition:all .12s;}
+  .pexit:hover{background:color-mix(in srgb, var(--exit-line) 12%, transparent);}
   .progress{font-size:.85rem; color:var(--muted);}
   /* Rondas de práctica: barra fina arriba de la tarjeta + tarjeta de cierre.
      Sin una meta visible la sesión no termina nunca y el alumno no sabe si va
@@ -636,7 +662,6 @@
 
   <!-- ============ BUILD ============ -->
   <div class="panel" id="build">
-    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card" id="bCard">
       <div class="rbar" id="bBar"><i></i></div>
       <div class="prompt" id="bPrompt"></div>
@@ -649,6 +674,7 @@
         <span>
           <button class="ghost" id="bReset" data-i18n="btnReset">Borrar</button>
           <button class="ghost" id="bSkip" data-i18n="btnSkip">Saltar →</button>
+          <button class="pexit" data-goto="practice" data-i18n="btnSalir">Salir del ejercicio</button>
         </span>
       </div>
     </div>
@@ -658,7 +684,6 @@
 
   <!-- ============ IDENTIFY ============ -->
   <div class="panel" id="identify">
-    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card" id="idCard">
       <div class="rbar" id="idBar"><i></i></div>
       <div class="prompt" id="idQuestion"></div>
@@ -677,7 +702,8 @@
         <span class="progress" id="idProg"></span>
         <span>
           <button class="primary" id="idCheck" data-i18n="idCheck">Comprobar</button>
-          <button class="ghost" id="idNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+          <button class="primary" id="idNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+          <button class="pexit" data-goto="practice" data-i18n="btnSalir">Salir del ejercicio</button>
         </span>
       </div>
     </div>
@@ -687,7 +713,6 @@
 
   <!-- ============ RESPONDE ============ -->
   <div class="panel" id="respond">
-    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card" id="rCard">
       <div class="rbar" id="rBar"><i></i></div>
       <div class="prompt" id="rQuestion"></div>
@@ -702,7 +727,8 @@
         <span class="progress" id="rProg"></span>
         <span>
           <button class="primary" id="rCheck" data-i18n="idCheck">Comprobar</button>
-          <button class="ghost" id="rNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+          <button class="primary" id="rNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+          <button class="pexit" data-goto="practice" data-i18n="btnSalir">Salir del ejercicio</button>
         </span>
       </div>
     </div>
@@ -720,7 +746,6 @@
        una cerrada son la misma pieza, la que ABRE la pregunta. El motor decide
        cuál toca segun la pregunta que salga. -->
   <div class="panel" id="fillpiece">
-    <button class="pback" data-goto="practice">← <span data-i18n="navPractice">Práctica</span></button>
     <div class="card" id="fpCard">
       <div class="rbar" id="fpBar"><i></i></div>
       <div class="prompt" id="fpQuestion"></div>
@@ -734,7 +759,8 @@
         <span>
           <button class="ghost" id="fpPista" data-i18n="btnPista">Pista</button>
           <button class="primary" id="fpCheck" data-i18n="idCheck">Comprobar</button>
-          <button class="ghost" id="fpNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+          <button class="primary" id="fpNext" data-i18n="idNext" style="display:none">Siguiente →</button>
+          <button class="pexit" data-goto="practice" data-i18n="btnSalir">Salir del ejercicio</button>
         </span>
       </div>
     </div>
@@ -2260,7 +2286,7 @@ function rondaFin(m){
     (perfecto ? `<div class="resmeta">⭐ ${esc(t("roundPerfect"))}</div>` : "") +
     `<div class="resbtns">` +
       `<button class="primary" id="${m}Again">${esc(t("roundAgain"))}</button>` +
-      `<button class="ghost" data-goto="practice">${esc(t("roundBack"))}</button>` +
+      `<button class="pexit" data-goto="practice">${esc(t("roundBack"))}</button>` +
     `</div>`;
   /* La ronda cerrada es un logro en sí: se registra en el progreso compartido
      y puede desbloquear la insignia 💎 de ronda perfecta. */
@@ -2776,7 +2802,8 @@ const I18N = {
     buildOk:"🎉 ¡Perfecto! Ahora mira cómo se responde…",
     buildBad:"Casi… el orden no es el correcto. Recuerda: (Wh) + Auxiliar + Sujeto + Verbo + Complemento. Toca una pieza para devolverla.",
     emptyBuild:"Toca las piezas en orden para armar la pregunta…",
-    roundOf:"Ejercicio {n} de {t}", roundDone:"Ronda terminada", roundBest:"Mejor racha", roundPerfect:"¡Ronda perfecta!", roundAgain:"Otra ronda", roundBack:"Volver",
+    btnSalir:"Salir del ejercicio",
+    roundOf:"Ejercicio {n} de {t}", roundDone:"Ronda terminada", roundBest:"Mejor racha", roundPerfect:"¡Ronda perfecta!", roundAgain:"Otra ronda", roundBack:"Volver a Práctica",
     streak:"🔥 Racha: ", nextChallenge:"Siguiente desafío →",
     idTypeQ:"¿Abierta o cerrada?", idTenseQ:"¿Qué tiempo?", idOpen:"Abierta", idClosed:"Cerrada",
     idPickFam:"Elige primero una familia ↑", idCheck:"Comprobar", idNext:"Siguiente →",
@@ -2900,7 +2927,8 @@ const I18N = {
     buildOk:"🎉 Perfect! Now see how it's answered…",
     buildBad:"Almost… the order isn't right. Remember: (Wh) + Auxiliary + Subject + Verb + Complement. Tap a piece to send it back.",
     emptyBuild:"Tap the pieces in order to build the question…",
-    roundOf:"Exercise {n} of {t}", roundDone:"Round complete", roundBest:"Best streak", roundPerfect:"Perfect round!", roundAgain:"Another round", roundBack:"Back",
+    btnSalir:"Exit exercise",
+    roundOf:"Exercise {n} of {t}", roundDone:"Round complete", roundBest:"Best streak", roundPerfect:"Perfect round!", roundAgain:"Another round", roundBack:"Back to Practice",
     streak:"🔥 Streak: ", nextChallenge:"Next challenge →",
     idTypeQ:"Open or closed?", idTenseQ:"Which tense?", idOpen:"Open", idClosed:"Closed",
     idPickFam:"Pick a family first ↑",
