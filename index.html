@@ -97,9 +97,11 @@
      El nivel hace falta en toda la app; la unidad solo cambia algo donde se
      CORRIGE y PUNTÚA. Preguntarla arriba sería una barrera para quien entra
      solo a analizar una pregunta.
-     Dos estados con el MISMO control: la primera vez, una tarjeta que explica
-     por qué se pregunta; después, una línea. El curso avanza cada semana, así
-     que el dato se queda viejo y tiene que ser fácil de mover.
+     Tres estados con el MISMO control: la primera vez, una tarjeta que explica
+     por qué se pregunta; después, una línea; y cuando la respuesta caduca, la
+     tarjeta otra vez, preguntando si siguen ahí. La tercera existe porque
+     «fácil de mover» no bastó: el curso avanza cada semana y nadie mueve un
+     ajuste que puso una vez.
      Es un `select` y no fichas: Elemental II tiene 18 unidades, que en un
      teléfono son cinco filas. Así ocupa una y sigue a la vista. */
   .unitask{padding:.7rem .8rem; border-radius:12px; margin-bottom:.8rem;
@@ -109,6 +111,15 @@
   .unitask small{display:block; font-size:.76rem; color:var(--muted); margin:.2rem 0 .5rem;}
   .unitline{display:flex; align-items:center; flex-wrap:wrap; gap:.4rem;
     font-size:.78rem; color:var(--muted); margin-bottom:.8rem;}
+  /* Fila de la revisión: confirmar y cambiar, uno al lado del otro. Confirmar
+     va primero porque es lo que va a tocar la mayoría. */
+  .unitrow{display:flex; align-items:center; flex-wrap:wrap; gap:.4rem;}
+  /* `--accent-solid` con blanco encima, igual que `.langtog button.on`: el
+     acento normal deja el blanco en 3,68:1 y no pasa AA. */
+  .unitok{padding:.32rem .75rem; border-radius:8px; border:none; font-size:.8rem;
+    font-weight:700; background:var(--accent-solid); color:#fff; cursor:pointer;
+    transition:transform .1s;}
+  .unitok:active{transform:scale(.96);}
   .unitsel{padding:.3rem .5rem; border-radius:8px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:.8rem; font-weight:700; cursor:pointer;}
   .langtog{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
@@ -2435,6 +2446,42 @@ const UNITS = CEFR.units || {};
 const CONTENT = CEFR.content || {};
 let curUnidad = null;
 try{ const u = localStorage.getItem("gh_unidad"); if(u !== null) curUnidad = u; }catch(e){}
+/* ── REVISIÓN PERIÓDICA ──
+   Este dato caduca solo. El curso avanza ~una unidad por clase y hay dos clases
+   por semana (los intensivos, tres o cuatro), así que a los siete días está
+   corrido y nadie lo mueve: el alumno no tiene por qué acordarse de un ajuste
+   que puso una vez.
+   Y el fallo es SILENCIOSO Y SIEMPRE HACIA EL MISMO LADO: una unidad vieja solo
+   puede hacer la app más chica. No sale ningún error; sale una app congelada en
+   la semana 3 que esconde justo lo que se vio en la última clase, que es cuando
+   más se querría practicar.
+   Por eso a los 7 días la línea vuelve a ser tarjeta y pregunta si siguen ahí.
+   Confirmar es un toque, y re-sella la fecha.
+   Con "" (todo el curso) NO se pregunta: ahí no hay nada escondido, así que no
+   hay nada que se pueda quedar viejo.
+   Sin fecha guardada = por revisar. Es exactamente el caso de quien ya tenía
+   una unidad puesta antes de que esto existiera, y su valor es el más viejo de
+   todos los que hay.
+   `gh_unidad_fecha` se LEE del almacenamiento cada vez, no se guarda en una
+   variable: es clave compartida de la suite igual que `gh_unidad`, así que si
+   el alumno confirma en Grammaster, aquí no se le puede volver a preguntar.
+   El PLAZO viene de curriculum.json, no escrito aquí: es la misma decisión de
+   temario en las dos apps, y dos números que dicen lo mismo terminan diciendo
+   cosas distintas. */
+const DIAS_REVISION = (CEFR.revision && CEFR.revision.dias) || 7;
+const leerUnidadFecha = () => { try{ return localStorage.getItem("gh_unidad_fecha"); }catch(e){ return null; } };
+const sellarUnidadFecha = () => {
+  const hoy = window.GH_GAME ? window.GH_GAME.todayISO() : null;
+  if(hoy) try{ localStorage.setItem("gh_unidad_fecha", hoy); }catch(e){}
+  return hoy;
+};
+function unidadPorRevisar(){
+  if(!curUnidad) return false;          // null = sin responder · "" = todo el curso
+  const G = window.GH_GAME; if(!G) return false;
+  const fecha = leerUnidadFecha();
+  if(!fecha) return true;
+  return G.dayGap(fecha, G.todayISO()) >= DIAS_REVISION;
+}
 /* Orden DENTRO del curso: comparar como texto daría «10A» < «9B». Sin unidad
    devuelve -1 = disponible desde el principio. */
 const unidadIndice = u => { const m = /^(\d+)([A-Z])$/.exec(String(u || ""));
@@ -2597,8 +2644,12 @@ function setLevel(id){
 function setUnidad(u){
   curUnidad = u;
   try{ localStorage.setItem("gh_unidad", u); }catch(e){}
+  sellarUnidadFecha();
   applyLevel();
 }
+/* «Sí, seguimos ahí»: re-sella la fecha y no toca la unidad. No pasa por
+   `applyLevel` porque el contenido no cambió; lo único que cambia es la caja. */
+function confirmarUnidad(){ sellarUnidadFecha(); renderUnitUI(); }
 function renderUnitUI(){
   const box = $("unitBox"); if(!box) return;
   const sinResponder = curUnidad === null;
@@ -2608,11 +2659,20 @@ function renderUnitUI(){
   const sel = `<select class="unitsel" id="unitSel" aria-label="${esc(t("unidadPregunta"))}">` +
     (sinResponder ? `<option value="__" selected disabled>${esc(t("unidadElige"))}</option>` : "") +
     opciones + `</select>`;
+  /* Tres estados con el MISMO select. La revisión repite la forma de tarjeta de
+     la primera vez a propósito: es la única forma que el alumno ya aprendió a
+     leer como «esto te pregunta algo». La línea gris no la lee nadie. */
   box.innerHTML = sinResponder
     ? `<div class="unitask"><b>${esc(t("unidadPregunta"))}</b><small>${esc(t("unidadPorQue"))}</small>${sel}</div>`
+    : unidadPorRevisar()
+    ? `<div class="unitask"><b>${esc(t("unidadRevisar").replace("{u}", curUnidad))}</b>` +
+      `<small>${esc(t("unidadRevisarPorQue"))}</small>` +
+      `<div class="unitrow"><button type="button" class="unitok" id="unitKeep">${esc(t("unidadSeguimos"))}</button>${sel}</div></div>`
     : `<div class="unitline"><span>${esc(curUnidad ? t("unidadVas") : t("unidadTodoCurso"))}</span>${sel}</div>`;
   const s = $("unitSel");
   if(s) s.addEventListener("change", () => { if(s.value !== "__") setUnidad(s.value); });
+  const keep = $("unitKeep");
+  if(keep) keep.addEventListener("click", confirmarUnidad);
 }
 /* Selector standalone — se oculta dentro del hub, que controla el nivel */
 (function initLevelUI(){
@@ -2732,6 +2792,9 @@ const I18N = {
     unidadTodo:"Todo el curso",
     unidadTodoCurso:"Practicando todo el curso",
     unidadVas:"Practicando hasta la unidad",
+    unidadRevisar:"La última vez ibas en la unidad {u}. ¿Siguen ahí?",
+    unidadRevisarPorQue:"Si ya avanzaron en clase, cámbialo aquí y la práctica se pone al día.",
+    unidadSeguimos:"Sí, seguimos ahí",
     /* Reportar. Mismo texto que Grammaster: es el mismo trámite y el alumno lo
        ve en las dos apps. */
     /* Falta la pieza. «Falta la wh» y no «Adivina la wh»: no se adivina, se
@@ -2852,6 +2915,9 @@ const I18N = {
     unidadTodo:"Whole course",
     unidadTodoCurso:"Practising the whole course",
     unidadVas:"Practising up to unit",
+    unidadRevisar:"Last time you were on unit {u}. Still there?",
+    unidadRevisarPorQue:"If your class has moved on, change it here and practice catches up.",
+    unidadSeguimos:"Yes, still there",
     navFillPiece:"Missing piece",
     pdFillPiece:"Look at the answer and type the word that opens the question.",
     fpHint:"Type the word missing at the start of the question.",

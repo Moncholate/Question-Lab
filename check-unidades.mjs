@@ -191,6 +191,70 @@ for (const nivel of LV) {
 }
 if (!problemas) console.log('   ✓ los 7 cursos tienen ejercicios en los 3 modos');
 
+/* ── 7. La revisión periódica ───────────────────────────────────────────────
+   El profesor reportó la unidad como «desaparecida» y no había desaparecido:
+   ya la había respondido, así que salía la línea compacta en vez de la tarjeta.
+   Eso destapó el problema de fondo: el dato caduca solo y nadie lo mueve.
+   Aquí se prueba el ciclo entero, incluido lo que NO debe preguntar. */
+console.log('\n7 · la unidad se vuelve a preguntar cuando caduca');
+const { unidadPorRevisar, confirmarUnidad, renderUnitUI, DIAS_REVISION, leerUnidadFecha } = QL;
+const G = globalThis.window.GH_GAME;
+const hoyReal = G.todayISO;
+/* Viajar en el tiempo en vez de escribir una fecha a mano: así se prueba la
+   comparación de verdad, con el mismo `todayISO` local que usa la racha. */
+const viajar = (n) => {
+  G.todayISO = (d) => {
+    if (d) return hoyReal(d);
+    const f = new Date(); f.setDate(f.getDate() + n); return hoyReal(f);
+  };
+};
+const caja = () => globalThis.document.getElementById('unitBox').innerHTML;
+
+setLevel('basico1');
+setUnidad('5B');
+if (unidadPorRevisar()) fallo('recién puesta y ya pide revisarla');
+renderUnitUI();
+if (!/unitline/.test(caja())) fallo('recién puesta debería quedar como línea compacta');
+
+viajar(DIAS_REVISION - 1);
+if (unidadPorRevisar()) fallo(`pregunta a los ${DIAS_REVISION - 1} días y el plazo es ${DIAS_REVISION}`);
+
+viajar(DIAS_REVISION);
+if (!unidadPorRevisar()) fallo(`no pregunta a los ${DIAS_REVISION} días`);
+renderUnitUI();
+const tarjeta = caja();
+if (!/unitask/.test(tarjeta)) fallo('caducada y no vuelve a ser tarjeta');
+if (!/5B/.test(tarjeta)) fallo('la tarjeta no dice en qué unidad iba');
+if (/\{u\}/.test(tarjeta)) fallo('el hueco {u} del texto quedó sin reemplazar');
+if (!/unitKeep/.test(tarjeta)) fallo('la tarjeta no trae el botón de confirmar');
+
+confirmarUnidad();
+if (unidadPorRevisar()) fallo('confirmar no re-selló la fecha');
+if (!/unitline/.test(caja())) fallo('tras confirmar no vuelve a la línea');
+/* Confirmar NO puede tocar la unidad: es el error que dejaría al alumno con un
+   filtro distinto del que aceptó. */
+if (QL.getUnidad() !== '5B') fallo(`confirmar cambió la unidad a «${QL.getUnidad()}»`);
+
+/* «Todo el curso» no esconde nada, así que no hay nada que se ponga viejo.
+   Preguntárselo cada semana sería molestar sin motivo. */
+setUnidad(''); viajar(400);
+if (unidadPorRevisar()) fallo('pregunta por «todo el curso», que no esconde nada');
+/* Sin responder tampoco: ahí ya sale la tarjeta original. */
+setLevel('basico2');            // cambiar de curso deja la unidad en null
+if (QL.getUnidad() !== null) fallo('cambiar de nivel debería dejar la unidad sin responder');
+if (unidadPorRevisar()) fallo('pide revisar una unidad que nunca se respondió');
+
+/* Sin fecha guardada = por revisar. Es el caso de quien ya tenía una unidad
+   puesta antes de que esto existiera: su valor es el más viejo que hay. */
+G.todayISO = hoyReal;
+setUnidad('9A');
+globalThis.localStorage.removeItem('gh_unidad_fecha');
+if (leerUnidadFecha() !== null) fallo('la fecha debería leerse del almacenamiento, no de una copia');
+if (!unidadPorRevisar()) fallo('una unidad sin fecha debería pedir revisión');
+
+if (!problemas) console.log(`   ✓ ciclo completo a ${DIAS_REVISION} días · confirmar, cambiar, y los 3 casos que no preguntan`);
+setUnidad('');
+
 /* ── Resumen legible: dónde empieza a haber práctica en cada curso ──────── */
 console.log('\nCuándo empieza a haber ejercicios en cada curso:');
 for (const nivel of LV) {

@@ -172,6 +172,9 @@ window.GRAMMAR_CEFR = {
       "10B"
     ]
   },
+  "revision": {
+    "dias": 7
+  },
   "content": {
     "to-be-pres": {
       "level": "basico1",
