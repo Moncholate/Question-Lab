@@ -22,10 +22,10 @@ const { ID_TENSES, LV, CONTENT, UNITS, CHALLENGES, setLevel, setUnidad,
         unidadDe, unidadIndice, buildIdPool, buildRPool, buildFPool,
         getIdPool, getRPool, getChallenges, getFPool } = QL;
 
-/* Los cinco pozos, para no repetirlos en cada bloque. «Falta la wh» y «Falta el
-   auxiliar» también corrigen y puntúan, así que se acotan igual que los otros. */
-const rehacer = () => { buildIdPool(); buildRPool(); buildFPool('wh'); buildFPool('ax'); };
-const pozos = () => [...getIdPool(), ...getRPool(), ...getFPool('wh'), ...getFPool('ax')];
+/* Los cuatro pozos, para no repetirlos en cada bloque. «Falta una pieza» también
+   corrige y puntúa, así que se acota igual que los otros. */
+const rehacer = () => { buildIdPool(); buildRPool(); buildFPool(); };
+const pozos = () => [...getIdPool(), ...getRPool(), ...getFPool()];
 const total = () => pozos().length + getChallenges().length;
 
 let problemas = 0;
@@ -91,8 +91,11 @@ else {
    varias aparte y ahí estaba el agujero: Básico I en la 2B llegaba a pedir
    «how much», que es la 9B de Elemental II. */
 console.log('\n2d · ninguna wh llega antes de su clase');
-const whsEn = (nivel, u) => { setLevel(nivel); setUnidad(u); buildFPool('wh');
-  return [...new Set(getFPool('wh').map(p => QL.FALTA.wh.pieza(p)))]; };
+/* Solo las ABIERTAS del pozo: ahora los dos tipos van mezclados en uno, así que
+   se filtra por `k` en vez de tener un pozo aparte. */
+const whsEn = (nivel, u) => { setLevel(nivel); setUnidad(u); buildFPool();
+  return [...new Set(getFPool().filter(p => p.k === 'wh')
+                               .map(p => QL.partirPregunta(p).pieza.toLowerCase()))]; };
 const idWh = w => 'wh-' + w.replace(/\s+/g, '-');
 let whMal = 0;
 for (const nivel of LV) for (const u of (UNITS[nivel] || [])) {
@@ -183,8 +186,8 @@ console.log('\n6 · ningún curso se queda sin práctica');
 for (const nivel of LV) {
   setLevel(nivel); setUnidad('');
   rehacer();
-  const [i, r, b, w, a] = [getIdPool().length, getRPool().length, getChallenges().length, getFPool('wh').length, getFPool('ax').length];
-  if (!i || !r || !b || !w || !a) fallo(`[${nivel}] pozos vacíos → Identifica ${i} · Responde ${r} · Construye ${b} · Wh ${w} · Aux ${a}`);
+  const [i, r, b, w] = [getIdPool().length, getRPool().length, getChallenges().length, getFPool().length];
+  if (!i || !r || !b || !w) fallo(`[${nivel}] pozos vacíos → Identifica ${i} · Responde ${r} · Construye ${b} · Pieza ${w}`);
 }
 if (!problemas) console.log('   ✓ los 7 cursos tienen ejercicios en los 3 modos');
 
@@ -199,7 +202,7 @@ for (const nivel of LV) {
     if (total()) { primera = u; break; }
   }
   setUnidad(''); rehacer();
-  const detalle = `${getIdPool().length} id · ${getRPool().length} resp · ${getChallenges().length} constr · ${getFPool('wh').length} wh · ${getFPool('ax').length} aux`;
+  const detalle = `${getIdPool().length} id · ${getRPool().length} resp · ${getChallenges().length} constr · ${getFPool().length} pieza`;
   console.log(`  ${nivel.padEnd(12)} desde ${String(primera || '—').padEnd(4)} (curso completo: ${detalle})`);
 }
 

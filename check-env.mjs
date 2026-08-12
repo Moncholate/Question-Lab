@@ -64,7 +64,7 @@ export const QL = new Function(bloques[bloques.length - 1] + `
          buildIdPool, buildRPool, refilterChallenges,
          getIdPool: () => idPool, getRPool: () => rPool, getChallenges: () => activeChallenges,
          getUnidad: () => curUnidad,
-         buildFPool, FALTA, getFPool: (k) => fEstado[k].pool};`
+         buildFPool, FALTA, partirPregunta, fHueco, getFPool: () => fEstado.pool};`
 ).call(globalThis);
 
 export const BANK = globalThis.window.QUESTION_BANK;

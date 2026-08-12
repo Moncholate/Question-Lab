@@ -168,5 +168,34 @@ for (const q of BUENAS) {
 }
 if (!malB) console.log(`   ✓ ${BUENAS.length} preguntas correctas aceptadas`);
 
+/* ── 8. El hueco de «Falta una pieza» ────────────────────────────────────── */
+console.log('\n8 · el hueco tapa la pieza que abre la pregunta');
+const { buildFPool, getFPool, partirPregunta, fHueco, FALTA } = QL;
+buildFPool();
+const pool = getFPool();
+let malH = 0;
+for (const p of pool) {
+  const { pieza } = partirPregunta(p);
+  const hueco = fHueco(p);
+  if (!pieza) { fallo(`«${p.q}» → no se le puede sacar pieza`); malH++; continue; }
+  if (!hueco.includes('____')) { fallo(`«${p.q}» → el hueco no aparece`); malH++; continue; }
+  /* La pieza no puede seguir a la vista. Con FRONTERA de palabra: «is» dentro
+     de «his car» no la regala, y sin \b eso daba un falso positivo. */
+  if (new RegExp(`\\b${pieza.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(hueco)) {
+    fallo(`«${p.q}» → el hueco «${hueco}» deja «${pieza}» a la vista`); malH++;
+  }
+  /* Y el hueco no puede pegarse mal a una contracción: «____ 's your name?». */
+  if (/____ ['’]/.test(hueco)) { fallo(`«${p.q}» → «${hueco}» separa la contracción`); malH++; }
+}
+if (!malH) console.log(`   ✓ ${pool.length} ejercicios (${pool.filter(p => p.k === 'wh').length} abiertas · ${pool.filter(p => p.k === 'ax').length} cerradas)`);
+
+console.log('\n9 · con una subordinada al frente, el hueco va en la PREGUNTA');
+/* «If I call you, will you answer?» tapaba el «If» y pedía escribirlo como si
+   fuera un auxiliar. La pieza es la de la segunda cláusula. */
+const cond = pool.find(p => /^if\b/i.test(p.q));
+if (!cond) console.log('   — no hay ninguna en el banco ahora mismo');
+else if (/^____/.test(fHueco(cond))) fallo(`«${cond.q}» → tapa la conjunción: «${fHueco(cond)}»`);
+else console.log(`   ✓ ${fHueco(cond)}  (pieza: «${partirPregunta(cond).pieza}»)`);
+
 console.log(problemas ? `\n✗ ${problemas} problema(s)` : '\nBÁSICO OK');
 process.exit(problemas ? 1 : 0);
