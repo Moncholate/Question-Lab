@@ -3370,7 +3370,8 @@ function normAns(s){
 }
 function expectedAnswers(r){
   if(!r.ok || !r.answer || r.answer.kind !== "closed") return [];
-  return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" ")).map(bajaSujeto);
+  return r.answer.lines.map(l => l.pieces.map(p => p.text).join(" "))
+                       .map(bajaSujeto).map(segunPreferencia);
 }
 /* «Yes, He does.» → «Yes, he does.» El sujeto que devuelve la respuesta va a
    MITAD de oración, detrás de «Yes,» o «No,», así que ahí no lleva mayúscula.
@@ -3382,6 +3383,25 @@ function expectedAnswers(r){
    `I` se conserva, que en inglés va siempre en mayúscula. */
 function bajaSujeto(s){
   return s.replace(/^((?:Yes|No), )([A-Z][a-z]+)\b/, (m, ini, pal) => ini + pal.toLowerCase());
+}
+/* CONTRACCIÓN, compartida con Grammaster (`gh_contraccion`). El profesor puede
+   querer la forma entera para explicar la estructura, y esa decisión no puede
+   valer en una app y no en la otra: el alumno es el mismo y vería «isn't» aquí
+   y «is not» allá sin ningún motivo. Por defecto contraída, que es lo natural.
+   Solo cambia lo que se MUESTRA: `normAns` expande las contracciones antes de
+   comparar, así que se sigue aceptando lo que el alumno escriba de las dos. */
+const NEG_ENTERA = {"isn't":"is not","aren't":"are not","wasn't":"was not","weren't":"were not",
+  "haven't":"have not","hasn't":"has not","hadn't":"had not","don't":"do not","doesn't":"does not",
+  "didn't":"did not","won't":"will not","can't":"cannot","couldn't":"could not",
+  "shouldn't":"should not","wouldn't":"would not","mustn't":"must not"};
+const contraeNeg = () => { try{ return localStorage.getItem("gh_contraccion") !== "entera"; }catch(e){ return true; } };
+function segunPreferencia(s){
+  if(contraeNeg()) return s;
+  return String(s == null ? "" : s).replace(/\b[A-Za-z]+n['’]t\b/g, m => {
+    const r = NEG_ENTERA[m.toLowerCase().replace("’", "'")];
+    if(!r) return m;
+    return /^[A-Z]/.test(m) ? r.charAt(0).toUpperCase() + r.slice(1) : r;
+  });
 }
 /* wh-base de la pregunta (la más larga que matchee: "how many", "what time"…)
    El wh contraído se desarma primero: sin esto "What's your name?" daba la base
