@@ -1,7 +1,17 @@
 <!DOCTYPE html>
+<!--
+  Question Lab · © 2026 Víctor Manuel Morales Muñoz. Todos los derechos reservados.
+  All rights reserved. https://moncholate.github.io/Grammar-HUB/
+
+  Este código llega a tu navegador porque una app web no puede funcionar de otra
+  forma, y leerlo está bien. Copiarlo o publicar una versión propia, no: ver
+  LICENSE en el repositorio. Permisos: v.moralesm@profesor.duoc.cl
+-->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="author" content="Víctor Manuel Morales Muñoz">
+<meta name="copyright" content="© 2026 Víctor Manuel Morales Muñoz. Todos los derechos reservados.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
 /* Tema de la suite (compartido same-origin): fija data-theme antes de pintar.
@@ -209,6 +219,8 @@
      forma justamente para que estas dos no se confundan. */
   .pmain{font-weight:600; opacity:.85;}
   .pmain:hover{opacity:1;}
+  /* Autoría al pie de la Guía: presente pero fuera del camino. */
+  .autoria{margin-top:1.4rem; text-align:center; font-size:.72rem; color:var(--muted);}
   .pmenu{display:flex; flex-direction:column; gap:.6rem; margin-top:.7rem;}
   .pmode{display:flex; align-items:center; gap:.8rem; text-align:left; padding:.9rem 1rem;
     border:1.5px solid var(--border); border-radius:14px; background:var(--card); color:var(--text);
@@ -925,6 +937,12 @@
         <p class="ej">Who painted the Mona Lisa?</p>
       </div>
     </div>
+    <!-- Autoría y copyright. Al final de la Guía y no en una barra fija: no es
+         información que el alumno necesite mientras practica, y una franja
+         permanente se come pantalla en un teléfono. El aviso que importa a
+         efectos legales es el del código y el LICENSE del repositorio; esto es
+         para quien mire quién hizo la app. -->
+    <p class="autoria" data-i18n="autoria">Question Lab · © 2026 Víctor Manuel Morales Muñoz · Todos los derechos reservados</p>
   </div>
 
   <!-- ============ PROGRESO ============ -->
@@ -2953,6 +2971,7 @@ const I18N = {
     unidadRevisar:"La última vez ibas en la unidad {u}. ¿Siguen ahí?",
     unidadRevisarPorQue:"Si ya avanzaron en clase, cámbialo aquí y la práctica se pone al día.",
     unidadSeguimos:"Sí, seguimos ahí",
+    autoria:"Question Lab · © 2026 Víctor Manuel Morales Muñoz · Todos los derechos reservados",
     /* Reportar. Mismo texto que Grammaster: es el mismo trámite y el alumno lo
        ve en las dos apps. */
     /* Falta la pieza. «Falta la wh» y no «Adivina la wh»: no se adivina, se
@@ -3077,6 +3096,7 @@ const I18N = {
     unidadRevisar:"Last time you were on unit {u}. Still there?",
     unidadRevisarPorQue:"If your class has moved on, change it here and practice catches up.",
     unidadSeguimos:"Yes, still there",
+    autoria:"Question Lab · © 2026 Víctor Manuel Morales Muñoz · All rights reserved",
     navFillPiece:"Missing piece",
     pdFillPiece:"Look at the answer and type the word that opens the question.",
     fpHint:"Type the word missing at the start of the question.",
