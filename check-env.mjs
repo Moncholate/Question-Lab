@@ -29,6 +29,7 @@ function nuevoNodo(id = '') {
 
 globalThis.document = {
   readyState: 'complete', documentElement: nuevoNodo('html'), body: nuevoNodo('body'), head: nuevoNodo('head'),
+  lastModified: '01/01/2026 00:00:00',   // de aquí sale APP_BUILD, que el reporte imprime
   getElementById(id){ if(!nodos.has(id)) nodos.set(id, nuevoNodo(id)); return nodos.get(id); },
   querySelector(){ return nuevoNodo(); }, querySelectorAll(){ return []; },
   createElement(t){ const n = nuevoNodo(); n.tagName = String(t).toUpperCase(); return n; },
@@ -40,7 +41,10 @@ globalThis.window = {
   matchMedia: () => ({ matches:false, addEventListener(){}, addListener(){} }),
   addEventListener(){}, removeEventListener(){}, localStorage: null, self:{}, top:{},
   ghTheme: { get:()=>'auto', effective:()=>'light', toggle(){}, apply(){} },
-  navigator: { serviceWorker:{ register:()=>Promise.resolve() }, clipboard:{ writeText:()=>Promise.resolve() } },
+  /* `userAgent` con valor de verdad: el reporte lo incluye, y sin él ese campo
+     se caía solo en el arnés y check-reporte no podía comprobarlo. */
+  navigator: { userAgent:'Mozilla/5.0 (arnés de pruebas)',
+               serviceWorker:{ register:()=>Promise.resolve() }, clipboard:{ writeText:()=>Promise.resolve() } },
 };
 globalThis.localStorage = { getItem:k=>store.has(k)?store.get(k):null, setItem:(k,v)=>store.set(k,String(v)), removeItem:k=>store.delete(k) };
 globalThis.window.localStorage = globalThis.localStorage;
@@ -62,6 +66,7 @@ export const QL = new Function(bloques[bloques.length - 1] + `
 ;return {analyze, tenseIdOf, ID_TENSES, LV, setLevel, expectedAnswers, openExpected, whBaseOf, WH_HINTS,
          setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
          confirmarUnidad, unidadPorRevisar, renderUnitUI, DIAS_REVISION, leerUnidadFecha,
+         construirReporte, goAnalyze, renderId, renderR, renderF, loadChallenge,
          buildIdPool, buildRPool, refilterChallenges,
          getIdPool: () => idPool, getRPool: () => rPool, getChallenges: () => activeChallenges,
          getUnidad: () => curUnidad,

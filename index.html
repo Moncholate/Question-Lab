@@ -3040,20 +3040,70 @@ function construirReporte(){
     linea("Idioma", lang),
     `— ${p.toUpperCase()} —`,
   ];
-  if(p === "analyze")  filas.push(linea("Escrito", ($("qin") || {}).value));
+  /* LAS ETIQUETAS, no solo la oración. Un reporte que dice «esta palabra está
+     mal pintada» sin decir DE QUÉ la pintó no se puede ni leer ni convertir en
+     un test. Cada pieza va como `palabra=rol`. */
+  const conRoles = a => a && a.parts && a.parts.length
+    ? a.parts.map(x => `${x.text}=${x.role}`).join(" ") : null;
+  const sinHtml = s => s == null ? s : String(s).replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+  const tipoEs = tp => tp === "open" ? "abierta" : tp === "closed" ? "cerrada" : tp;
+
+  if(p === "analyze") filas.push(
+    linea("Escrito", ($("qin") || {}).value),
+    linea("La app leyó", conRoles(ultimoAnalisis)),
+    linea("Tipo", ultimoAnalisis && tipoEs(ultimoAnalisis.qtipo)),
+    linea("Tiempo", ultimoAnalisis && ultimoAnalisis.tense),
+    /* Sin las etiquetas: los avisos llevan `<b>` para la pantalla y el reporte
+       viaja como texto plano dentro de un correo. */
+    linea("Aviso", sinHtml(ultimoAnalisis && (ultimoAnalisis.error || ultimoAnalisis.msg
+                    || (ultimoAnalisis.incomplete ? "la dio por incompleta" : null)))));
   if(p === "build" && curCh) filas.push(
     linea("Desafío", curCh.t || curCh.c),
     linea("Consigna", lang === "en" && curCh.pe ? curCh.pe : curCh.prompt),
-    linea("Puesto", bPlaced.map(b => b.text).join(" ")));
+    /* Con el rol de cada pieza: en Construye el error típico es que una pieza
+       venga con el rol equivocado, y sin el rol eso no se ve. */
+    linea("Puesto", bPlaced.length ? bPlaced.map(b => `${b.text}=${b.role}`).join(" ") : "nada todavía"),
+    linea("Sin poner", bPool.length ? bPool.map(b => `${b.text}=${b.role}`).join(" ") : "nada"),
+    linea("Orden correcto", [...bPlaced, ...bPool].sort((a, b) => a.id - b.id).map(b => b.text).join(" ")),
+    linea("Corregido", bScored ? (bFailed ? "sí, lo dio por malo" : "sí, lo dio por bueno") : "todavía no"));
   if(p === "build" && !curCh) filas.push(linea("Desafío", "ninguno: el pozo salió vacío"));
   if(p === "identify") filas.push(
     linea("Pregunta", idCurrent && idCurrent.q),
-    linea("Es", idCurrent && `${idCurrent.type} · ${idCurrent.tid}`),
-    linea("Marcó", `${idType || "—"} · ${idTense || "—"}`));
-  if(p === "respond") filas.push(
-    linea("Pregunta", rCurrent && rCurrent.q),
-    linea("Es", rCurrent && `${rCurrent.type} · ${rCurrent.tid}`),
-    linea("Respondió", ($("rInput") || {}).value));
+    linea("Es", idCurrent && `${tipoEs(idCurrent.type)} · ${idCurrent.tid}`),
+    linea("Marcó", `${idType ? tipoEs(idType) : "—"} · ${idTense || "—"}`),
+    linea("Corregido", idChecked ? "sí" : "todavía no"));
+  if(p === "respond" && rCurrent) filas.push(
+    linea("Pregunta", rCurrent.q),
+    linea("Es", `${tipoEs(rCurrent.type)} · ${rCurrent.tid}`),
+    linea("Respondió", ($("rInput") || {}).value),
+    /* Lo que la app daba por bueno. Es la mitad que faltaba: sin esto el reporte
+       decía qué escribió el alumno, pero no contra qué se comparó. */
+    linea("Esperaba", rCurrent.type === "closed"
+      ? (expectedAnswers(analyze(rCurrent.q)) || []).join(" / ")
+      : `información de tipo ${rCorrectType || "?"}`),
+    linea("Marcó el tipo", rTypePick || null),
+    linea("Corregido", rChecked ? "sí" : "todavía no"));
+  if(p === "respond" && !rCurrent) filas.push(linea("Ejercicio", "ninguno: el pozo salió vacío"));
+  /* «Falta una pieza» se quedó FUERA del reporte cuando se creó el modo, así que
+     reportar desde aquí no decía absolutamente nada: solo el nombre del panel. */
+  if(p === "fillpiece" && fEstado.cur){
+    const c = fEstado.cur;
+    filas.push(
+      linea("Hueco", fHueco(c)),
+      linea("Pregunta entera", c.q),
+      linea("Pieza que falta", c.k === "wh" ? "una wh-word (abierta)" : "el auxiliar (cerrada)"),
+      linea("Evidencia mostrada", FALTA[c.k].respuesta(c)),
+      linea("Pista", fEstado.pista ? FALTA[c.k].pista(c) : "no la pidió"),
+      linea("Escribió", ($("fpInput") || {}).value),
+      linea("Aceptaba", (FALTA[c.k].acepta(c) || []).join(" / ")),
+      linea("Corregido", fEstado.checked ? "sí" : "todavía no"));
+  }
+  if(p === "fillpiece" && !fEstado.cur) filas.push(linea("Ejercicio", "ninguno: el pozo salió vacío"));
+  /* La ronda, en los cuatro modos: sitúa el fallo dentro de la sesión y dice si
+     venía de una racha, que es lo que el alumno acaba de perder. */
+  const claveRonda = { build:"b", identify:"id", respond:"r", fillpiece:"w" }[p];
+  if(claveRonda && rondas[claveRonda]) filas.push(
+    linea("Ronda", `${rondas[claveRonda].hechos}/${rondaTotal(claveRonda)} · ${rondas[claveRonda].ok} bien · mejor racha ${rondas[claveRonda].mejor}`));
   filas.push("—", linea("Navegador", navigator.userAgent), "",
              lang === "en" ? "What I expected instead:" : "Qué esperaba en vez de eso:", "");
   return filas.filter(Boolean).join("\n");
@@ -3229,7 +3279,11 @@ function scrollReveal(el){
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   try{ el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" }); }catch(e){}
 }
-function goAnalyze(text){ renderResult(analyze(text), $("result")); scrollReveal($("result")); const w=$("exWrap"); if(w) w.style.display="none"; }
+/* El último análisis se guarda para el REPORTE. Sin esto el reporte contaba la
+   mitad: decía qué escribió el alumno pero no qué leyó la app, y el desacuerdo
+   entre las dos cosas es justamente lo que se está reportando. */
+let ultimoAnalisis = null;
+function goAnalyze(text){ ultimoAnalisis = analyze(text); renderResult(ultimoAnalisis, $("result")); scrollReveal($("result")); const w=$("exWrap"); if(w) w.style.display="none"; }
 /* Gamificación (suite): progreso compartido + toast de logro */
 let ghProgress = null;
 function showBadgeToast(key){
