@@ -312,6 +312,33 @@ for (const [q, subj, verbo] of NO_COPULA) {
 }
 if (!malC) console.log(`   ✓ ${COPULA.length} con «be» de verbo principal · ${NO_COPULA.length} donde el verbo sí está`);
 
+/* ── 12. `this/that` son pronombre y determinante ───────────────────────────
+   Estaban solo en la lista de determinantes, así que el sujeto se comía la
+   palabra de al lado: «Is this your plan?» daba sujeto «this your», y
+   «Is this correct?» daba sujeto «this correct» y NINGÚN complemento, o sea que
+   se tragaba la pieza que la pregunta enseña. */
+console.log('\n12 · «this/that» de pronombre y de determinante');
+const DEMOSTRATIVOS = [
+  // pronombre: le sigue otro determinante, o no hay sustantivo que determinar
+  ['Is this your plan?',   'this',      'your plan'],
+  ['Is that the stop?',    'that',      'the stop'],
+  ['Is this a good plan?', 'this',      'a good plan'],
+  ['Is this correct?',     'this',      'correct'],
+  ['Is that true?',        'that',      'true'],
+  ['Are these your keys?', 'these',     'your keys'],
+  // determinante: determina un sustantivo de verdad
+  ['Is this book new?',    'this book', 'new'],
+  ['Is that man tall?',    'that man',  'tall'],
+];
+let malD = 0;
+for (const [q, subj, comp] of DEMOSTRATIVOS) {
+  const p = piezas(q);
+  if (!p.ok) { fallo(`«${q}» → rechazada`); malD++; continue; }
+  if (p.rol('subj').toLowerCase() !== subj) { fallo(`«${q}» → sujeto «${p.rol('subj')}», y es «${subj}»`); malD++; }
+  if (p.rol('comp').toLowerCase() !== comp) { fallo(`«${q}» → complemento «${p.rol('comp')}», y es «${comp}»`); malD++; }
+}
+if (!malD) console.log(`   ✓ ${DEMOSTRATIVOS.length} demostrativos, de pronombre y de determinante`);
+
 console.log('\n9 · con una subordinada al frente, el hueco va en la PREGUNTA');
 /* «If I call you, will you answer?» tapaba el «If» y pedía escribirlo como si
    fuera un auxiliar. La pieza es la de la segunda cláusula. */

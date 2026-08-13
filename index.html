@@ -1522,7 +1522,20 @@ function analyze(raw){
   } else if(vIdx === -1 || vIdx === auxIdx+1){
     // No hay verbo después del sujeto -> be/modal como verbo principal (Is she a doctor?)
     let sEnd = auxIdx+2;
-    if(DETS.includes(lower[auxIdx+1])) sEnd = auxIdx+3;
+    /* `this/that/these/those` son determinante Y pronombre, y estaban solo como
+       determinante: el sujeto se comía la palabra siguiente. «Is this your
+       plan?» daba sujeto «this your», y «Is this correct?» daba sujeto «this
+       correct» y NINGÚN complemento, o sea que se tragaba la pieza que la
+       pregunta enseña.
+       Es determinante solo si de verdad determina un sustantivo: hacen falta al
+       menos dos palabras detrás («Is this book new?») y la de al lado no puede
+       ser otro determinante, porque «this your» no existe. En cualquier otro
+       caso es pronombre y el sujeto termina en él. */
+    const DEMOS = ["this","that","these","those"];
+    const esDeterminante = DETS.includes(lower[auxIdx+1])
+      && !(DEMOS.includes(lower[auxIdx+1])
+           && (n - (auxIdx+2) < 2 || DETS.includes(lower[auxIdx+2])));
+    if(esDeterminante) sEnd = auxIdx+3;
     // Pregunta de identidad ("What is your favorite food?"): todo el resto es el sujeto
     const whBase0 = whText.toLowerCase().split(" ")[0];
     if(isOpen && vIdx === -1 && !PRONOUNS.includes(lower[auxIdx+1])
