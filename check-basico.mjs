@@ -189,6 +189,87 @@ for (const p of pool) {
 }
 if (!malH) console.log(`   ✓ ${pool.length} ejercicios (${pool.filter(p => p.k === 'wh').length} abiertas · ${pool.filter(p => p.k === 'ax').length} cerradas)`);
 
+/* ── 10. Los verbos frasales no se parten ───────────────────────────────────
+   Reporte del profesor en clase: «What time do you get up during the week?»
+   dejaba `get` de verbo y `up during the week` de complemento. Su reacción fue
+   «pensé que habíamos solucionado el problema», y tenía razón a medias: estaba
+   resuelto en Desgramatizador, y esta app no tenía NINGUNA noción de frasal.
+   Ahora la lista es única (Grammar HUB/phrasal-verbs.json) y la consumen las
+   dos. Aquí se fija el comportamiento, con los pares que se contradicen. */
+console.log('\n10 · la partícula es del verbo, no del complemento');
+const FRASALES = [
+  // pregunta,                                    verbo,          complemento
+  ['What time do you get up during the week?',    'get up',       'during the week'],
+  ['What time do you get up?',                    'get up',       ''],
+  ['Do you get up early?',                        'get up',       'early'],
+  ['What do you look for?',                       'look for',     ''],
+  ['What are you looking for?',                   'looking for',  ''],
+  ['Do you turn off the light?',                  'turn off',     'the light'],
+  ['Do you pick up the kids?',                    'pick up',      'the kids'],
+  ['Do you look after the kids?',                 'look after',   'the kids'],
+  ['Who picked up the phone?',                    'picked up',    'the phone'],
+  ['What do you come up with?',                   'come up with', ''],   // tres palabras
+];
+/* Y LO QUE NO ES FRASAL, que es la mitad difícil: `in`, `on`, `at`, `to` y `for`
+   son partícula A VECES. Delante de un adverbial de tiempo o lugar son
+   preposición y el complemento se queda entero. */
+const NO_FRASALES = [
+  ['Do you go on holiday in summer?', 'go',   'on holiday in summer'],
+  ['Did she come in the morning?',    'come', 'in the morning'],
+  ['Are you up?',                     'Are',  'up'],            // `be` como verbo principal
+];
+let malF = 0;
+for (const [q, verbo, comp] of [...FRASALES, ...NO_FRASALES]) {
+  const p = piezas(q);
+  if (!p.ok) { fallo(`«${q}» → rechazada (${p.msg})`); malF++; continue; }
+  if (p.rol('verb').toLowerCase() !== verbo.toLowerCase()) {
+    fallo(`«${q}» → verbo «${p.rol('verb')}», y es «${verbo}»`); malF++;
+  }
+  if (p.rol('comp').toLowerCase() !== comp.toLowerCase()) {
+    fallo(`«${q}» → complemento «${p.rol('comp')}», y es «${comp || '(ninguno)'}»`); malF++;
+  }
+}
+if (!malF) console.log(`   ✓ ${FRASALES.length} frasales enteros · ${NO_FRASALES.length} que NO lo son`);
+
+/* Toda base de la lista compartida tiene que ser un verbo que ESTA app conozca.
+   `turn`, `pick` y `carry` no estaban en su vocabulario, así que la lista traía
+   «turn off» y la pregunta ni se parseaba: daba «you turn off the» de sujeto. */
+console.log('\n10b · la app conoce todas las bases de la lista compartida');
+const bases = [...new Set((globalThis.window.GRAMMAR_PHRASAL || {verbs:[]}).verbs.map(e => e[0]))];
+const desconocidas = bases.filter(v => {
+  const p = piezas(`Do you ${v} now?`);
+  return !p.ok || !p.rol('verb').toLowerCase().startsWith(v);
+});
+if (desconocidas.length) fallo(`la lista trae verbos que el analizador no conoce: ${desconocidas.join(' ')}`);
+else console.log(`   ✓ las ${bases.length} bases se reconocen como verbo`);
+
+/* Añadir un verbo que también es sustantivo puede romper el otro sentido, así
+   que va probado en pares mínimos. No es opcional: al meter `turn` para los
+   frasales se destapó que «Whose turn is it?» lo leía como verbo — y que `work`,
+   `plan` y `call`, que llevaban tiempo en la lista, ya fallaban igual. */
+console.log('\n10c · el homónimo sigue siendo sustantivo donde toca');
+const HOMONIMOS = [
+  ['Whose turn is it?',  'Whose turn'],
+  ['Whose work is it?',  'Whose work'],
+  ['Whose plan is it?',  'Whose plan'],
+  ['Whose call is it?',  'Whose call'],
+  ['What time is it?',   'What time'],
+  ['Whose book is this?','Whose book'],
+];
+let malH2 = 0;
+for (const [q, wh] of HOMONIMOS) {
+  const p = piezas(q);
+  if (!p.ok) { fallo(`«${q}» → rechazada`); malH2++; continue; }
+  if (p.rol('wh').toLowerCase() !== wh.toLowerCase()) { fallo(`«${q}» → wh «${p.rol('wh')}», y es «${wh}»`); malH2++; }
+  if (p.rol('verb').toLowerCase() === wh.split(' ')[1]) { fallo(`«${q}» → lee «${wh.split(' ')[1]}» como verbo`); malH2++; }
+}
+/* Y las de sujeto no se ven arrastradas: ahí detrás del verbo NO hay auxiliar. */
+for (const [q, v] of [['Who painted the Mona Lisa?', 'painted'], ['Who called you?', 'called'], ['Who wants tea?', 'wants']]) {
+  const p = piezas(q);
+  if (!p.ok || p.rol('verb').toLowerCase() !== v) { fallo(`«${q}» → verbo «${p.ok ? p.rol('verb') : '?'}», y es «${v}»`); malH2++; }
+}
+if (!malH2) console.log(`   ✓ ${HOMONIMOS.length} sustantivos + 3 preguntas de sujeto intactas`);
+
 console.log('\n9 · con una subordinada al frente, el hueco va en la PREGUNTA');
 /* «If I call you, will you answer?» tapaba el «If» y pedía escribirlo como si
    fuera un auxiliar. La pieza es la de la segunda cláusula. */

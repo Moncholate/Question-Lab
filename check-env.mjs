@@ -54,7 +54,7 @@ globalThis.addEventListener = () => {}; globalThis.removeEventListener = () => {
 globalThis.requestAnimationFrame = f => f();
 globalThis.setTimeout = () => 0;
 
-for (const f of ['bank.js', 'answers.js', 'gamification.generated.js', 'cefr.generated.js'])
+for (const f of ['bank.js', 'answers.js', 'gamification.generated.js', 'cefr.generated.js', 'phrasal.generated.js'])
   try { new Function(readFileSync(dir + f, 'utf8')).call(globalThis); } catch (e) {}
 
 const html = readFileSync(dir + 'index.html', 'utf8');

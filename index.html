@@ -44,6 +44,10 @@
      la pregunta sola no determina la wh. Ver la cabecera de answers.js. -->
 <script src="answers.js"></script>
 <script src="gamification.generated.js"></script>
+<!-- Verbos frasales del libro. Fuente única en Grammar HUB/phrasal-verbs.json,
+     la misma que consume Desgramatizador: sin ella «get up» se partía y «up»
+     acababa de complemento. -->
+<script src="phrasal.generated.js"></script>
 <style>
   /* Tipografía DUA self-hosted (subset latin, cubre inglés + español) */
   @font-face{font-family:'Lexend';font-style:normal;font-weight:400 700;font-display:swap;src:url('fonts/Lexend.woff2') format('woff2');}
@@ -1021,7 +1025,14 @@ const REG = ["like","live","work","play","study","travel","visit","cook","dance"
   // buscador de sujeto ya resuelve el par ("Where is the bus stop?" ≠ "Does the
   // bus stop here?"), y sin el verbo en la lista la pregunta ni siquiera se
   // parsea. Probado en pares mínimos con work/plan/call/watch/change/order.
-  "accept","pass","stop"];
+  "accept","pass","stop",
+  // `turn`, `pick` y `carry` FALTABAN, y se notó por los frasales: la lista
+  // compartida trae «turn on/off», «pick up» y «carry on», pero sin la base en
+  // este vocabulario la pregunta ni se parseaba. «Do you turn off the light?»
+  // daba «you turn off the» de sujeto y «light» de verbo.
+  // `turn` es además homónimo («Whose turn is it?»), así que va probado en pares
+  // mínimos en check-basico, igual que work/plan/call/watch/change/order.
+  "turn","pick","carry"];
 
 const VERB_BASES = new Set([...Object.keys(IRR), ...REG]);
 const PAST_FORMS = new Map();  // pasado -> base
@@ -1126,6 +1137,55 @@ function baseOf(w){
   return w;
 }
 
+/* ══════════════ VERBOS FRASALES ══════════════
+   «What time do you get up during the week?» dejaba «get» de verbo y
+   «up during the week» de complemento: la partícula es parte del VERBO, y sin
+   ella el alumno ve mal justo la pieza que esta app enseña a reconocer.
+
+   La lista NO se escribe aquí. Vive en Grammar HUB/phrasal-verbs.json y llega
+   generada, la misma que consume Desgramatizador. Esa app ya lo hacía bien y
+   esta no tenía ninguna noción de frasal: el reporte del profesor fue «pensé que
+   habíamos solucionado el problema», y lo estaba, en la otra app.
+
+   LA PARTE FINA es que hay partículas que también son preposiciones. «go on» es
+   frasal, pero en «go on holiday» ese «on» es preposición y `holiday` no es el
+   objeto de nada. Por eso una partícula ambigua solo se absorbe si detrás NO
+   viene un adverbial de tiempo o lugar. Las puramente adverbiales (up, down,
+   off, out, back) no tienen esa duda y se absorben siempre. */
+const PHRASAL = window.GRAMMAR_PHRASAL || {verbs:[], prepParticles:[], adverbialHeads:[], determiners:[]};
+const PHRASAL_POR_VERBO = new Map();
+for(const e of PHRASAL.verbs){
+  if(!PHRASAL_POR_VERBO.has(e[0])) PHRASAL_POR_VERBO.set(e[0], []);
+  PHRASAL_POR_VERBO.get(e[0]).push(e.slice(1));
+}
+const PREP_PART = new Set(PHRASAL.prepParticles);
+const CABEZA_ADV = new Set(PHRASAL.adverbialHeads);
+const DETERMINANTES = new Set(PHRASAL.determiners);
+const limpiaPal = w => String(w || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+function encabezaAdverbial(resto){
+  if(!resto.length) return false;
+  let h = limpiaPal(resto[0]);
+  if(DETERMINANTES.has(h)){            // «on a holiday», «in the morning»
+    if(resto.length < 2) return false;
+    h = limpiaPal(resto[1]);
+  }
+  return CABEZA_ADV.has(h) || /^\d{2,4}$/.test(h);   // «in 2020»
+}
+/* Cuántos tokens de la cabeza del complemento son en realidad del verbo. 0 = ninguno.
+   Prueba la más larga primero: «come up with» antes que «come up». */
+function particulasDelVerbo(base, comp){
+  const opciones = PHRASAL_POR_VERBO.get(base);
+  if(!opciones || !comp || !comp.length) return 0;
+  for(const parts of [...opciones].sort((a, b) => b.length - a.length)){
+    if(parts.length > comp.length) continue;
+    if(!parts.every((p, i) => limpiaPal(comp[i]) === p)) continue;
+    if(PREP_PART.has(parts[parts.length - 1]) && encabezaAdverbial(comp.slice(parts.length))) continue;
+    return parts.length;
+  }
+  return 0;
+}
+
 /* ================================================================
    PARSER
 ================================================================ */
@@ -1188,7 +1248,18 @@ function analyze(raw){
   if(!AUXES.includes(aux) && isOpen){
     // ¿Wh extendida ("How many books DID you buy?") o pregunta de sujeto ("Who painted...?")
     let sIdx = whLen, extra = [];
-    while(sIdx < n && !isVerbCandidate(lower[sIdx]) && !isAuxTok(lower[sIdx]) && extra.length < 3){
+    /* UN VERBO SEGUIDO DE AUXILIAR ES UN SUSTANTIVO. En «Whose turn is it?» la
+       palabra `turn` también es verbo, así que este bucle paraba ahí, la wh no
+       absorbía su sustantivo y la pregunta acababa analizada como si `turn`
+       fuera el verbo principal. Pero en una pregunta el verbo principal NUNCA va
+       antes del auxiliar: si detrás viene `is/are/did/has…`, lo de delante es el
+       sustantivo de la wh.
+       Ya fallaba con `work`, `plan` y `call`, que llevaban tiempo en la lista;
+       se vio al añadir `turn` para los frasales. No toca las preguntas de
+       sujeto: en «Who painted the Mona Lisa?» detrás de `painted` no hay
+       auxiliar, así que el bucle sigue parando ahí. */
+    while(sIdx < n && !isAuxTok(lower[sIdx]) && extra.length < 3
+          && (!isVerbCandidate(lower[sIdx]) || (sIdx+1 < n && isAuxTok(lower[sIdx+1])))){
       extra.push(tokens[sIdx]); sIdx++;
     }
     if(sIdx < n && isAuxTok(lower[sIdx]) && extra.length && !PRONOUNS.includes(lower[whLen])){
@@ -1202,9 +1273,14 @@ function analyze(raw){
       for(let i = whLen+1; i < n; i++){ if(isVerbCandidate(lower[i])){ vj = i; break; } }
       const parts = [{role:"wh", text:whText, label:"wh-word"}, gapPart("aux","auxiliar","auxiliary")];
       if(vj > 0){
+        /* También aquí, aunque la pregunta esté incompleta: el alumno está
+           viendo las piezas y no puede aprender el frasal partido en una
+           pantalla y entero en otra. */
+        const compInc = tokens.slice(vj+1);
+        const nInc = particulasDelVerbo(baseOf(lower[vj]), compInc);
         parts.push({role:"subj", text:tokens.slice(whLen, vj).join(" "), label:"sujeto"});
-        parts.push({role:"verb", text:tokens[vj], label:"verbo"});
-        if(n > vj+1) parts.push({role:"comp", text:tokens.slice(vj+1).join(" "), label:"complemento"});
+        parts.push({role:"verb", text:[tokens[vj], ...compInc.slice(0, nInc)].join(" "), label:"verbo"});
+        if(compInc.length > nInc) parts.push({role:"comp", text:compInc.slice(nInc).join(" "), label:"complemento"});
       } else {
         parts.push({role:"subj", text:tokens.slice(whLen).join(" "), label:"sujeto"});
       }
@@ -1368,8 +1444,10 @@ function analyze(raw){
     if(isOpen) parts.push({role:"wh", text:whText, label:"wh-word"});
     parts.push({role:"aux", text:auxW, label:"auxiliar"});
     parts.push(gapPart("subj","sujeto","subject"));
-    parts.push({role:"verb", text:vW, label:"verbo"});
-    if(n > vIdx+1) parts.push({role:"comp", text:tokens.slice(vIdx+1).join(" "), label:"complemento"});
+    const compFalta = tokens.slice(vIdx+1);
+    const nFalta = particulasDelVerbo(baseOf(lower[vIdx]), compFalta);
+    parts.push({role:"verb", text:[vW, ...compFalta.slice(0, nFalta)].join(" "), label:"verbo"});
+    if(compFalta.length > nFalta) parts.push({role:"comp", text:compFalta.slice(nFalta).join(" "), label:"complemento"});
     const note = lang==="en"
       ? `Every question needs a <b>subject</b> <span class="cdot" style="background:var(--subj)"></span> between the auxiliary «${auxW}» and the verb «${vW}»: <i>${auxW} <b>[subject]</b> ${tokens.slice(vIdx).join(" ")}?</i>`
       : `Toda pregunta necesita un <b>sujeto</b> <span class="cdot" style="background:var(--subj)"></span> entre el auxiliar «${auxW}» y el verbo «${vW}»: <i>${auxW} <b>[sujeto]</b> ${tokens.slice(vIdx).join(" ")}?</i>`;
@@ -1591,6 +1669,16 @@ function analyze(raw){
   if(beLike) parts.push({role:"wh", text:beLikeText, label:"pareja del what"});
   if(!beMain && semiAuxText) parts.push({role:"semiaux", text:semiAuxText, label:"semi-aux"});
   if(advTokens.length) parts.push({role:"adv", text:advTokens.join(" "), label:"adverbio"});
+  /* La partícula del frasal se pasa del complemento al verbo. Va aquí, después
+     de que `beMain` haya podido vaciar `verbTokens` («Are you up?» no es frasal)
+     y antes de pintar Y de armar la respuesta, que también usa `compTokens`. */
+  if(!beMain && verbTokens.length && compTokens.length){
+    const nPart = particulasDelVerbo(mainBase, compTokens);
+    if(nPart){
+      verbTokens = [...verbTokens, ...compTokens.slice(0, nPart)];
+      compTokens = compTokens.slice(nPart);
+    }
+  }
   if(!beMain && verbTokens.length){
     if(verbForm === "perfCont" && verbTokens.length >= 2){
       // Perfecto continuo: "been" es parte del auxiliar (have/has/had been), no del verbo
@@ -1670,7 +1758,15 @@ function analyze(raw){
 
 function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
   const v = lower[vIdx];
-  const compTokens = tokens.slice(vIdx+1);
+  /* «Who picked up the phone?» también parte el frasal si no se mira aquí: esta
+     es la rama de las preguntas de sujeto, que no pasa por el camino normal. */
+  let compTokens = tokens.slice(vIdx+1);
+  let verbText = tokens[vIdx];
+  const nPartSubj = particulasDelVerbo(baseOf(v), compTokens);
+  if(nPartSubj){
+    verbText = [verbText, ...compTokens.slice(0, nPartSubj)].join(" ");
+    compTokens = compTokens.slice(nPartSubj);
+  }
   let tense = "Presente Simple";
   let auxShort = "does";
   const auxIsMainVerb = (v === "is" || v === "are");
@@ -1679,7 +1775,7 @@ function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
   const whSubj = whText + (extra.length ? " " + extra.join(" ") : "");
   const parts = [
     {role:"wh", text: whSubj, label:"wh = sujeto"},
-    {role:"verb", text: tokens[vIdx], label:"verbo"}
+    {role:"verb", text: verbText, label:"verbo"}
   ];
   if(compTokens.length) parts.push({role:"comp", text: compTokens.join(" "), label:"complemento"});
   const notes = [
