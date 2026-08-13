@@ -270,6 +270,48 @@ for (const [q, v] of [['Who painted the Mona Lisa?', 'painted'], ['Who called yo
 }
 if (!malH2) console.log(`   ✓ ${HOMONIMOS.length} sustantivos + 3 preguntas de sujeto intactas`);
 
+/* ── 11. `to be` como verbo principal: sujeto y complemento enteros ─────────
+   Salió del reporte de los frasales. Con `is/are/was/were`, cualquier palabra
+   que fuera a la vez sustantivo y verbo partía la oración: de 20 probadas,
+   rompían 13. «Is the plan ready?» daba sujeto «the» y complemento «plan ready».
+   La regla es gramática, no heurística: detrás de `be` el verbo principal es
+   siempre -ing, participio o «going to», así que una forma BASE es un
+   sustantivo. `be` no admite infinitivo pelado. */
+console.log('\n11 · con «to be», el sustantivo-verbo no parte la oración');
+const COPULA = [
+  // pregunta,                  sujeto,      complemento
+  ['Is it your turn?',          'it',        'your turn'],
+  ['Was it your call?',         'it',        'your call'],
+  ['Is the plan ready?',        'the plan',  'ready'],
+  ['Was the call long?',        'the call',  'long'],
+  ['Is your work difficult?',   'your work', 'difficult'],
+  ['Is he a good cook?',        'he',        'a good cook'],
+  ['Is she a teacher?',         'she',       'a teacher'],
+];
+/* Y lo que NO puede cambiar: detrás de `be` sí hay verbo de verdad cuando viene
+   en -ing o participio, y con do-support el verbo en forma base SÍ es el verbo. */
+const NO_COPULA = [
+  ['Is the plan working?',      'the plan',  'working'],
+  ['Are you working?',          'you',       'working'],
+  ['Is that changing?',         'that',      'changing'],
+  ['Does the bus stop here?',   'the bus',   'stop'],
+  ['Does work start at eight?', 'work',      'start'],
+];
+let malC = 0;
+for (const [q, subj, comp] of COPULA) {
+  const p = piezas(q);
+  if (!p.ok) { fallo(`«${q}» → rechazada`); malC++; continue; }
+  if (p.rol('subj').toLowerCase() !== subj) { fallo(`«${q}» → sujeto «${p.rol('subj')}», y es «${subj}»`); malC++; }
+  if (p.rol('comp').toLowerCase() !== comp) { fallo(`«${q}» → complemento «${p.rol('comp')}», y es «${comp}»`); malC++; }
+}
+for (const [q, subj, verbo] of NO_COPULA) {
+  const p = piezas(q);
+  if (!p.ok) { fallo(`«${q}» → rechazada`); malC++; continue; }
+  if (p.rol('subj').toLowerCase() !== subj) { fallo(`«${q}» → sujeto «${p.rol('subj')}», y es «${subj}»`); malC++; }
+  if (p.rol('verb').toLowerCase() !== verbo) { fallo(`«${q}» → verbo «${p.rol('verb')}», y es «${verbo}»`); malC++; }
+}
+if (!malC) console.log(`   ✓ ${COPULA.length} con «be» de verbo principal · ${NO_COPULA.length} donde el verbo sí está`);
+
 console.log('\n9 · con una subordinada al frente, el hueco va en la PREGUNTA');
 /* «If I call you, will you answer?» tapaba el «If» y pedía escribirlo como si
    fuera un auxiliar. La pieza es la de la segunda cláusula. */

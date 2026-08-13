@@ -970,6 +970,7 @@ const isAuxTok = w => AUXES.includes(w) || !!NEG_AUX[w];
 const MODALS = ["will","would","can","could","should","shall","may","might","must"];
 const PRONOUNS = ["i","you","he","she","it","we","they"];
 const DETS = ["the","a","an","my","your","his","her","its","our","their","this","that","these","those","some","any"];
+const BE_AUX = ["am","is","are","was","were"];
 const ADVS = ["ever","never","always","usually","often","already","just","still","also","really","sometimes","generally","recently"];
 /* Adverbios de tiempo/lugar que NO pueden ser sujeto (para detectar "Where were yesterday?") */
 const TIME_PLACE_ADV = new Set(["yesterday","today","tomorrow","tonight","now","then","here","there",
@@ -1317,8 +1318,29 @@ function analyze(raw){
     for(let i = auxIdx+1; i < n; i++) if(CONJ_SUBORD.includes(lower[i])) return i;
     return n;
   })();
+  /* DESPUÉS DE `be`, UNA FORMA BASE NO PUEDE SER EL VERBO PRINCIPAL.
+     El verbo principal detrás de `is/are/was/were` es siempre -ing (continuo),
+     participio (pasiva) o «going to». `be` no admite infinitivo pelado. Así que
+     un candidato en forma base, con `be` de auxiliar, es un SUSTANTIVO.
+
+     Sin esto, cualquier palabra que fuera a la vez sustantivo y verbo partía la
+     oración: «Is the plan ready?» daba sujeto «the» y complemento «plan ready»,
+     y «Is it your turn?» daba sujeto «it your». De 20 palabras probadas rompían
+     13 — todas las que están en el léxico de verbos y se usan de sustantivo.
+
+     Es gramática, no heurística, y por eso se prefiere a los dos guardias que ya
+     había (mirar si hay determinante delante, o si queda otro verbo detrás):
+     esos dejan huecos porque describen síntomas.
+     Medido antes de escribirlo: arregla 8 de 10 casos rotos, no mueve ninguno de
+     los 17 protegidos, y no cambia NINGUNA de las 300 preguntas del banco.
+
+     La excepción real es `be + to +` infinitivo («Is he to blame?»): ahí el `to`
+     va en medio, no está en el temario, y hoy tampoco se analiza bien. */
+  const esFormaBase = w => VERB_BASES.has(w) && !w.endsWith("ing") && !w.endsWith("ed")
+                           && !PART_FORMS.has(w) && !PAST_FORMS.has(w);
   for(let i = auxIdx+1; i < finPrincipal; i++){
     if(!esVerboEn(i)) continue;
+    if(BE_AUX.includes(aux) && esFormaBase(lower[i])) continue;
     /* Sustantivo deverbal DENTRO del sujeto: «Is the plan working?» daba
        sujeto=«the» y complemento=«plan working», que además se ve en pantalla.
        Si la palabra va dentro de un sintagma abierto por un determinante y
