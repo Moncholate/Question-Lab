@@ -1182,6 +1182,44 @@ const CABEZA_ADV = new Set(PHRASAL.adverbialHeads);
 const DETERMINANTES = new Set(PHRASAL.determiners);
 const limpiaPal = w => String(w || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
+/* ¿Este complemento es un adverbial de TIEMPO?
+   Hace falta para ordenar la respuesta modelo: el inglés coloca objeto, después
+   LUGAR, después TIEMPO, y sin distinguir el tiempo del resto «Where did you eat
+   today?» respondía «I ate today [+lugar]».
+   Reconoce las tres formas en que aparece un tiempo:
+     · suelto            → «today», «yesterday»
+     · con cuantificador → «last week», «every day», «this morning»
+     · con preposición   → «in the morning», «on Monday», «at 8», «in 2020»
+   Con preposición se EXIGE que el núcleo sea temporal, porque `in`, `on` y `at`
+   encabezan lugares igual de bien: «at home» y «at 8» empiezan igual y no son lo
+   mismo. Las listas salen de phrasal-verbs.json, que ya era la fuente única de
+   núcleos adverbiales para las dos apps que analizan. */
+const ADV_T_SUELTO = new Set(PHRASAL.advTiempoSueltos || []);
+const CUANT_T = new Set(PHRASAL.cuantificadoresTiempo || []);
+const PREP_T = new Set(PHRASAL.preposicionesTiempo || []);
+const NUCLEO_T = new Set(PHRASAL.adverbialHeadsTime || []);
+const PREP_SEC = new Set(PHRASAL.preposicionesSecuencia || []);
+const EVENTO_T = new Set(PHRASAL.nucleosDeEvento || []);
+const esNucleoTiempo = w => NUCLEO_T.has(w) || /^(19|20)\d{2}$/.test(w) || /^\d{1,2}(:\d{2})?$/.test(w);
+function esComplementoDeTiempo(tokens){
+  if(!tokens || !tokens.length) return false;
+  const p = tokens.map(limpiaPal).filter(Boolean);
+  if(!p.length) return false;
+  if(p.length === 1 && ADV_T_SUELTO.has(p[0])) return true;         // «today»
+  if(CUANT_T.has(p[0]) && p[1] && esNucleoTiempo(p[1])) return true; // «last week»
+  if(PREP_T.has(p[0])){                                              // «in the morning»
+    let i = 1;
+    if(DETERMINANTES.has(p[i])) i++;
+    if(!p[i]) return false;
+    if(esNucleoTiempo(p[i])) return true;
+    /* «after class», «before dinner». Un nombre de evento solo es tiempo detrás
+       de una preposición de SECUENCIA: «after school» es cuándo y «at school»
+       es dónde, con el mismo sustantivo. */
+    return PREP_SEC.has(p[0]) && EVENTO_T.has(p[i]);
+  }
+  return false;
+}
+
 function encabezaAdverbial(resto){
   if(!resto.length) return false;
   let h = limpiaPal(resto[0]);
@@ -2097,9 +2135,23 @@ function buildAnswer(ctx){
   const ARG_WH = ["what","who","whom","which","whose","how many","how much","what kind","what color","what colour"];
   const STRAND_PREPS = ["about","with","to","for","at","in","on","from","of","by","like"];
   const lastComp = compTokens.length ? compTokens[compTokens.length-1].toLowerCase() : null;
+  /* EL REPARTO ERA BINARIO Y EL ORDEN DEL INGLÉS ES TERNARIO.
+     Arriba solo se distinguía «wh de argumento» de «todo lo demás», y con eso
+     `where` caía en el mismo saco que `when`. Pero la secuencia es
+     sujeto + verbo + OBJETO + LUGAR + TIEMPO, así que un lugar va ANTES de un
+     tiempo, no después: «I ate at home today», no «I ate today at home».
+     Sin este tercer escalón, «Where did you eat today?» respondía
+     «I ate today [+un lugar]». Lo reportó el profesor, y lo diagnosticó él
+     mismo: «cambia la wh por what y te darás cuenta».
+     Solo entran `where` (lugar) y `how` (modo), que en la secuencia van delante
+     del tiempo. `why` NO: su respuesta es una cláusula con «because» y esas van
+     al final igual. Y las wh temporales tampoco, por razones obvias. */
+  const WH_ANTES_DEL_TIEMPO = ["where", "how"];
+  const compEsTiempo = esComplementoDeTiempo(compTokens);
   // En "What was Sarah like at school?" el hueco también va tras el be: "She was ___ at school"
   const gapAfterVerb = !doMain && compFlipped && !STRAND_PREPS.includes(lastComp)
-    && ((!beMain && ARG_WH.includes(whBase)) || beLike);
+    && ((!beMain && ARG_WH.includes(whBase)) || beLike
+        || (compEsTiempo && WH_ANTES_DEL_TIEMPO.includes(whBase)));
 
   const subjPiece = {role:"subj", text:cap(newSubj), label:"sujeto"};
   const compPiece = compFlipped ? {role:"comp", text:compFlipped, label:"complemento"} : null;

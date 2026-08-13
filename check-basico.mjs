@@ -339,6 +339,68 @@ for (const [q, subj, comp] of DEMOSTRATIVOS) {
 }
 if (!malD) console.log(`   ✓ ${DEMOSTRATIVOS.length} demostrativos, de pronombre y de determinante`);
 
+/* ── 13. El lugar va antes que el tiempo ────────────────────────────────────
+   Reporte del profesor: «Where did you eat today?» daba de respuesta modelo
+   «I ate today [+un lugar]». Él mismo lo acotó: «cambia la wh por what y te
+   darás cuenta». El reparto del hueco era BINARIO —wh de argumento contra todo
+   lo demás— y el orden del inglés es TERNARIO: sujeto + verbo + objeto + LUGAR
+   + TIEMPO. `where` pedía un lugar y caía en el mismo saco que `when`. */
+console.log('\n13 · el hueco de la respuesta respeta lugar-antes-que-tiempo');
+const ordenResp = (q) => {
+  const r = analyze(q);
+  const l = r.ok && r.answer && r.answer.lines && r.answer.lines[0];
+  return l ? l.pieces.map(p => p.role === 'new' ? '[NUEVO]' : p.text).join(' ') : null;
+};
+const ORDEN = [
+  // Lugar y modo van DELANTE del tiempo
+  ['Where did you eat today?',            'I ate [NUEVO] today'],
+  ['Where did you go yesterday?',         'I went [NUEVO] yesterday'],
+  ['Where do you study in the morning?',  'I study [NUEVO] in the morning'],
+  ['Where did you eat on Monday?',        'I ate [NUEVO] on Monday'],
+  ['Where were you last night?',          'I was [NUEVO] last night'],
+  ['Where were you living in 2020?',      'I was living [NUEVO] in 2020'],
+  ['How did you travel last week?',       'I traveled [NUEVO] last week'],
+  // El objeto ya iba bien y tiene que seguir igual
+  ['What did you eat today?',             'I ate [NUEVO] today'],
+  ['Who did you see today?',              'I saw [NUEVO] today'],
+  // Sin complemento de tiempo no hay nada que reordenar
+  ['Where did you eat?',                  'I ate [NUEVO]'],
+  ['Where do you live?',                  'I live [NUEVO]'],
+  /* `why` NO entra: su respuesta es una cláusula con «because» y esas van al
+     final igual, así que el tiempo se queda delante. */
+  ['Why did you leave today?',            'I left today [NUEVO]'],
+  /* Y un complemento que NO es de tiempo tampoco mueve nada: «with Ana» empieza
+     por preposición igual que «in the morning», y ahí está la gracia. */
+  ['Where did you go with Ana?',          'I went with Ana [NUEVO]'],
+];
+let malO = 0;
+for (const [q, esperado] of ORDEN) {
+  const dio = ordenResp(q);
+  if (dio !== esperado) { fallo(`«${q}» → «${dio}», y es «${esperado}»`); malO++; }
+}
+if (!malO) console.log(`   ✓ ${ORDEN.length} respuestas · lugar y modo antes del tiempo, el resto quieto`);
+
+/* La mitad difícil es distinguir el tiempo de lo que solo se le parece: `in`,
+   `on` y `at` encabezan lugares igual de bien. «at home» y «at 8» empiezan
+   igual y no son lo mismo. */
+console.log('\n13b · qué cuenta como complemento de tiempo');
+const { esComplementoDeTiempo } = QL;
+const TIEMPO_SI = [['today'], ['yesterday'], ['now'], ['last', 'week'], ['every', 'day'],
+                   ['this', 'morning'], ['in', 'the', 'morning'], ['on', 'Monday'],
+                   ['in', '2020'], ['at', '8'], ['after', 'class'], ['in', 'summer'],
+                   ['during', 'the', 'week'], ['before', 'dinner'], ['after', 'school']];
+const TIEMPO_NO = [['at', 'home'], ['with', 'Ana'], ['in', 'Santiago'], ['on', 'the', 'table'],
+                   ['the', 'book'], ['by', 'bus'], ['on', 'foot'], [],
+                   /* EL PAR QUE JUSTIFICA TODO EL DISEÑO: el mismo sustantivo es
+                      cuándo con «after» y dónde con «at». Por eso los nombres de
+                      evento van en su propia lista y solo cuentan detrás de una
+                      preposición de secuencia. */
+                   ['at', 'school'], ['at', 'work']];
+let malTi = 0;
+for (const c of TIEMPO_SI) if (!esComplementoDeTiempo(c)) { fallo(`«${c.join(' ')}» debería contar como tiempo`); malTi++; }
+for (const c of TIEMPO_NO) if (esComplementoDeTiempo(c)) { fallo(`«${c.join(' ') || '(vacío)'}» NO es tiempo y lo cuenta`); malTi++; }
+if (!malTi) console.log(`   ✓ ${TIEMPO_SI.length} sí · ${TIEMPO_NO.length} no, incluidos «at home» y «at 8»`);
+
 console.log('\n9 · con una subordinada al frente, el hueco va en la PREGUNTA');
 /* «If I call you, will you answer?» tapaba el «If» y pedía escribirlo como si
    fuera un auxiliar. La pieza es la de la segunda cláusula. */

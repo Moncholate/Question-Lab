@@ -67,6 +67,7 @@ export const QL = new Function(bloques[bloques.length - 1] + `
          setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
          confirmarUnidad, unidadPorRevisar, renderUnitUI, DIAS_REVISION, leerUnidadFecha,
          construirReporte, goAnalyze, renderId, renderR, renderF, loadChallenge,
+         esComplementoDeTiempo, particulasDelVerbo,
          buildIdPool, buildRPool, refilterChallenges,
          getIdPool: () => idPool, getRPool: () => rPool, getChallenges: () => activeChallenges,
          getUnidad: () => curUnidad,
