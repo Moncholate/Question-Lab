@@ -401,6 +401,31 @@ for (const c of TIEMPO_SI) if (!esComplementoDeTiempo(c)) { fallo(`«${c.join(' 
 for (const c of TIEMPO_NO) if (esComplementoDeTiempo(c)) { fallo(`«${c.join(' ') || '(vacío)'}» NO es tiempo y lo cuenta`); malTi++; }
 if (!malTi) console.log(`   ✓ ${TIEMPO_SI.length} sí · ${TIEMPO_NO.length} no, incluidos «at home» y «at 8»`);
 
+/* ── 14. El panel de Progreso enumera TODOS los modos ───────────────────────
+   «Falta una pieza» calculaba su racha, la guardaba y alimentaba la mejor
+   histórica, y el panel de Progreso no la mostraba: el modo se creó después que
+   el panel y nadie volvió a mirarlo. Es el mismo despiste que lo dejó fuera del
+   reporte de errores.
+   Esto no se comprueba mirando la lista del panel —sería copiarla— sino
+   CRUZÁNDOLA con `MODOS`, que es de donde salen los pozos y las rondas. Si
+   mañana aparece un quinto modo, aquí falla hasta que se enumere en los dos. */
+console.log('\n14 · el panel de Progreso muestra la racha de los 4 modos');
+const { renderProgress, MODOS, bumpBestStreak } = QL;
+/* Con racha 0 la fila igual se pinta, pero se les da valor para distinguir una
+   fila presente de una ausente aunque el nombre se repitiera. */
+const RACHAS = { b: 3, id: 5, r: 7, w: 11 };
+const CLAVE = { b: 'ql_streak', id: 'ql_id_streak', r: 'ql_r_streak', w: 'ql_pieza_streak' };
+for (const [k, v] of Object.entries(RACHAS)) globalThis.localStorage.setItem(CLAVE[k], String(v));
+renderProgress();
+const panel = globalThis.document.getElementById('progressBody').innerHTML;
+let malP = 0;
+for (const k of Object.keys(MODOS)) {
+  const nombre = MODOS[k].nombre();
+  if (!panel.includes(nombre)) { fallo(`el panel de Progreso no nombra el modo «${nombre}»`); malP++; }
+  if (!new RegExp('>' + RACHAS[k] + '<').test(panel)) { fallo(`no aparece la racha del modo «${nombre}»`); malP++; }
+}
+if (!malP) console.log(`   ✓ los ${Object.keys(MODOS).length} modos de MODOS, con su racha`);
+
 console.log('\n9 · con una subordinada al frente, el hueco va en la PREGUNTA');
 /* «If I call you, will you answer?» tapaba el «If» y pedía escribirlo como si
    fuera un auxiliar. La pieza es la de la segunda cláusula. */
