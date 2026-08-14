@@ -4,7 +4,11 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-export const dir = fileURLToPath(new URL('./', import.meta.url));
+/* Por defecto el fuente. Con `QL_DIR=dist` los MISMOS chequeos corren contra lo
+   que se publica, que es como se comprueba que quitar los comentarios no cambió
+   nada. Ver build.mjs y check-build.mjs. */
+export const dir = fileURLToPath(new URL('./', import.meta.url))
+  + (process.env.QL_DIR ? process.env.QL_DIR.replace(/[\\/]*$/, '/') : '');
 
 const nodos = new Map();
 function nuevoNodo(id = '') {
@@ -67,7 +71,7 @@ export const QL = new Function(bloques[bloques.length - 1] + `
          setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
          confirmarUnidad, unidadPorRevisar, renderUnitUI, DIAS_REVISION, leerUnidadFecha,
          construirReporte, goAnalyze, renderId, renderR, renderF, loadChallenge,
-         esComplementoDeTiempo, particulasDelVerbo,
+         esComplementoDeTiempo, particulasDelVerbo, I18N,
          buildIdPool, buildRPool, refilterChallenges,
          getIdPool: () => idPool, getRPool: () => rPool, getChallenges: () => activeChallenges,
          getUnidad: () => curUnidad,

@@ -1,0 +1,69 @@
+name: Deploy to GitHub Pages
+
+# Question Lab no tiene dependencias: es un HTML escrito a mano. Lo unico que
+# hace este flujo es publicar la version SIN COMENTARIOS (build.mjs), y no
+# publicar nada si los chequeos no pasan.
+#
+# OJO: para que esto sirva, Settings -> Pages -> Source tiene que estar en
+# "GitHub Actions". Con "Deploy from a branch" se sigue publicando el fuente con
+# comentarios y este flujo no pinta nada.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  # Un solo despliegue a la vez, pero NO se cancela el que esta en curso: con
+  # `true`, varios commits seguidos dejaban un despliegue colgado y el siguiente
+  # run se quedaba esperandolo hasta agotar el tiempo. Es lo que dice la
+  # plantilla oficial de Pages.
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # `check-build` construye y ademas comprueba que lo construido se comporta
+      # igual que el fuente: mismas 309 preguntas, mismos textos, sin
+      # comentarios y con el aviso de copyright.
+      - name: Construir y comprobar que lo publicado es lo probado
+        run: node check-build.mjs
+
+      # Y los nueve de siempre, contra dist/ y no contra el fuente: lo que se
+      # prueba tiene que ser lo que se sube.
+      - name: Los chequeos, contra lo que se va a publicar
+        env:
+          QL_DIR: dist
+        run: |
+          for f in check-basico check-bank check-analyzer check-respuestas \
+                   check-unidades check-reporte check-i18n check-css check-contraste; do
+            echo "── $f"
+            node "$f.mjs"
+          done
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
