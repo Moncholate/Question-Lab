@@ -1,13 +1,18 @@
 /* ============================================================================
    PUBLICAR QUESTION LAB SIN LOS COMENTARIOS · `node build.mjs`
    ----------------------------------------------------------------------------
-   Question Lab es el único de los cuatro que se sirve TAL CUAL: es un archivo
-   HTML escrito a mano, sin Vite, así que lo que descarga el alumno son 253 KB de
-   los que 60 son comentarios. Las otras tres van compiladas y no publican ni uno.
+   Question Lab es el único de los cuatro que se sirve TAL CUAL: está escrito a
+   mano, sin Vite, así que lo que descarga el alumno incluye todos los
+   comentarios. Las otras tres van compiladas y no publican ni uno.
 
    Esto lo iguala: `dist/` lleva el mismo código sin comentarios. El fuente NO se
-   toca — se edita `index.html` como siempre, con sus comentarios en su sitio,
-   que es donde sirven.
+   toca — se editan `index.html` y `app.js` como siempre, con sus comentarios en
+   su sitio, que es donde sirven.
+
+   DOS ENTRADAS desde que la app salió del HTML (2026-08): `index.html` pasa por
+   `construir()`, que trata cada bloque según lo que sea, y `app.js` va directo
+   al tokenizador de JavaScript. Si algún día aparece otro `.js` escrito a mano,
+   va por el mismo camino que `app.js`, no por `ACTIVOS`.
 
    POR QUÉ UN TOKENIZADOR Y NO UNA EXPRESIÓN REGULAR. Un `/\*[\s\S]*?\*\//g` se
    come cualquier `/*` que viva dentro de una cadena o de una expresión regular,
@@ -174,6 +179,14 @@ if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`
   const listo = construir(fuente);
   writeFileSync(salida + 'index.html', listo);
 
+  /* app.js pasa por el MISMO tokenizador, y no por la copia literal de abajo.
+     Es el archivo grande: se llevó casi todos los comentarios cuando salió de
+     index.html, así que copiarlo tal cual dejaría a este script sin nada que
+     hacer, que es justo lo que vino a evitar. */
+  const appFuente = readFileSync(dir + 'app.js', 'utf8');
+  const appListo = compactar(sinComentariosJS(appFuente));
+  writeFileSync(salida + 'app.js', appListo);
+
   /* Todo lo demás se copia tal cual. Los .js de datos llevan 2,6 KB de
      comentarios entre los dos: no compensa el riesgo de tocarlos. */
   const ACTIVOS = ['answers.js', 'bank.js', 'cefr.generated.js', 'gamification.generated.js',
@@ -186,7 +199,9 @@ if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`
     cpSync(dir + a, salida + a, { recursive: true });
   }
 
-  const antes = (fuente.length / 1024).toFixed(1), despues = (listo.length / 1024).toFixed(1);
-  console.log(`  ✓ dist/index.html  ${antes} KB → ${despues} KB  (−${(100 - listo.length / fuente.length * 100).toFixed(0)}%)`);
+  const kb = (s) => (s.length / 1024).toFixed(1);
+  const pct = (a, b) => (100 - b.length / a.length * 100).toFixed(0);
+  console.log(`  ✓ dist/index.html  ${kb(fuente)} KB → ${kb(listo)} KB  (−${pct(fuente, listo)}%)`);
+  console.log(`  ✓ dist/app.js      ${kb(appFuente)} KB → ${kb(appListo)} KB  (−${pct(appFuente, appListo)}%)`);
   console.log(`  ✓ ${ACTIVOS.length} activos copiados`);
 }

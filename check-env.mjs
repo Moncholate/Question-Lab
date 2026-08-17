@@ -1,6 +1,10 @@
-/* Arranca el script inline de index.html contra un DOM de mentira y devuelve su
-   ámbito. Lo usan check-bank.mjs y check-analyzer.mjs, para probar el
-   analizador DE VERDAD y no una copia que se desincroniza con el tiempo. */
+/* Arranca app.js contra un DOM de mentira y devuelve su ámbito. Lo usan
+   check-bank.mjs y check-analyzer.mjs, para probar el analizador DE VERDAD y no
+   una copia que se desincroniza con el tiempo.
+
+   Hasta 2026-08 la app vivía dentro de index.html y esto la sacaba de ahí con
+   una expresión regular. Ahora está en app.js y se lee y ya: misma garantía, un
+   paso menos. */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -61,12 +65,11 @@ globalThis.setTimeout = () => 0;
 for (const f of ['bank.js', 'answers.js', 'gamification.generated.js', 'cefr.generated.js', 'phrasal.generated.js'])
   try { new Function(readFileSync(dir + f, 'utf8')).call(globalThis); } catch (e) {}
 
-const html = readFileSync(dir + 'index.html', 'utf8');
-const bloques = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+const app = readFileSync(dir + 'app.js', 'utf8');
 
 /* Los pozos (`idPool`, `rPool`, `activeChallenges`) se REASIGNAN, así que se
    exponen como funciones: devolver el array una vez daría siempre el primero. */
-export const QL = new Function(bloques[bloques.length - 1] + `
+export const QL = new Function(app + `
 ;return {analyze, tenseIdOf, ID_TENSES, LV, setLevel, expectedAnswers, openExpected, whBaseOf, WH_HINTS,
          setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
          confirmarUnidad, unidadPorRevisar, renderUnitUI, DIAS_REVISION, leerUnidadFecha,

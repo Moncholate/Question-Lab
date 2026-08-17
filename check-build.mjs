@@ -23,17 +23,24 @@ const fallo = (m) => { console.log('   ✗ ' + m); problemas++; };
 console.log('QUESTION LAB · lo publicado contra lo probado\n');
 
 /* ── 1. Construir ─────────────────────────────────────────────────────────── */
-console.log('1 · el build corre y encoge el archivo');
+console.log('1 · el build corre y encoge los dos archivos');
 const salida = execFileSync(process.execPath, ['build.mjs'], { cwd: dir, encoding: 'utf8' });
 process.stdout.write(salida.replace(/^/gm, '  '));
 const fuente = readFileSync(dir + 'index.html', 'utf8');
 const listo  = readFileSync(dir + 'dist/index.html', 'utf8');
-if (listo.length >= fuente.length) fallo('el build no quitó nada');
+/* Desde que la app salió del HTML hay DOS salidas que verificar. app.js es la
+   que más importa: se llevó el grueso de los comentarios. */
+const appFuente = readFileSync(dir + 'app.js', 'utf8');
+const appListo  = readFileSync(dir + 'dist/app.js', 'utf8');
+if (listo.length >= fuente.length) fallo('el build no quitó nada de index.html');
+if (appListo.length >= appFuente.length) fallo('el build no quitó nada de app.js');
 
 /* ── 2. Ni un comentario, pero el copyright se queda ──────────────────────── */
 console.log('\n2 · sin comentarios, con el aviso de copyright');
 const bloques = (listo.match(/\/\*[\s\S]*?\*\//g) || []);
-if (bloques.length) fallo(`quedan ${bloques.length} comentarios de bloque`);
+if (bloques.length) fallo(`quedan ${bloques.length} comentarios de bloque en index.html`);
+const bloquesApp = (appListo.match(/\/\*[\s\S]*?\*\//g) || []);
+if (bloquesApp.length) fallo(`quedan ${bloquesApp.length} comentarios de bloque en app.js`);
 if (!/Todos los derechos reservados/.test(listo)) fallo('se perdió el aviso de copyright');
 if (!/name="author"/.test(listo)) fallo('se perdió el meta de autor');
 if (!problemas) console.log('   ✓ 0 comentarios · aviso y meta en su sitio');
@@ -47,14 +54,12 @@ const claves = (s) => [...s.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)].map(m =>
 const cf = claves(fuente), cl = claves(listo);
 if (cf.join('|') !== cl.join('|')) fallo(`los data-i18n no coinciden: ${cf.length} en el fuente, ${cl.length} en dist`);
 
-/* El script de dist se evalúa en los MISMOS globales que ya montó check-env,
+/* El app.js de dist se evalúa en los MISMOS globales que ya montó check-env,
    así que las dos versiones conviven y se pueden enfrentar. */
-const inline = (html) => {
-  const b = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-  return new Function(b[b.length - 1] + '\n;return {analyze, I18N, setLevel, LV, setUnidad, expectedAnswers};').call(globalThis);
-};
+const cargar = (js) =>
+  new Function(js + '\n;return {analyze, I18N, setLevel, LV, setUnidad, expectedAnswers};').call(globalThis);
 let DIST;
-try { DIST = inline(listo); }
+try { DIST = cargar(appListo); }
 catch (e) { fallo(`el JavaScript de dist NO PARSEA: ${e.message}`); console.log(`\n✗ ${problemas} problema(s)`); process.exit(1); }
 
 for (const lang of ['es', 'en']) {

@@ -3,13 +3,17 @@
    pegado en una vieja, el problema que tuvo Desgram con cache-first); sin red,
    cae a la última copia cacheada. Existe para que la app sea instalable y
    funcione offline. */
-const CACHE_VERSION = 'v1';
+/* v2: la app salió de index.html a app.js. Subir la versión bota la caché vieja
+   entera en `activate` — incluidas las entradas que fue dejando el runtime, que
+   apuntan a una estructura de archivos que ya no existe. */
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `question-lab-${CACHE_VERSION}`;
 const BASE = '/Question-Lab/';
 
 const urlsToCache = [
   BASE,
   `${BASE}index.html`,
+  `${BASE}app.js`,
   `${BASE}tokens.css`,
   `${BASE}cefr.generated.js`,
   `${BASE}bank.js`,

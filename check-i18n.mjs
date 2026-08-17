@@ -6,7 +6,13 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-const h = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'index.html'), 'utf8');
+/* El marcado y la app se leen JUNTOS. Los `data-i18n` están en index.html; los
+   `t("…")` y la tabla I18N viven en app.js desde que la app salió del HTML
+   (2026-08). Para lo que comprueba este archivo, las dos mitades son una sola
+   fuente, así que se concatenan y el resto sigue igual. */
+const aquí = dirname(fileURLToPath(import.meta.url));
+const h = readFileSync(join(aquí, 'index.html'), 'utf8')
+        + '\n' + readFileSync(join(aquí, 'app.js'), 'utf8');
 
 /* Dos formas de usar una clave: marcada en el HTML, o pedida desde JS con
    t("..."). La segunda faltaba y es la que se rompe al RENOMBRAR una clave:

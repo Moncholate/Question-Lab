@@ -12,7 +12,7 @@
    reusó para la Guía). Se midió: 34 de las 92 clases de QL tienen la misma
    forma estructural que ese bug y todas son correctas, así que el aviso tendría
    un 3% de acierto. Un aviso ruidoso enseña a ignorar la herramienta. Para eso
-   la medida es `grep -n '\.nombre' index.html` ANTES de nombrar una clase.
+   la medida es `grep -n '\.nombre' index.html app.js` ANTES de nombrar una clase.
 
    TRAMPA al escribirlo: hay clases SIN CSS que están perfectas — son ganchos
    que el JS consulta (`querySelector(".glabel")`). Marcarlas sería mentir, así
@@ -25,7 +25,12 @@ const aquí = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(join(aquí, 'index.html'), 'utf8');
 const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
   .map(m => m[1]).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
-const cuerpo = html.slice(html.indexOf('<body'));
+/* Dónde se USAN las clases: el marcado del <body> y la app. Van juntos porque
+   app.js está lleno de plantillas con `class="…"` y de ganchos
+   `querySelector(".x")` — antes vivían dentro de este mismo HTML, y sin ellos
+   este chequeo denunciaba como huérfanas 53 clases que se usan a diario. */
+const cuerpo = html.slice(html.indexOf('<body'))
+  + '\n' + readFileSync(join(aquí, 'app.js'), 'utf8');
 /* tokens.css lo genera design-tokens y trae reglas propias (el anillo de foco,
    el chip `.ghf`). Sin leerlo, toda clase generada se denunciaba como «no pinta
    nada» — que era mentira. Va en un conjunto APARTE porque el reporte de reglas
