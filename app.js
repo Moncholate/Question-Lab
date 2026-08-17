@@ -449,8 +449,30 @@ function analyze(raw){
      va en medio, no está en el temario, y hoy tampoco se analiza bien. */
   const esFormaBase = w => VERB_BASES.has(w) && !w.endsWith("ing") && !w.endsWith("ed")
                            && !PART_FORMS.has(w) && !PAST_FORMS.has(w);
+  /* SEMI-AUXILIARES: aquí termina el sujeto, y ningún guardia de abajo opina.
+     `use/used to` y `going to` abren la zona verbal, pero los dos guardias que
+     vienen después los tomaban por sustantivos y seguían buscando:
+
+       «Where did your family use to go?»  -> sujeto «your family use to»
+       «What is your family going to do?»  -> sujeto «your family going to do
+                                              tonight», y de ahí una respuesta
+                                              inventada: «My family going to do
+                                              tonight is…»
+
+     Con sujeto PRONOMBRE nunca se vio, porque el guardia del sustantivo deverbal
+     solo entra si hay un determinante delante («your», «the»), y un pronombre no
+     lo lleva. Por eso «Where did YOU use to go?» siempre estuvo bien y la
+     familia y los niños no.
+
+     Las condiciones son LAS MISMAS con las que se arma el semi-auxiliar más
+     abajo (busca `goingTo = true` y `usedTo = true`): si un día cambian allí,
+     tienen que cambiar aquí, o el sujeto volverá a comerse el «to». */
+  const abreSemiAux = i => lower[i+1] === "to" && isVerbCandidate(lower[i+2])
+    && (((lower[i] === "use" || lower[i] === "used") && aux === "did")
+        || (lower[i] === "going" && BE_AUX.includes(aux)));
   for(let i = auxIdx+1; i < finPrincipal; i++){
     if(!esVerboEn(i)) continue;
+    if(abreSemiAux(i)){ vIdx = i; break; }
     if(BE_AUX.includes(aux) && esFormaBase(lower[i])) continue;
     /* Sustantivo deverbal DENTRO del sujeto: «Is the plan working?» daba
        sujeto=«the» y complemento=«plan working», que además se ve en pantalla.
