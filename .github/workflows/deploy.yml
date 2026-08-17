@@ -42,14 +42,15 @@ jobs:
       - name: Construir y comprobar que lo publicado es lo probado
         run: node check-build.mjs
 
-      # Y los nueve de siempre, contra dist/ y no contra el fuente: lo que se
+      # Y los diez de siempre, contra dist/ y no contra el fuente: lo que se
       # prueba tiene que ser lo que se sube.
       - name: Los chequeos, contra lo que se va a publicar
         env:
           QL_DIR: dist
         run: |
           for f in check-basico check-bank check-analyzer check-respuestas \
-                   check-unidades check-reporte check-i18n check-css check-contraste; do
+                   check-unidades check-reporte check-i18n check-css check-contraste \
+                   check-sw; do
             echo "── $f"
             node "$f.mjs"
           done
