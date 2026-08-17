@@ -968,6 +968,21 @@ const FLIP_SUBJ = {i:"you", you:"I", we:"we", they:"they", he:"he", she:"she", i
 const FLIP_AUX_TO_I = {are:"am", is:"am", were:"was", does:"do", has:"have"};
 const FLIP_AUX_TO_YOU = {am:"are", is:"are", was:"were", does:"do", has:"have"};
 const FLIP_COMP = {your:"my", my:"your", yours:"mine", mine:"yours", you:"me", me:"you"};
+/* Qué pronombres caben cuando el sujeto NO es pronombre («your mother», «the
+   book») y hay que ofrecerle opciones al alumno. La lista tiene que CONCORDAR
+   con el auxiliar que ya está en pantalla: ofrecer «they» al lado de «is» invita
+   a escribir «They is cooking», y enseñar ese error es lo contrario de para lo
+   que existe esto. Se ofrecen opciones a propósito —la pista pide que el alumno
+   elija el pronombre—, pero todas tienen que ser correctas.
+
+   Los modales, `did` y `had` no marcan número, así que ahí caben los cuatro y el
+   comodín se queda entero. `am` no aparece: solo va con «I», que es pronombre y
+   no llega a esta rama. */
+const PRON_SEGUN_AUX = {
+  is:"he / she / it", was:"he / she / it", does:"he / she / it", has:"he / she / it",
+  are:"they", were:"they", do:"they", have:"they",
+};
+const PRON_COMODIN = "he / she / it / they";
 const WH_HINTS = {
   where:"un lugar 📍", when:"un momento 🕐", who:"una persona 🧑", whom:"una persona 🧑",
   what:"una cosa / idea 💡", why:"because + una razón 💬", which:"una opción ✅",
@@ -1062,8 +1077,11 @@ function buildAnswer(ctx){
     // Identidad con be: el sujeto completo vuelve ("your favorite food" -> "my favorite food")
     newSubj = subjText.split(" ").map(t => ({you:"I", your:"my", yours:"mine"}[t.toLowerCase()] || t)).join(" ");
   } else {
-    newSubj = "he / she / it / they";
-    subjNote = lang==="en" ? `Replace "${subjText}" with the matching pronoun.` : `Reemplaza «${subjText}» por el pronombre que corresponda.`;
+    newSubj = PRON_SEGUN_AUX[String(aux || "").toLowerCase()] || PRON_COMODIN;
+    /* Con un solo pronombre posible («they») ya no hay nada que elegir, así que
+       la pista sobra: se queda solo cuando de verdad hay opciones. */
+    if(newSubj.includes(" / "))
+      subjNote = lang==="en" ? `Replace "${subjText}" with the matching pronoun.` : `Reemplaza «${subjText}» por el pronombre que corresponda.`;
   }
   // Ajuste del auxiliar según el nuevo sujeto
   let newAux = aux;
