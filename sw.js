@@ -19,6 +19,7 @@ const urlsToCache = [
   `${BASE}bank.js`,
   `${BASE}answers.js`,
   `${BASE}gamification.generated.js`,
+  `${BASE}phrasal.generated.js`,
   `${BASE}fonts/Lexend.woff2`,
   `${BASE}fonts/AtkinsonHyperlegible-Regular.woff2`,
   `${BASE}fonts/AtkinsonHyperlegible-Bold.woff2`,
