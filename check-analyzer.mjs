@@ -100,6 +100,31 @@ console.log('\n   sin otro verbo detrás no se toca nada');
   ['Where is the bus stop?','to-be-pres'],        ['Is your watch expensive?','to-be-pres'],
 ].forEach(([q,e]) => ok(q,e));
 
+/* «been» queda fuera del guardia de arriba: no es un sustantivo deverbal, es
+   solo verbo. El guardia lo saltaba igual —veía el determinante y otro verbo
+   detrás— y el sujeto se quedaba con él: «Have the dogs been working at home?»
+   daba sujeto «the dogs been» y, al perderse «been + -ing», el tiempo salía
+   perfecto SIMPLE. El fallo llegaba hasta lo que la app le enseña al alumno.
+
+   Con pronombre nunca se vio, porque sin determinante el guardia ni entra: es el
+   mismo punto ciego que ya tenían los semi-auxiliares. Por eso los pares de
+   abajo llevan siempre las dos versiones, con determinante y sin él.
+
+   Lo encontró el oráculo de paridad de la suite (Grammaster/src/ql.parity.test.js),
+   que genera preguntas con Grammaster y comprueba que este analizador devuelva
+   el tiempo y el sujeto con que se construyeron. */
+console.log('\n   «been» nunca es sustantivo: el perfecto continuo con determinante');
+[ ['Have the dogs been working at home?','present-perfect-continuous'],
+  ['Have they been working at home?','present-perfect-continuous'],
+  ['Have the students been studying?','present-perfect-continuous'],
+  ['Have my friends been working?','present-perfect-continuous'],
+  ['Has the dog been working at home?','present-perfect-continuous'],
+  ['Have dogs been working at home?','present-perfect-continuous'],
+  // y el perfecto simple con el mismo sujeto sigue siendo simple
+  ['Have the dogs worked at home?','present-perfect'],
+  ['Has the dog worked at home?','present-perfect'],
+].forEach(([q,e]) => ok(q,e));
+
 /* La pregunta de sujeto no es ambigüedad léxica, pero comparte el problema de
    fondo: un hueco que parece un error y no lo es. «Who is coming?» no tiene
    sujeto entre el auxiliar y el verbo porque la wh-word YA es el sujeto.

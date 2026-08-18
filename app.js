@@ -482,7 +482,21 @@ function analyze(raw){
        sustantivo va pelado y aquí lleva determinante, así que aquel guardia no
        llegaba. Sin otro verbo detrás no se toca nada: «Does the bus stop
        here?» y «Is the plan ready?» siguen como estaban. */
-    if(lower.slice(auxIdx+1, i).some(w => DETS.includes(w))){
+    /* «been» queda FUERA de este guardia: no es un sustantivo deverbal, no es
+       nada más que verbo. Detrás de have/has/had solo puede abrir el perfecto
+       continuo o la pasiva, así que dejarlo opinar aquí solo puede equivocarse.
+
+       Sin la excepción, «Have the dogs been working at home?» salía con sujeto
+       «the dogs been»: el guardia veía el determinante «the», encontraba
+       «working» más atrás y saltaba el «been». Y al perderse el «been + -ing»,
+       el tiempo se reconocía como perfecto simple en vez de continuo, o sea el
+       fallo llegaba hasta lo que la app le enseña al alumno.
+
+       Con sujeto pronombre nunca se vio («Have they been working?» siempre
+       estuvo bien), que es exactamente el mismo punto ciego que el bloque de los
+       semi-auxiliares aquí arriba ya documenta: sin determinante delante este
+       guardia ni siquiera entra. */
+    if(lower[i] !== "been" && lower.slice(auxIdx+1, i).some(w => DETS.includes(w))){
       let otro = -1;
       for(let j = i+1; j < n; j++){ if(esVerboEn(j)){ otro = j; break; } }
       if(otro !== -1) continue;
