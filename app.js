@@ -639,6 +639,51 @@ function analyze(raw){
     return incompleteResult(parts, [note]);
   }
 
+  /* ¿La palabra que ocupa el sitio del verbo es un verbo MAL ESCRITO?
+     «Does she wrok at home?» no es una pregunta incompleta: el verbo está, con
+     dos letras cruzadas. Decirle al alumno que le falta una pieza cuando lo
+     único que hizo fue teclear rápido en el celular es el peor resultado
+     posible, y es el mismo fallo que ya se corrigió dos veces en el analizador
+     (el hueco falso de «How many people have worked…»).
+
+     El pozo de candidatos son SOLO los verbos, no el diccionario entero: lo que
+     falta aquí es un verbo por posición —do/does/did y los modales exigen uno—,
+     así que el hueco ya dice de qué clase de palabra se trata. Es el mismo
+     principio que en Grammaster hace que detrás de «be» se prefieran adjetivos.
+
+     No corrige nada por su cuenta: propone. La decisión de si quiso decir
+     «work» es del alumno, y equivocarse proponiendo cuesta mucho menos que
+     acusar de incompleta una pregunta que no lo está. */
+  function sugerenciaDeVerbo(palabra){
+    const S = (typeof window !== "undefined" && window.GH_SPELL) || null;
+    if(!S || !palabra) return [];
+    const limpia = String(palabra).toLowerCase().replace(/[^a-z']/g, "");
+    if(limpia.length < 3 || VERB_BASES.has(limpia)) return [];
+
+    /* Una palabra funcional bien escrita NO es un verbo mal escrito. Sin este
+       guardia, «What do you?» —a la que de verdad le falta el verbo— proponía
+       que «you» era una errata de «do», y «Did he the book?» que «the» lo era de
+       «be». Proponer de más en el caso que el mensaje ya diagnostica bien es
+       peor que callar: confunde justo donde el aviso original acertaba. */
+    if(PRONOUNS.includes(limpia) || DETS.includes(limpia) || MODALS.includes(limpia)
+       || BE_AUX.includes(limpia) || ADVS.includes(limpia) || TIME_PLACE_ADV.has(limpia)
+       || PREP_PART.has(limpia) || DETERMINANTES.has(limpia) || NOT_VERBS.has(limpia)
+       || GRADO.has(limpia)) return [];
+
+    /* `categoria:'verbo'` con el vocabulario del curso desempata entre
+       candidatos que están a la MISMA distancia, sin adelantar nunca a uno más
+       cercano. Es lo que separa «liek» → «like» de «liek» → «lie»: las dos
+       están a una edición, pero «like» es un verbo que el curso enseña y «lie»
+       no aparece en ningún nivel. Sin esto ganaba el orden alfabético, que aquí
+       no significa nada. */
+    return S.sugerenciasDe(limpia, {
+      diccionario: [...VERB_BASES],
+      categoriaDe: (typeof window !== "undefined" && window.VOCAB_CATEGORIA_DE) || null,
+      categoria: "verbo",
+      max: 3,
+    });
+  }
+
   // Falta el verbo principal: do/does/did y los modales exigen un verbo base.
   // Si no se encontró ningún verbo (vIdx===-1), el verbo falta. («be» sí va solo.)
   if(vIdx === -1 && (["do","does","did"].includes(aux) || MODALS.includes(aux))){
@@ -652,6 +697,14 @@ function analyze(raw){
       if(PRONOUNS.includes(lower[auxIdx+1])){ subjTxt = tokens[auxIdx+1]; compAfter = after.slice(1); }
       else { subjTxt = after.join(" "); }
     }
+    /* La primera palabra del complemento es la que ocupa el sitio del verbo, así
+       que es la candidata a ser un verbo mal escrito. Si no hubo sujeto
+       pronombre, `compAfter` va vacío y todo se fue al sujeto: ahí se mira la
+       ÚLTIMA del sujeto, que es la que queda pegada al hueco. */
+    const sospechosa = compAfter.length ? compAfter[0]
+      : (subjTxt ? subjTxt.split(/\s+/).pop() : "");
+    const erratas = sugerenciaDeVerbo(sospechosa);
+
     if(subjTxt) parts.push({role:"subj", text:subjTxt, label:"sujeto"});
     else parts.push(gapPart("subj","sujeto","subject"));
     parts.push(gapPart("verb","verbo","verb"));
@@ -660,6 +713,17 @@ function analyze(raw){
     const note = lang==="en"
       ? `«${auxW}» needs a <b>main verb</b> <span class="cdot" style="background:var(--verb)"></span> after the subject: <i>${isOpen ? whText+" " : ""}${auxW} ${shown} <b>[verb]</b> …?</i>`
       : `«${auxW}» necesita un <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span> después del sujeto: <i>${isOpen ? whText+" " : ""}${auxW} ${shown} <b>[verbo]</b> …?</i>`;
+
+    /* La sugerencia va DELANTE del aviso de pieza faltante, no detrás: si el
+       alumno solo escribió mal el verbo, lo primero que tiene que leer es eso,
+       no un diagnóstico que no le corresponde. */
+    if(erratas.length){
+      const lista = erratas.map(v => `<b>${esc(v)}</b>`).join(lang==="en" ? " / " : " / ");
+      const aviso = lang==="en"
+        ? `Is «${esc(sospechosa)}» a typo? Maybe you meant ${lista} — that would be the <b>main verb</b> <span class="cdot" style="background:var(--verb)"></span> and the question would be complete.`
+        : `¿«${esc(sospechosa)}» es una errata? Quizá quisiste escribir ${lista} — ahí iría el <b>verbo principal</b> <span class="cdot" style="background:var(--verb)"></span> y la pregunta quedaría completa.`;
+      return incompleteResult(parts, [aviso, note]);
+    }
     return incompleteResult(parts, [note]);
   }
 

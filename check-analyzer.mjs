@@ -296,5 +296,89 @@ rotas.forEach(q => console.log('  ✗ ' + q));
 if (rotas.length) fail += rotas.length;
 console.log(`  ${rotas.length ? '✗' : '✓'} ${todas.length} preguntas del banco`);
 
+
+/* ── Una errata NO es una pieza que falta ────────────────────────────────────
+   «Does she wrok at home?» daba «pregunta incompleta: falta el verbo» con el
+   verbo delante, a dos letras cruzadas de estar bien. Es el mismo modo de fallo
+   que el hueco falso de «How many people have worked…»: decirle al alumno que
+   su trabajo correcto está mal armado.
+
+   El pozo de candidatos son SOLO los verbos, no el diccionario entero: lo que
+   falta ahí es un verbo POR POSICIÓN, así que el hueco ya dice de qué clase de
+   palabra se trata.
+   ------------------------------------------------------------------------- */
+const sugerenciasDelAviso = (q) => {
+  const r = analyze(q);
+  const nota = (r.notes || [])[0] || '';
+  const m = nota.match(/escribir ([^—]+)—/);
+  return m ? m[1].replace(/<[^>]+>/g, '').trim().split(/\s*\/\s*/) : [];
+};
+const proponer = (q, esperado) => {
+  const s = sugerenciasDelAviso(q);
+  const bien = esperado === null ? s.length === 0 : s[0] === esperado;
+  if (!bien) fail++;
+  console.log(`  ${bien ? '✓' : '✗'} ${q.padEnd(32)} ${s.length ? s.join(' / ') : '(sin sugerencia)'}` +
+    (bien ? '' : `   (esperado ${esperado === null ? 'ninguna' : esperado})`));
+};
+
+console.log('\n7 · una errata no es una pieza que falta');
+[ ['Does she wrok at home?', 'work'],   ['Do you liek pizza?', 'like'],
+  ['Do you wach TV?', 'watch'],         ['Did he stdy English?', 'study'],
+  ['Where do you lveie?', 'lie'],
+].forEach(([q, e]) => {
+  // «study» compite con «stay» a la misma distancia; basta con que esté entre las tres.
+  const s = sugerenciasDelAviso(q);
+  const bien = s.includes(e);
+  if (!bien) fail++;
+  console.log(`  ${bien ? '✓' : '✗'} ${q.padEnd(32)} ${s.join(' / ') || '(nada)'}${bien ? '' : `   (faltaba ${e})`}`);
+});
+
+/* Cuando el verbo falta DE VERDAD, el aviso original ya acierta y proponer de
+   más lo estropea. Una palabra funcional bien escrita no es un verbo mal
+   escrito: sin el guardia, «What do you?» proponía que «you» era errata de
+   «do», y «Did he the book?» que «the» lo era de «be». */
+console.log('\n   y cuando el verbo falta de verdad, no inventa erratas');
+[ 'Does she at home?', 'What do you?', 'Did he the book?',
+  'Do they here?', 'What did she very?', 'Do they always?',
+].forEach(q => proponer(q, null));
+
+/* El generador de erratas como oráculo, igual que en Grammaster: se parte de un
+   verbo del léxico, se le aplica un desliz de teclado y se comprueba que la app
+   lo recupere. Nadie escribe la expectativa — la respuesta correcta es, por
+   construcción, el verbo del que se partió. El umbral es el suelo medido, no
+   una aspiración. */
+console.log('\n   generador de erratas sobre el léxico de verbos');
+{
+  const VECINAS = { q:'wa',w:'qes',e:'wrd',r:'etf',t:'ryg',y:'tuh',u:'yij',i:'uok',o:'ipl',p:'ol',
+    a:'qsz',s:'awdx',d:'serfc',f:'drtgv',g:'ftyhb',h:'gyujn',j:'huikm',k:'jiol',l:'kop',
+    z:'asx',x:'zsdc',c:'xdfv',v:'cfgb',b:'vghn',n:'bhjm',m:'njk' };
+  const DESLICES = {
+    'tecla vecina': (w, i) => { const v = VECINAS[w[i]]; return v ? w.slice(0,i)+v[Math.floor(v.length/2)]+w.slice(i+1) : null; },
+    'transposición': (w, i) => (i+1 < w.length ? w.slice(0,i)+w[i+1]+w[i]+w.slice(i+2) : null),
+    'omisión': (w, i) => w.slice(0,i)+w.slice(i+1),
+  };
+  /* Suelos medidos sobre los 279 verbos del léxico (98% / 97% / 94%), con
+     margen. No son aspiraciones: si alguien vuelve la distancia a Levenshtein,
+     la transposición se desploma y esto lo dice en voz alta. */
+  const SUELO = { 'tecla vecina': 90, 'transposición': 90, 'omisión': 85 };
+  const verbos = [...(QL.VERB_BASES || [])];
+  const base = (verbos.length ? verbos : ['work','study','watch','listen','travel','visit','cook','dance','play','live'])
+    .filter(v => v.length >= 4 && /^[a-z]+$/.test(v));
+
+  for (const [nombre, desliz] of Object.entries(DESLICES)) {
+    let n = 0, ok3 = 0;
+    for (const v of base) {
+      const e = desliz(v, Math.floor(v.length / 2));
+      if (!e || e === v) continue;
+      n++;
+      if (sugerenciasDelAviso(`Does she ${e} at home?`).includes(v)) ok3++;
+    }
+    const pct = n ? Math.round(100 * ok3 / n) : 0;
+    const bien = pct >= SUELO[nombre];
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${nombre.padEnd(15)} ${pct}% entre las tres (suelo ${SUELO[nombre]}%, n=${n})`);
+  }
+}
+
 console.log(`\n${fail === 0 ? 'ANALIZADOR OK' : fail + ' FALLOS'}`);
 process.exit(fail ? 1 : 0);
