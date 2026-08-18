@@ -141,11 +141,45 @@ console.log('\n4 · pregunta de sujeto con tiempo compuesto');
   ['What happened?','simple-past'],                 ['Who will come?','simple-future'],
 ].forEach(([q,e]) => ok(q,e));
 
+/* «How many/much + sustantivo» también puede ser el sujeto, y faltaba: la lista
+   de wh-sujeto mira la PRIMERA palabra y ahí dice «how». Sin eso la pregunta se
+   iba por la rama normal, que sale a buscar sujeto detrás del auxiliar y se
+   queda con lo que haya («working», «been») o, peor, la denuncia como
+   incompleta. La versión con auxiliar es la que rompía; la de verbo simple
+   («How many people work here?») siempre estuvo bien, y va al lado para que se
+   vea que el eje es el auxiliar, no el cuantificador. */
+console.log('\n   la wh de sujeto también puede ser «how many / how much»');
+[ ['How many people are working?','present-continuous'],
+  ['How many people have worked here?','present-perfect'],
+  ['How many people have been working?','present-perfect-continuous'],
+  ['How much money has been spent?','present-perfect'],
+  ['How many students will come?','simple-future'],
+  ['How many people work here?','simple-present'],
+  ['How many people used to work here?','used-to'],
+].forEach(([q,e]) => ok(q,e));
+
+/* El hábito pasado también existe sin auxiliar. Esta rama solo sabía de verbos
+   de UNA palabra, así que se quedaba con «used», lo daba por Pasado Simple y
+   dejaba «to work» en el complemento: la perífrasis partida por la mitad, el
+   mismo fallo que el declarativo del Desgramatizador tenía con «did not use to».
+   Ojo con la etiqueta: `tenseIdOf` reconoce el tiempo por el «used to» en
+   MINÚSCULA, así que un «Used to» capitalizado se le escapa y cae en el
+   simple-present de reserva. */
+console.log('\n   pregunta de sujeto con «used to» (sin auxiliar)');
+[ ['Who used to work here?','used-to'],             ['Which student used to study here?','used-to'],
+  ['What used to happen?','used-to'],
+  // el pasado simple con el mismo aire no se contagia
+  ['Who used the computer?','simple-past'],         ['Who worked here?','simple-past'],
+].forEach(([q,e]) => ok(q,e));
+
 console.log('\n   y lo que NO es pregunta de sujeto');
 [ ['What are you doing?','present-continuous'],     ['Who is your teacher?','to-be-pres'],
   ['What is your name?','to-be-pres'],              ['Where is he going?','present-continuous'],
   ['Who is she talking to?','present-continuous'],  ['What have you done today?','present-perfect'],
   ['Does work start at eight?','simple-present'],   ['Is the plan working?','present-continuous'],
+  // las cuantificadas de ADJUNTO llevan su propio sujeto y no deben confundirse
+  ['How many books did you buy?','simple-past'],    ['How much money do you have?','simple-present'],
+  ['How many hours are you working?','present-continuous'],
 ].forEach(([q,e]) => ok(q,e));
 
 console.log('\n   la respuesta NOMBRA al sujeto, no agrega un dato al final');

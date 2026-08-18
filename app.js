@@ -559,8 +559,24 @@ function analyze(raw){
      lives here?»), así que estas se resuelven aquí y aprovechan toda la lógica
      de tiempos de más abajo. */
   const whBaseSuj = whText.toLowerCase().split(" ")[0];
+  /* «How many/much + sustantivo» TAMBIÉN puede ser el sujeto: «How many people
+     are working?», «How much money has been spent?». Faltaban porque la lista
+     mira la PRIMERA palabra y ahí dice «how», así que hay que mirar las dos.
+
+     Sin esto la pregunta no entraba por la rama de sujeto y el análisis normal
+     salía a buscar un sujeto detrás del auxiliar, quedándose con lo que hubiera:
+     «How many people are working at home?» daba sujeto «working» y tiempo
+     to-be-pres, y «How many people have worked at home?» acababa en «pregunta
+     incompleta» con un hueco de sujeto — o sea, la app le decía al alumno que su
+     pregunta correcta estaba mal armada, que es el peor resultado posible aquí.
+
+     No hace falta guardia extra contra la wh de adjunto: «How many books did you
+     buy?» tiene sujeto propio, así que el verbo NO va pegado al auxiliar y la
+     condición `vIdx === auxIdx+1` de aquí arriba ya la deja fuera. */
+  const whDosSuj = whText.toLowerCase().split(" ").slice(0, 2).join(" ");
   const whEsSujeto = isOpen && vIdx === auxIdx+1
-    && ["who","what","which","whose"].includes(whBaseSuj)
+    && (["who","what","which","whose"].includes(whBaseSuj)
+        || ["how many","how much"].includes(whDosSuj))
     && auxIdx === whLen                       // el aux va pegado a la wh: no hay sujeto en medio
     && (
       (["am","is","are","was","were"].includes(aux) && lower[vIdx].endsWith("ing")) ||
@@ -952,7 +968,25 @@ function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
   let tense = "Presente Simple";
   let auxShort = "does";
   const auxIsMainVerb = (v === "is" || v === "are");
-  if(PAST_FORMS.has(v) || (v.endsWith("ed") && !VERB_BASES.has(v))){ tense = "Pasado Simple"; auxShort = "did"; }
+  /* «Who used to work here?» — el hábito pasado también existe sin auxiliar, y
+     esta rama solo sabía de verbos de UNA palabra, así que se quedaba con «used»
+     y lo daba por Pasado Simple, dejando «to work» en el complemento. Es el
+     mismo fallo que el declarativo del Desgramatizador tenía con «did not use
+     to»: la perífrasis partida por la mitad.
+     El «did» de la respuesta corta ya es el correcto («Maria did»), así que solo
+     hay que agrupar el verbo y nombrar bien el tiempo. */
+  const usedToSubj = v === "used" && lower[vIdx+1] === "to" && isVerbCandidate(lower[vIdx+2]);
+  if(usedToSubj){
+    /* LA MISMA cadena que usa la ruta con auxiliar («Did you use to work?»), no
+       una equivalente: `tenseIdOf` la reconoce por el «used to» en MINÚSCULA, y
+       un «Used to» capitalizado se le escapa y cae en el simple-present de
+       reserva. El tiempo saldría mal en la pantalla y en la telemetría de
+       gamificación, que también se apoya en ese id. */
+    tense = "Pasado (hábito con «used to»)"; auxShort = "did";
+    verbText = tokens.slice(vIdx, vIdx+3).join(" ");
+    compTokens = tokens.slice(vIdx+3);
+  }
+  else if(PAST_FORMS.has(v) || (v.endsWith("ed") && !VERB_BASES.has(v))){ tense = "Pasado Simple"; auxShort = "did"; }
   else if(auxIsMainVerb){ tense = "Presente Simple (to be)"; auxShort = v; }
   const whSubj = whText + (extra.length ? " " + extra.join(" ") : "");
   const parts = [
@@ -973,7 +1007,11 @@ function analyzeSubjectQ(tokens, lower, whText, extra, vIdx, warnings){
       ], caption:"Respuesta corta"},
       {pieces:[
         {role:"new", text:"[sujeto real]", label:"info nueva"},
-        {role:"verb", text:tokens[vIdx], label:"verbo"},
+        /* `verbText` y no `tokens[vIdx]`: la respuesta larga repite el verbo
+           ENTERO. Con la palabra suelta, «Who used to work here?» respondía
+           «[sujeto real] used here» y «Who picked up the phone?» perdía la
+           partícula — justo las dos formas que la pieza de arriba ya agrupa. */
+        {role:"verb", text:verbText, label:"verbo"},
         ...(compTokens.length ? [{role:"comp", text:compTokens.join(" "), label:"complemento"}] : [])
       ], caption:"Respuesta larga"}
     ]
