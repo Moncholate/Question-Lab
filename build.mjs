@@ -190,7 +190,8 @@ if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`
   /* Todo lo demás se copia tal cual. Los .js de datos llevan 2,6 KB de
      comentarios entre los dos: no compensa el riesgo de tocarlos. */
   const ACTIVOS = ['answers.js', 'bank.js', 'cefr.generated.js', 'gamification.generated.js',
-    'phrasal.generated.js', 'tokens.css', 'sw.js', 'site.webmanifest', 'logo.svg',
+    'phrasal.generated.js', 'spelling.generated.js', 'vocabulary.generated.js',
+    'tokens.css', 'sw.js', 'site.webmanifest', 'logo.svg',
     'favicon.ico', 'favicon.svg', 'favicon-96x96.png', 'apple-touch-icon.png',
     'og-image.png', 'maskable-192x192.png', 'maskable-512x512.png',
     'web-app-manifest-192x192.png', 'web-app-manifest-512x512.png', 'fonts'];

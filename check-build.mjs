@@ -14,7 +14,7 @@
    antes de publicar nada.
    ============================================================================ */
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { QL, dir } from './check-env.mjs';
 
 let problemas = 0;
@@ -101,6 +101,36 @@ for (const q of [...BANCO, ...EXTRA]) {
 }
 if (distintas) fallo(`${distintas} preguntas se analizan distinto en dist`);
 else console.log(`   ✓ ${BANCO.length + EXTRA.length} preguntas, retrato idéntico`);
+
+/* ── 5 ─────────────────────────────────────────────────────────────────────
+   Un archivo que index.html carga tiene que LLEGAR a dist. Suena obvio y por
+   eso faltaba: `ACTIVOS` en build.mjs es una lista escrita a mano, y añadir un
+   <script> sin acordarse de ella deja la app publicada pidiendo un archivo que
+   no existe. Pasó de verdad al conectar el corrector (spelling.generated.js y
+   vocabulary.generated.js): en local todo pasaba, porque los chequeos corrían
+   contra el FUENTE, y el despliegue se rompió tres commits seguidos.
+
+   check-sw ya vigila la otra mitad —que lo que carga index.html esté en el
+   precache— pero eso no dice nada de si el archivo se copió. Son dos listas
+   distintas y cada una necesita su guardia; entre las dos, un <script> nuevo ya
+   no puede colarse.
+   ------------------------------------------------------------------------- */
+console.log('\n5 · todo lo que index.html carga llegó a dist');
+{
+  const htmlDist = listo;   // el index.html ya construido, leído arriba
+  const pedidos = [
+    ...[...htmlDist.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map(m => m[1]),
+    ...[...htmlDist.matchAll(/<link[^>]*\brel="stylesheet"[^>]*\bhref="([^"]+)"/g)].map(m => m[1]),
+  ].filter(u => !/^(data:|https?:|\/\/)/.test(u));
+
+  const faltan = [...new Set(pedidos)].filter(u => !existsSync(dir + 'dist/' + u.replace(/^\.?\//, '')));
+  if (faltan.length) {
+    faltan.forEach(f => console.log(`   ✗ ${f} — añádelo a ACTIVOS en build.mjs`));
+    fallo(`${faltan.length} archivo(s) que index.html carga no están en dist`);
+  } else {
+    console.log(`   ✓ los ${new Set(pedidos).size} archivos que pide index.html están`);
+  }
+}
 
 console.log(problemas ? `\n✗ ${problemas} problema(s)` : '\nBUILD OK · lo publicado es lo probado');
 process.exit(problemas ? 1 : 0);
