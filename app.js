@@ -2618,7 +2618,11 @@ function updateThemeBtn(){
   const el = $("themeTog"); if(!el || !window.ghTheme) return;
   const target = window.ghTheme.effective() === "dark" ? "light" : "dark";   // modo al que puedes cambiar
   const name = lang === "en" ? (target === "dark" ? "Dark" : "Light") : (target === "dark" ? "Oscuro" : "Claro");
-  el.innerHTML = `<span style="font-size:1rem; line-height:1">${target === "dark" ? "🌙" : "☀️"}</span>${esc(name)}`;
+  /* El rótulo va en su propio span, como el `.rlabel` del botón Reportar, para
+     que CSS pueda esconderlo en pantalla de teléfono. Suelto como nodo de texto
+     no había forma de alcanzarlo, y era lo que empujaba a «Reportar» fuera de
+     la pantalla a 375px. El `title` sigue diciendo la acción completa. */
+  el.innerHTML = `<span style="font-size:1rem; line-height:1">${target === "dark" ? "🌙" : "☀️"}</span><span class="tlabel">${esc(name)}</span>`;
   el.title = (lang === "en" ? "Switch to " : "Cambiar a modo ") + name.toLowerCase();
 }
 if($("themeTog")) $("themeTog").addEventListener("click", () => { if(window.ghTheme){ window.ghTheme.toggle(); updateThemeBtn(); } });

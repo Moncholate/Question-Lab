@@ -112,18 +112,73 @@
   .prompt, .ej, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
   .apphead{flex-shrink:0; background:var(--bg);
     border-bottom:1px solid var(--border); box-shadow:0 1px 8px -4px rgba(0,0,0,.15);}
-  .apphead-inner{max-width:640px; margin:0 auto; padding:.65rem 1rem;
-    display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap;}
+  /* Sin tope de ancho, como Grammaster y Desgramatizador. Estaba en 640px para
+     alinearse con `.wrap`, y el efecto era que los cuatro controles NUNCA cabían
+     junto al título: se iban a una segunda línea a cualquier ancho, incluso a
+     1100px, y el botón Reportar quedaba debajo del título en vez de arriba a la
+     derecha como en las otras dos apps. La cabecera a todo el ancho con
+     `space-between` es el patrón de la suite: marca a la izquierda, controles a
+     la derecha. El `flex-wrap` se queda para las pantallas donde de verdad no
+     quepa. */
+  .apphead-inner{max-width:1100px; margin:0 auto; padding:.65rem 1rem;
+    display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:nowrap;}
   .brand{display:flex; align-items:center; gap:.65rem; min-width:0;}
   .applogo{width:34px; height:34px; flex-shrink:0; display:block;}
   .brandtext{min-width:0;}
-  .brandtext h1{font-size:1.35rem; letter-spacing:-.02em; line-height:1.1;}
-  .brandtext p{color:var(--muted); font-size:.8rem; margin-top:.1rem;}
+  /* `nowrap`: sin esto, al encogerse la marca el nombre partía en dos líneas y
+     los controles se le montaban encima. Antes de partirse, que ceda. */
+  .brandtext h1{font-size:1.35rem; letter-spacing:-.02em; line-height:1.1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* El subtítulo CEDE espacio en vez de empujar. Es el más largo de la suite
+     —dos frases, contra una corta en Grammaster y Desgramatizador— y era lo que
+     mandaba los controles a la segunda línea. Con `min-width:0` ya puesto en
+     `.brand`, recortarlo con puntos suspensivos deja que la marca se encoja y
+     los controles se queden a la derecha, que es donde están en las otras dos.
+     Recortar y no ocultar: la frase sigue diciendo qué hace la app hasta donde
+     cabe, en vez de desaparecer de golpe. */
+  .brandtext p{color:var(--muted); font-size:.8rem; margin-top:.1rem;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .headctrls{display:flex; align-items:center; gap:.5rem; flex-shrink:0;}
   .lvlwrap{display:inline-flex; align-items:center; gap:.35rem; font-size:.82rem; color:var(--muted);}
   .lvlwrap select{padding:.32rem .55rem; border-radius:8px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:.82rem; cursor:pointer;}
-  @media (max-width:430px){ .brandtext p{display:none;} }
+  /* En pantalla de teléfono el subtítulo se va y la etiqueta «Nivel» también: el
+     propio selector ya dice cuál es, así que la palabra solo ocupa. Sin esto el
+     botón Reportar terminaba en x=424 sobre un viewport de 375 — fuera de la
+     pantalla y con scroll horizontal, que es exactamente lo que le pasa hoy a
+     Grammaster en un móvil. */
+  /* ── La cabecera al estrecharse ────────────────────────────────────────────
+     El orden en que cada cosa cede está pensado, no es casualidad. La marca es
+     lo único que NO puede desaparecer: es cómo el alumno sabe en qué app está.
+     Los controles sí pueden quedarse en su icono, porque el `title` sigue
+     diciendo qué hacen y el propio selector ya muestra el nivel.
+     Sin este escalonado, la marca absorbía TODO el recorte —es el único hijo
+     que encoge— y «Question Lab» acababa en «C…» ya a 600px. */
+  @media (max-width:768px){ .lvlwrap [data-i18n="lvl"]{display:none;} }
+  /* Con su regla base declarada, igual que `.rlabel` del botón Reportar unas
+     líneas más abajo. Además de dejar dicho el valor por defecto, hace falta
+     por cómo mira `check-css`: solo reconoce una clase como definida si sale en
+     una regla de primer nivel, y la PRIMERA regla dentro de un `@media` se le
+     escapa. `.rlabel` lleva su base por lo mismo. */
+  .tlabel{display:inline;}
+  @media (max-width:700px){ .themebtn .tlabel{display:none;} }
+  /* Por debajo de ~520px NO CABE, y no es cuestión de apretar más: medido, los
+     cuatro controles piden 280px y el nombre de la app otros 109, sobre un
+     viewport de 430. Ahí la cabecera vuelve a dos filas — marca arriba,
+     controles debajo — que es lo que hacía siempre y en un teléfono está bien.
+     Lo que NO vale es lo que hace Grammaster hoy: mantener la fila a la fuerza
+     y dejar el botón Reportar cortado fuera de la pantalla. Un control que no se
+     ve no existe, y este es justo el que sirve para avisar de que algo falla. */
+  @media (max-width:520px){
+    .apphead-inner{flex-wrap:wrap;}
+    .headctrls{width:100%; justify-content:flex-start;}
+  }
+  @media (max-width:430px){
+    .brandtext p{display:none;}
+    .lvlwrap select{max-width:9rem;}
+    .headctrls{gap:.35rem;}
+    .apphead-inner{padding:.65rem .6rem; gap:.4rem;}
+  }
   /* UNIDAD DEL CURSO — vive en el menú de práctica, no en la cabecera.
      El nivel hace falta en toda la app; la unidad solo cambia algo donde se
      CORRIGE y PUNTÚA. Preguntarla arriba sería una barrera para quien entra
