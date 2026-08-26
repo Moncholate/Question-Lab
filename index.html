@@ -125,7 +125,13 @@
      `space-between` es el patrón de la suite: marca a la izquierda, controles a
      la derecha. El `flex-wrap` se queda para las pantallas donde de verdad no
      quepa. */
-  .apphead-inner{max-width:1100px; margin:0 auto; padding:.65rem 1rem;
+  /* SIN tope de ancho ni centrado. Lo puse en 1100px y era otra vez lo mismo con
+     otro número: en una pantalla ancha —o dentro del iframe del Hub, que es
+     donde se ve de verdad— el contenido se centraba y la marca aparecía a 416px
+     del borde, mientras Grammaster la tiene en 32 y Desgramatizador en 16. Con
+     `space-between` y a sangre, la marca queda pegada a la izquierda y los
+     controles a la derecha, que es el patrón de las otras dos. */
+  .apphead-inner{padding:.65rem 1rem;
     display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:nowrap;}
   .brand{display:flex; align-items:center; gap:.65rem; min-width:0;}
   .applogo{width:34px; height:34px; flex-shrink:0; display:block;}
