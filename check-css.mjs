@@ -29,7 +29,16 @@ const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
    app.js está lleno de plantillas con `class="…"` y de ganchos
    `querySelector(".x")` — antes vivían dentro de este mismo HTML, y sin ellos
    este chequeo denunciaba como huérfanas 53 clases que se usan a diario. */
-const cuerpo = html.slice(html.indexOf('<body'))
+/* Los <script> EN LÍNEA del <head> también cuentan. Ahí va lo que tiene que
+   correr ANTES de pintar —el resolver del tema, y la marca de «estoy dentro del
+   iframe del Hub»—, y las dos cosas ponen clases en el <html>. Leyendo solo
+   desde <body>, este chequeo denunciaba `gh-en-hub` como una regla que no usa
+   nadie, cuando la usa el único sitio donde se puede usar sin provocar un
+   parpadeo. Solo los de código: los `<script src=…>` ya se leen aparte. */
+const cabeza = html.slice(0, html.indexOf('<body'));
+const scriptsCabeza = [...cabeza.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)]
+  .map(m => m[1]).join('\n');
+const cuerpo = scriptsCabeza + '\n' + html.slice(html.indexOf('<body'))
   + '\n' + readFileSync(join(aquí, 'app.js'), 'utf8');
 /* tokens.css lo genera design-tokens y trae reglas propias (el anillo de foco,
    el chip `.ghf`). Sin leerlo, toda clase generada se denunciaba como «no pinta

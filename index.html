@@ -28,6 +28,13 @@
   var mq=matchMedia('(prefers-color-scheme: dark)');
   mq.addEventListener?mq.addEventListener('change',apply):mq.addListener(apply);
 }catch(e){}})();
+/* ¿Estamos dentro del iframe del Hub? Se marca en el <html> ANTES de pintar,
+   porque de ello depende cómo se reparte la cabecera: en el Hub el nivel, el
+   idioma y el tema los lleva el Hub y esta app los esconde, así que ahí solo
+   queda «Reportar» y la fila entra de sobra hasta en un teléfono. Fuera del Hub
+   son cuatro controles y por debajo de 520px no caben.
+   Va aquí y no en app.js para que no haya un parpadeo de cabecera partida. */
+(function(){try{if(window.self!==window.top)document.documentElement.classList.add('gh-en-hub');}catch(e){}})();
 </script>
 <title>Question Lab</title>
 <meta name="description" content="Arma preguntas en inglés y aprende a responderlas">
@@ -179,9 +186,15 @@
      Lo que NO vale es lo que hace Grammaster hoy: mantener la fila a la fuerza
      y dejar el botón Reportar cortado fuera de la pantalla. Un control que no se
      ve no existe, y este es justo el que sirve para avisar de que algo falla. */
+  /* El salto a dos filas depende del CONTEXTO, no solo del ancho. Estaba puesto
+     por ancho a secas y dentro del Hub partía la cabecera sin motivo: ahí el
+     nivel, el idioma y el tema los lleva el Hub, así que solo queda «Reportar»
+     y cabe de sobra — el botón acababa suelto abajo a la izquierda, debajo del
+     logo, con media barra vacía al lado. Lo que decide no es el viewport sino
+     cuántos controles hay. */
   @media (max-width:520px){
-    .apphead-inner{flex-wrap:wrap;}
-    .headctrls{width:100%; justify-content:flex-start;}
+    :root:not(.gh-en-hub) .apphead-inner{flex-wrap:wrap;}
+    :root:not(.gh-en-hub) .headctrls{width:100%; justify-content:flex-start;}
   }
   @media (max-width:430px){
     .brandtext p{display:none;}
