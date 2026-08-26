@@ -310,6 +310,27 @@ function analyze(raw){
   if(!q) return {ok:false, error: lang==="en" ? "Type a question first. 😊" : "Escribe una pregunta primero. 😊"};
   if(!/\?\s*$/.test(q)) warnings.push(lang==="en" ? "Tip: questions in English end with \"?\"." : "Tip: las preguntas en inglés terminan con «?».");
 
+  /* MAYÚSCULAS. Meses, días y nacionalidades — el conjunto donde el español y el
+     inglés NO coinciden, que es de donde sale el error. El motor y la lista
+     vienen de Grammar HUB; el porqué largo está en `capitals-engine.js`.
+     Va en `warnings` y no en `notes` porque es una corrección de lo que el
+     alumno ESCRIBIÓ, como el aviso del «?», y no una explicación de gramática.
+     La primera palabra se salta: ahí la mayúscula la pide el inicio de oración,
+     que es otra regla y ya la enseña cualquier profesor — marcarla aquí diría
+     «los meses van en mayúscula» señalando algo que iría en mayúscula igual. */
+  (function(){
+    const C = (typeof window !== "undefined" && window.GH_CAPS) || null;
+    if(!C) return;
+    const inicio = q.search(/[A-Za-z]/);
+    const hallazgos = C.revisarMayusculas(q, { canonico: C.CAPS_CANONICO, ambiguas: C.CAPS_AMBIGUAS })
+      .filter(h => h.indice !== inicio);
+    if(!hallazgos.length) return;
+    const lista = hallazgos.map(h => `<b>${esc(h.sugerida)}</b>`).join(" · ");
+    warnings.push(lang==="en"
+      ? `In English, months, days and nationalities take a capital: ${lista}.`
+      : `En inglés los meses, los días y las nacionalidades van con mayúscula: ${lista}.`);
+  })();
+
   /* CONDICIÓN AL FRENTE: «If it rains, will you stay?». La pregunta de verdad es
      la SEGUNDA cláusula; el analizador miraba «If» al inicio, no encontraba ni
      wh-word ni auxiliar, y rechazaba la oración entera.

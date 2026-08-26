@@ -21,6 +21,8 @@ const urlsToCache = [
   `${BASE}gamification.generated.js`,
   `${BASE}phrasal.generated.js`,
   `${BASE}spelling.generated.js`,
+
+  `${BASE}capitals.generated.js`,
   `${BASE}vocabulary.generated.js`,
   `${BASE}fonts/Lexend.woff2`,
   `${BASE}fonts/AtkinsonHyperlegible-Regular.woff2`,
