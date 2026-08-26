@@ -2147,7 +2147,6 @@ window.addEventListener("message", e=>{
 const I18N = {
   es: {
     subtitle:"Arma preguntas en inglés pieza por pieza. Respóndelas con las mismas piezas.",
-    lvl:"Nivel",
     navAnalyze:"Analiza", navBuild:"Construye", navIdentify:"Identifica", navRespond:"Responde", navGuide:"Guía",
     navPractice:"Práctica", navProgress:"Progreso",
     practiceTitle:"Práctica", practiceIntro:"Elige un modo para practicar:",
@@ -2273,7 +2272,6 @@ const I18N = {
   },
   en: {
     subtitle:"Build questions in English piece by piece. Answer them with the same pieces.",
-    lvl:"Level",
     navAnalyze:"Analyze", navBuild:"Build", navIdentify:"Identify", navRespond:"Respond", navGuide:"Guide",
     navPractice:"Practice", navProgress:"Progress",
     practiceTitle:"Practice", practiceIntro:"Choose a mode to practice:",

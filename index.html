@@ -110,8 +110,13 @@
   .wrap{width:100%; max-width:640px; margin:0 auto; padding:1rem 1rem 3rem;}
   /* Contenido en inglés que se lee con atención → Atkinson Hyperlegible (DUA) */
   .prompt, .ej, .gtable, .block, #idQuestion, #rQuestion, #rInput{font-family:var(--font-read);}
-  .apphead{flex-shrink:0; background:var(--bg);
-    border-bottom:1px solid var(--border); box-shadow:0 1px 8px -4px rgba(0,0,0,.15);}
+  /* `--card` y no `--bg`: la barra es una SUPERFICIE, no un trozo de página.
+     Con el color del fondo no se separaba de nada y era lo que más la distinguía
+     de Grammaster y Desgramatizador, que la llevan blanca sobre página gris.
+     La sombra también baja a la de ellas —Tailwind `shadow-sm`— porque la que
+     había competía con el borde y remarcaba todavía más la diferencia. */
+  .apphead{flex-shrink:0; background:var(--card);
+    border-bottom:1px solid var(--border); box-shadow:0 1px 2px 0 rgba(0,0,0,.05);}
   /* Sin tope de ancho, como Grammaster y Desgramatizador. Estaba en 640px para
      alinearse con `.wrap`, y el efecto era que los cuatro controles NUNCA cabían
      junto al título: se iban a una segunda línea a cualquier ancho, incluso a
@@ -127,7 +132,7 @@
   .brandtext{min-width:0;}
   /* `nowrap`: sin esto, al encogerse la marca el nombre partía en dos líneas y
      los controles se le montaban encima. Antes de partirse, que ceda. */
-  .brandtext h1{font-size:1.35rem; letter-spacing:-.02em; line-height:1.1;
+  .brandtext h1{font-size:1.25rem; letter-spacing:-.02em; line-height:1.1;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   /* El subtítulo CEDE espacio en vez de empujar. Es el más largo de la suite
      —dos frases, contra una corta en Grammaster y Desgramatizador— y era lo que
@@ -154,7 +159,6 @@
      diciendo qué hacen y el propio selector ya muestra el nivel.
      Sin este escalonado, la marca absorbía TODO el recorte —es el único hijo
      que encoge— y «Question Lab» acababa en «C…» ya a 600px. */
-  @media (max-width:768px){ .lvlwrap [data-i18n="lvl"]{display:none;} }
   /* Con su regla base declarada, igual que `.rlabel` del botón Reportar unas
      líneas más abajo. Además de dejar dicho el valor por defecto, hace falta
      por cómo mira `check-css`: solo reconoce una clase como definida si sale en
@@ -208,12 +212,18 @@
   .unitok:active{transform:scale(.96);}
   .unitsel{padding:.3rem .5rem; border-radius:8px; border:1px solid var(--border);
     background:var(--card); color:var(--text); font-size:.8rem; font-weight:700; cursor:pointer;}
-  .langtog{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
-  .langtog button{border:none; background:var(--card); color:var(--muted); font-size:.78rem;
-    font-weight:700; padding:.28rem .5rem; cursor:pointer;}
-  /* `--accent-solid` y no `--accent`: relleno con texto blanco encima. El
-     acento normal deja el blanco en 3,68:1 y no pasa AA. */
-  .langtog button.on{background:var(--accent-solid); color:#fff;}
+  /* Mismo objeto que en Grammaster y Desgramatizador: carril hundido y el
+     idioma activo como PASTILLA elevada, no como bloque de color sólido.
+     Antes el activo era `--accent-solid` con texto blanco — legible, pero era
+     el control más ruidoso de la cabecera y no se parecía al de las otras dos.
+     La tinta activa es `--accent-ink`, que existe justo para esto (el acento
+     como TEXTO sobre una superficie) y está medido en los dos temas. */
+  .langtog{display:inline-flex; border:1px solid var(--border); border-radius:8px;
+    overflow:hidden; background:var(--n-surface2); padding:2px; gap:2px;}
+  .langtog button{border:none; background:transparent; color:var(--muted); font-size:.78rem;
+    font-weight:700; padding:.24rem .48rem; border-radius:6px; cursor:pointer;}
+  .langtog button.on{background:var(--card); color:var(--accent-ink);
+    box-shadow:0 1px 2px 0 rgba(0,0,0,.06);}
   .themebtn{display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .6rem; border-radius:8px;
     border:1px solid var(--border); background:color-mix(in srgb, var(--text) 6%, var(--card)); color:var(--text);
     font-size:.85rem; font-weight:700; line-height:1.2; cursor:pointer; transition:all .12s; white-space:nowrap;}
@@ -680,7 +690,10 @@
       </div>
     </div>
     <div class="headctrls">
-      <span class="lvlwrap" id="lvlWrap"><span data-i18n="lvl">📊 Nivel</span><select id="levelSel" aria-label="Nivel CEFR"></select></span>
+      <!-- Sin rótulo delante: ni Grammaster ni Desgramatizador lo llevan, y el
+           propio selector ya dice el nivel. El nombre accesible lo pone el
+           `aria-label`, así que no se pierde para quien navega con lector. -->
+      <span class="lvlwrap" id="lvlWrap"><select id="levelSel" aria-label="Nivel CEFR"></select></span>
       <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
       <button type="button" class="themebtn" id="themeTog">🌗</button>
       <!-- Reportar. En ámbar y no en gris: si se viste como los demás controles
