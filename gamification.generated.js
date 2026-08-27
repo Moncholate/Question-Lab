@@ -52,11 +52,13 @@ function loadProgress(storage) {
     const p = JSON.parse(raw);
     if (!p || p.v !== SCHEMA_V) return emptyProgress();   // schema bumped → start clean
     return { ...emptyProgress(), ...p };
-  } catch (e) { return emptyProgress(); }
+  } catch { return emptyProgress(); }
 }
 
 function saveProgress(storage, p) {
-  try { storage && storage.setItem(SHARED_KEY, JSON.stringify(p)); } catch (e) {}
+  /* Si el navegador no deja escribir (modo privado, cuota llena), el progreso
+     se pierde y no pasa nada más: guardar es lo accesorio, la app sigue. */
+  try { storage && storage.setItem(SHARED_KEY, JSON.stringify(p)); } catch { /* sin persistencia */ }
 }
 
 /* Registra UN intento de práctica calificado. Muta y devuelve `p`.
@@ -148,7 +150,6 @@ function meets(p, criteria, tenseId) {
    y devuelve { newly:[keys], all:[keys] }. `tenseIds` acota las perTense. */
 function evaluateBadges(p, badges, tenseIds) {
   const newly = [];
-  const stamp = today => today;
   for (const b of badges) {
     if (b.perTense) {
       const ids = tenseIds && tenseIds.length ? tenseIds : Object.keys(p.tenses);
