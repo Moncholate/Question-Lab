@@ -73,7 +73,7 @@ export const QL = new Function(app + `
 ;return {analyze, tenseIdOf, ID_TENSES, LV, setLevel, expectedAnswers, openExpected, whBaseOf, WH_HINTS,
          setUnidad, visto, vistoEjercicio, unidadDe, unidadIndice, CONTENT, UNITS, CHALLENGES,
          confirmarUnidad, unidadPorRevisar, renderUnitUI, DIAS_REVISION, leerUnidadFecha,
-         construirReporte, goAnalyze, renderId, renderR, renderF, loadChallenge,
+         construirReporte, hayQueReportar, goAnalyze, renderId, renderR, renderF, loadChallenge,
          esComplementoDeTiempo, particulasDelVerbo, I18N, renderProgress, MODOS, bumpBestStreak,
          VERB_BASES,
          buildIdPool, buildRPool, refilterChallenges,

@@ -18,7 +18,7 @@
    ============================================================================ */
 import { QL } from './check-env.mjs';
 
-const { construirReporte, goAnalyze, setLevel, setUnidad, LV,
+const { construirReporte, hayQueReportar, goAnalyze, setLevel, setUnidad, LV,
         buildIdPool, buildRPool, buildFPool, renderId, renderR, renderF,
         loadChallenge, getFPool } = QL;
 
@@ -121,6 +121,45 @@ const fin = construirReporte();
 if (!/Qué esperaba en vez de eso:|What I expected instead:/.test(fin))
   fallo('no deja el hueco para que el profesor escriba qué esperaba');
 else console.log('   ✓ «Qué esperaba en vez de eso»');
+
+/* ── El botón solo cuando hay algo que contar ─────────────────────────────
+   El profesor lo dijo mirando la app: «aparece siempre en todas las pestañas y
+   en esos casos no reporta nada». Y era verdad — desde la Guía o Progreso el
+   informe salía con el encabezado y el nombre del panel, nada más. Un botón que
+   no hace nada enseña a no tocarlo, y el día que sí haga falta ya nadie lo usa.
+   Esto fija la regla: se reporta lo que la app puso delante. */
+console.log('\n6 · el botón solo aparece cuando hay algo que reportar');
+{
+  const antes = problemas;
+  enPanel('guide');
+  if (hayQueReportar()) fallo('en la Guía no hay nada que reportar');
+  enPanel('progress');
+  if (hayQueReportar()) fallo('en Progreso no hay nada que reportar');
+  enPanel('practice');
+  if (hayQueReportar()) fallo('en el menú de práctica todavía no hay ejercicio');
+
+  enPanel('analyze');
+  goAnalyze('Where do you work?');
+  if (!hayQueReportar()) fallo('con un análisis hecho SÍ hay que poder reportar');
+
+  enPanel('build');
+  loadChallenge(0);
+  if (!hayQueReportar()) fallo('con un desafío en pantalla SÍ hay que poder reportar');
+
+  enPanel('identify');
+  buildIdPool(); renderId(true);
+  if (!hayQueReportar()) fallo('con una pregunta de identificar SÍ hay que poder reportar');
+
+  enPanel('respond');
+  buildRPool(); renderR(true);
+  if (!hayQueReportar()) fallo('con una pregunta de responder SÍ hay que poder reportar');
+
+  enPanel('fillpiece');
+  buildFPool(); renderF(true);
+  if (!hayQueReportar()) fallo('con un hueco en pantalla SÍ hay que poder reportar');
+
+  if (problemas === antes) console.log('   ✓ callado en guía, progreso y menú · disponible en los cinco con ejercicio');
+}
 
 console.log(problemas ? `\n✗ ${problemas} problema(s)` : '\nREPORTE OK');
 process.exit(problemas ? 1 : 0);

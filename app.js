@@ -1428,6 +1428,11 @@ function showPanel(id){
   document.querySelectorAll(".tabbtn").forEach(x=>x.classList.toggle("active", x.dataset.nav === nav));
   const sa = document.querySelector(".scrollarea"); if(sa) sa.scrollTop = 0;
   if(id === "progress") renderProgress();
+  /* El botón de reportar depende del panel: se recalcula aquí además de después
+     de cada interacción. `typeof` porque `showPanel` puede correr antes de que
+     se declare —está más abajo en el archivo— y un ReferenceError aquí dejaría
+     la app sin pestañas. */
+  if(typeof refrescarReporte === "function") refrescarReporte();
 }
 document.querySelectorAll(".tabbtn").forEach(b=> b.addEventListener("click", ()=> showPanel(b.dataset.panel)));
 document.querySelectorAll("[data-goto]").forEach(b=> b.addEventListener("click", ()=> showPanel(b.dataset.goto)));
@@ -2469,6 +2474,37 @@ const panelActivo = () => {
   const p = document.querySelector(".panel.active");
   return p ? p.id : "?";
 };
+/* ¿HAY ALGO QUE REPORTAR?
+   El botón salía en todos los paneles, también en la Guía o en Progreso, y ahí
+   el informe era el encabezado y nada más: curso, unidad, idioma y el nombre del
+   panel. Un botón que no hace nada enseña a no tocarlo, y el día que sí haga
+   falta ya nadie lo usa.
+   Se reporta lo que la app PUSO DELANTE: un análisis hecho o el ejercicio que
+   está en pantalla. Sin eso no hay nada que contar. */
+function hayQueReportar(){
+  const p = panelActivo();
+  if(p === "analyze")   return !!ultimoAnalisis;
+  if(p === "build")     return !!curCh;
+  if(p === "identify")  return !!idCurrent;
+  if(p === "respond")   return !!rCurrent;
+  if(p === "fillpiece") return !!(fEstado && fEstado.cur);
+  return false;   // guía, menú de práctica y progreso no producen nada reportable
+}
+function refrescarReporte(){
+  const b = $("reportTog");
+  /* `style.display` y no el atributo `hidden`: la regla del navegador para
+     [hidden] pierde contra el `display:inline-flex` que .reportbtn trae en el
+     CSS, así que el botón se quedaba a la vista igual. */
+  if(b) b.style.display = hayQueReportar() ? "" : "none";
+}
+/* El estado que decide vive en cinco variables que cambian en muchos sitios
+   —analizar, sacar ejercicio, corregir, vaciarse el pozo—. En vez de acordarse
+   de refrescar en cada uno, y olvidarse en el próximo modo que se añada, se
+   refresca DESPUÉS de cada interacción: en captura y con un `setTimeout` de 0
+   para que corra cuando los manejadores de la app ya hicieron lo suyo. */
+["click", "keyup"].forEach(ev =>
+  document.addEventListener(ev, () => setTimeout(refrescarReporte, 0), true));
+
 function construirReporte(){
   const linea = (k, v) => (v === null || v === undefined || v === "" ? null : `${k}: ${v}`);
   const p = panelActivo();
@@ -3279,3 +3315,4 @@ buildGuideWh();          // tabla Wh-words colapsable
 buildGuideAccordion();   // agrupa los tiempos de la Guía en acordeones por familia
 updateThemeBtn();        // ícono inicial del toggle de tema
 applyLevel();   // primer render: rellena ejemplos y carga el primer desafío del nivel
+refrescarReporte();      // el botón de reportar arranca según lo que haya en pantalla
