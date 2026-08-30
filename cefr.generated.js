@@ -178,56 +178,104 @@ window.GRAMMAR_CEFR = {
   "content": {
     "to-be-pres": {
       "level": "basico1",
-      "unit": "2B"
+      "unit": "2B",
+      "label": {
+        "es": "Verbo be (presente)",
+        "en": "Verb be (present)"
+      }
     },
     "simple-present": {
       "level": "basico1",
       "unit": "5A",
       "unitBe": "2B",
       "unitQuestions": "5B",
-      "unitThirdPerson": "6A"
+      "unitThirdPerson": "6A",
+      "label": {
+        "es": "Presente Simple",
+        "en": "Simple Present"
+      }
     },
     "present-continuous": {
       "level": "basico2",
-      "unit": "9A"
+      "unit": "9A",
+      "label": {
+        "es": "Presente Continuo",
+        "en": "Present Continuous"
+      }
     },
     "to-be-past": {
       "level": "basico2",
-      "unit": "10B"
+      "unit": "10B",
+      "label": {
+        "es": "Verbo be (pasado)",
+        "en": "Verb be (past)"
+      }
     },
     "simple-past": {
       "level": "basico2",
       "unit": "11A",
       "unitBe": "10B",
-      "unitIrregulars": "11B"
+      "unitIrregulars": "11B",
+      "label": {
+        "es": "Pasado Simple",
+        "en": "Simple Past"
+      }
     },
     "future-going-to": {
       "level": "elemental2",
-      "unit": "10B"
+      "unit": "10B",
+      "label": {
+        "es": "Futuro (going to)",
+        "en": "Future (going to)"
+      }
     },
     "present-perfect": {
       "level": "elemental2",
-      "unit": "12A"
+      "unit": "12A",
+      "label": {
+        "es": "Presente Perfecto",
+        "en": "Present Perfect"
+      }
     },
     "past-continuous": {
       "level": "intermedio1",
-      "unit": "2B"
+      "unit": "2B",
+      "label": {
+        "es": "Pasado Continuo",
+        "en": "Past Continuous"
+      }
     },
     "simple-future": {
       "level": "intermedio1",
-      "unit": "6A"
+      "unit": "6A",
+      "label": {
+        "es": "Futuro Simple (will)",
+        "en": "Simple Future (will)"
+      }
     },
     "past-perfect": {
       "level": "intermedio2",
-      "unit": "12A"
+      "unit": "12A",
+      "label": {
+        "es": "Pasado Perfecto",
+        "en": "Past Perfect"
+      }
     },
     "used-to": {
       "level": "intermedio2",
-      "unit": "11A"
+      "unit": "11A",
+      "label": {
+        "es": "Used to",
+        "en": "Used to"
+      }
     },
     "present-perfect-continuous": {
       "level": "avanzado",
-      "unit": "2B"
+      "unit": "2B",
+      "label": {
+        "es": "Presente Perfecto Continuo",
+        "en": "Present Perfect Continuous"
+      }
     },
     "subject-question": {
       "level": "intermedio2",
