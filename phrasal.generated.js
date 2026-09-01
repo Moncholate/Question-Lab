@@ -83,6 +83,10 @@ window.GRAMMAR_PHRASAL = {
       "after"
     ],
     [
+      "get",
+      "dressed"
+    ],
+    [
       "carry",
       "on"
     ],
