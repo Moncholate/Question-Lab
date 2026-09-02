@@ -2152,11 +2152,42 @@ function renderUnitUI(){
     sel.value = curLevel;
     sel.addEventListener("change", ()=>setLevel(sel.value));
   }
-  // Desde el hub, el nivel y el idioma los controla el hub → se ocultan;
-  // el botón de tema se mantiene visible (control global de la suite).
+  /* DESDE EL HUB LA CABECERA ENTERA SE VA. El nivel, el idioma, la marca y el
+     tema ya están en la barra del hub —antes estaban en las DOS, apiladas, y
+     entre ambas se llevaban más de cien píxeles de alto—, así que la esconde
+     el CSS con `:root.gh-en-hub .apphead`.
+
+     REPORTAR SE MUEVE, NO SE DUPLICA. Es el MISMO nodo: `refrescarReporte()`
+     lo enciende y lo apaga por `id`, y una copia habría dejado la mitad de las
+     veces el botón equivocado en pantalla. Se cuelga arriba del contenido, sin
+     borde ni fondo; cuando no hay nada que reportar sigue apagándose solo.
+
+     Y se apaga con `style.display`, no con `hidden`: la regla del navegador
+     para `[hidden]` pierde contra `.reportbtn{display:inline-flex}`. Ya costó
+     una vez. */
   if(fromHub){
     if($("lvlWrap")) $("lvlWrap").style.display = "none";
     if($("langTog")) $("langTog").style.display = "none";
+
+    /* LA CABECERA NO SE ESCONDE HASTA QUE EL BOTÓN ESTÉ A SALVO, y el orden es
+       la parte que importa. Si el CSS la escondiera por su cuenta y la mudanza
+       fallara —un DOM que no es el del navegador, algo que cambió de nombre—,
+       Reportar se quedaría dentro de algo invisible y no habría forma de
+       llegar a él. Encendiendo la clase DESPUÉS, lo peor que puede pasar es
+       que todo siga como antes de este cambio.
+       Por eso se apila con `appendChild` y no con `prepend`: es lo que existe
+       en cualquier DOM, incluido el de las sondas. */
+    try {
+      const rep = $("reportTog"), wrap = document.querySelector(".scrollarea .wrap");
+      if(rep && wrap && wrap.firstChild !== undefined){
+        const fila = document.createElement("div");
+        fila.className = "reportfuera";
+        fila.appendChild(rep);
+        if(wrap.insertBefore) wrap.insertBefore(fila, wrap.firstChild);
+        else wrap.appendChild(fila);
+        document.documentElement.classList.add("gh-sin-cabecera");
+      }
+    } catch(e){ /* se queda la cabecera de siempre, que funciona */ }
   }
 })();
 /* El hub manda nivel e idioma por postMessage */

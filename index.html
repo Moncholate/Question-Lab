@@ -125,6 +125,22 @@
      había competía con el borde y remarcaba todavía más la diferencia. */
   .apphead{flex-shrink:0; background:var(--card);
     border-bottom:1px solid var(--border); box-shadow:0 1px 2px 0 rgba(0,0,0,.05);}
+  /* DENTRO DEL HUB NO HAY CABECERA. Estaban las dos apiladas —la barra del hub
+     y esta— repitiendo logo, nombre y botón de tema, y entre ambas se llevaban
+     más de cien píxeles de alto en todas las pantallas. La identidad y el tema
+     los lleva ahora la barra del hub; aquí no quedaba nada que no esté allá.
+     El único que se queda es Reportar, y `app.js` lo MUEVE al contenido: sale
+     solo cuando hay algo que reportar, y eso solo lo sabe esta app.
+
+     LA CLASE LA ENCIENDE `app.js` DESPUÉS DE MOVER EL BOTÓN, no al entrar. Si
+     la mudanza fallara, esconder la cabecera dejaría a Reportar dentro de algo
+     invisible; encendiéndola después, lo peor que puede pasar es que todo siga
+     como estaba. Por eso no se cuelga de `gh-en-hub`, que ya existe. */
+  :root.gh-sin-cabecera .apphead{display:none;}
+  /* Su sitio en el contenido: sin borde, sin fondo y sin barra. Cuando no hay
+     nada que reportar, `app.js` le pone display:none al botón y esta fila se
+     queda sin alto —el hueco de arriba lo pone el propio `.wrap`—. */
+  .reportfuera{display:flex; justify-content:flex-end; margin:0 0 .6rem;}
   /* Sin tope de ancho, como Grammaster y Desgramatizador. Estaba en 640px para
      alinearse con `.wrap`, y el efecto era que los cuatro controles NUNCA cabían
      junto al título: se iban a una segunda línea a cualquier ancho, incluso a
