@@ -306,6 +306,27 @@
     padding:.5rem .2rem; border:none; background:none; color:var(--muted); cursor:pointer;
     min-height:var(--tap-min,44px); transition:color .15s; position:relative;}
   .tabbtn .ti{font-size:1.25rem; line-height:1;}
+  /* ICONOS DE LÍNEA, NO EMOJI. Los cuatro eran emoji y los dibujaba el sistema
+     operativo: cada uno con su color, su volumen y su tamaño óptico, así que la
+     barra se veía salida de un teclado y no de la app. Son los MISMOS cuatro de
+     Grammaster y Desgramatizador —lucide `search`, `book-open`, `pen-line` y
+     `chart-no-axes-column`—, aquí en SVG a mano porque esta app es vanilla y no
+     tiene de dónde importarlos.
+     Los trazos NO se copiaron de una web: se sacaron del paquete instalado en
+     las otras dos apps, para que las tres barras dibujen exactamente lo mismo.
+     Si algún día hay que actualizarlos, se leen de
+     `node_modules/lucide-react/dist/esm/icons/<nombre>.js`.
+     `currentColor` y `stroke-width:2` son lo que hace que el activo se tiña de
+     índigo junto al rótulo, que es lo que el emoji no podía hacer. */
+  /* Mismo tratamiento que los iconos de las pestañas: el trazo se pinta con
+     el color del botón, así que el tema tiñe el icono y el rótulo a la vez. */
+  .themebtn .ticono{display:inline-flex; align-items:center;}
+  .themebtn .ticono svg{width:1rem; height:1rem; display:block;
+    fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round;}
+  .tabbtn .ti svg{width:1.15em; height:1.15em; display:block;
+    fill:none; stroke:currentColor; stroke-width:2;
+    stroke-linecap:round; stroke-linejoin:round;}
   .tabbtn .tl{font-size:.66rem; font-weight:700; letter-spacing:.01em;}
   /* Regla: el acento COMO TEXTO usa `--accent-ink`; como borde o barra, el
      `--accent` normal. La pestaña activa daba 3,68:1 en claro con el normal. */
@@ -731,7 +752,7 @@
            `aria-label`, así que no se pierde para quien navega con lector. -->
       <span class="lvlwrap" id="lvlWrap"><select id="levelSel" aria-label="Nivel CEFR"></select></span>
       <span class="langtog" id="langTog"><button type="button" data-lang="es">ES</button><button type="button" data-lang="en">EN</button></span>
-      <button type="button" class="themebtn" id="themeTog">🌗</button>
+      <button type="button" class="themebtn" id="themeTog"><span class="ticono"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span></button>
       <!-- Reportar. En ámbar y no en gris: si se viste como los demás controles
            de la cabecera, se pierde entre ellos, que fue lo que pasó la primera
            vez en Grammaster. El rótulo se oculta en pantalla chica. -->
@@ -1070,10 +1091,10 @@
 
 <nav class="tabbar" id="tabbar" aria-label="Secciones">
   <div class="tabbar-inner">
-    <button class="tabbtn active" data-nav="analyze" data-panel="analyze"><span class="ti" aria-hidden="true">🔍</span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
-    <button class="tabbtn" data-nav="guide" data-panel="guide"><span class="ti" aria-hidden="true">📖</span><span class="tl" data-i18n="navGuide">Guía</span></button>
-    <button class="tabbtn" data-nav="practice" data-panel="practice"><span class="ti" aria-hidden="true">✏️</span><span class="tl" data-i18n="navPractice">Práctica</span></button>
-    <button class="tabbtn" data-nav="progress" data-panel="progress"><span class="ti" aria-hidden="true">📊</span><span class="tl" data-i18n="navProgress">Progreso</span></button>
+    <button class="tabbtn active" data-nav="analyze" data-panel="analyze"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></span><span class="tl" data-i18n="navAnalyze">Analiza</span></button>
+    <button class="tabbtn" data-nav="guide" data-panel="guide"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></span><span class="tl" data-i18n="navGuide">Guía</span></button>
+    <button class="tabbtn" data-nav="practice" data-panel="practice"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 21h8"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg></span><span class="tl" data-i18n="navPractice">Práctica</span></button>
+    <button class="tabbtn" data-nav="progress" data-panel="progress"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21v-6"/><path d="M12 21V3"/><path d="M19 21V9"/></svg></span><span class="tl" data-i18n="navProgress">Progreso</span></button>
   </div>
 </nav>
 

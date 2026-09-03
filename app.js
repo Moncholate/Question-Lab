@@ -2700,6 +2700,8 @@ document.querySelectorAll("#langTog button").forEach(b=> b.addEventListener("cli
 const enElHub = (() => { try { return window.self !== window.top; } catch(e) { return false; } })();
 if(enElHub && $("themeTog")) $("themeTog").style.display = "none";
 
+const SVG_SOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>';
+const SVG_LUNA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>';
 function updateThemeBtn(){
   const el = $("themeTog"); if(!el || !window.ghTheme) return;
   const target = window.ghTheme.effective() === "dark" ? "light" : "dark";   // modo al que puedes cambiar
@@ -2708,7 +2710,12 @@ function updateThemeBtn(){
      que CSS pueda esconderlo en pantalla de teléfono. Suelto como nodo de texto
      no había forma de alcanzarlo, y era lo que empujaba a «Reportar» fuera de
      la pantalla a 375px. El `title` sigue diciendo la acción completa. */
-  el.innerHTML = `<span style="font-size:1rem; line-height:1">${target === "dark" ? "🌙" : "☀️"}</span><span class="tlabel">${esc(name)}</span>`;
+  /* ICONO DE LÍNEA, NO EMOJI, igual que las cuatro pestañas de abajo y que el
+     mismo botón en Grammaster, Desgramatizador y el hub. Son los trazos de
+     lucide `sun` y `moon`, sacados del paquete instalado en las otras apps y
+     no copiados a ojo: aquí van a mano porque esta app es vanilla.
+     El emoji además no se teñía con el botón; esto sí, por `currentColor`. */
+  el.innerHTML = `<span class="ticono">${target === "dark" ? SVG_LUNA : SVG_SOL}</span><span class="tlabel">${esc(name)}</span>`;
   el.title = (lang === "en" ? "Switch to " : "Cambiar a modo ") + name.toLowerCase();
 }
 if($("themeTog")) $("themeTog").addEventListener("click", () => { if(window.ghTheme){ window.ghTheme.toggle(); updateThemeBtn(); } });
