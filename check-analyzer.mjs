@@ -208,6 +208,8 @@ console.log('\n   verbo + gerundio / infinitivo: el hueco va DESPUÉS de esa pie
     ['What did you decide to study?',          'I decided to study []'],
     ['What do you like to talk about?',        'I like to talk about []'],   // preposición colgada
     ['Where do you like to eat today?',        'I like to eat [] today'],    // lugar antes del tiempo
+    ['Where do you eat on Fridays?',           'I eat [] on Fridays'],       // días en plural también son tiempo
+    ['Where do you go in the mornings?',       'I go [] in the mornings'],
     ['What do you eat on the weekend?',        'I eat [] on the weekend'],   // sin gerundio, como antes
   ];
   for (const [q, esperado] of casos) {
