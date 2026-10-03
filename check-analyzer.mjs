@@ -191,6 +191,34 @@ console.log('\n   la respuesta NOMBRA al sujeto, no agrega un dato al final');
   console.log(`  ${bien ? '✓' : '✗'} Who is coming tonight? → ${largo}`);
 }
 
+/* La wh puede ser el objeto del gerundio o del infinitivo, no del verbo
+   principal: «Where are you planning to travel next week?» respondía «I am
+   planning to travel next week [+lugar]», con el lugar detrás del tiempo y la
+   pieza verbal tratada como si fuera parte del bloque final. Lo reportó el profesor trabajando verbos + gerundio / infinitivo. */
+console.log('\n   verbo + gerundio / infinitivo: el hueco va DESPUÉS de esa pieza');
+{
+  const casos = [
+    ['Where are you planning to travel next week?', 'I am planning to travel [] next week'],
+    ['Where do you want to go this summer?',   'I want to go [] this summer'],
+    // «doing» / «to do» no vuelven: los reemplaza la acción, como el «do» principal
+    ['What do you love doing on the weekend?', 'I love [] on the weekend'],
+    ['What do you like to do on Sundays?',     'I like to [] on Sundays'],
+    ['What do you like to eat for breakfast?', 'I like to eat [] for breakfast'],
+    ['Who do you want to invite to the party?', 'I want to invite [] to the party'],
+    ['What did you decide to study?',          'I decided to study []'],
+    ['What do you like to talk about?',        'I like to talk about []'],   // preposición colgada
+    ['Where do you like to eat today?',        'I like to eat [] today'],    // lugar antes del tiempo
+    ['What do you eat on the weekend?',        'I eat [] on the weekend'],   // sin gerundio, como antes
+  ];
+  for (const [q, esperado] of casos) {
+    const r = analyze(q);
+    const t = (r.answer?.lines?.[0]?.pieces || []).map(p => p.role === 'new' ? '[]' : p.text).join(' ');
+    const bien = t === esperado;
+    if (!bien) fail++;
+    console.log(`  ${bien ? '✓' : '✗'} ${q} → ${t}`);
+  }
+}
+
 console.log('\n5 · condicionales: la condición es pieza propia, no bloque gris');
 {
   const casos = [

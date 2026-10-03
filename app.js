@@ -1214,6 +1214,32 @@ function flipClausula(ts, esCondicion){
   return [nuevoSujeto, ...flipObjetos(resto)];
 }
 
+/* Cuántos tokens del inicio del complemento son un gerundio o un «to + verbo»
+   que cuelga del verbo principal: «love DOING …», «like TO EAT …». 0 = ninguno.
+   Se queda con las partículas de un frasal («enjoy getting up early»), porque
+   son parte de esa misma pieza verbal. */
+function cabezaVerbal(comp){
+  if(!comp || !comp.length) return 0;
+  const p0 = limpiaPal(comp[0]);
+  let n = 0, base = null;
+  if(p0.length > 4 && p0.endsWith("ing") && !NOT_VERBS.has(p0)){
+    const s = p0.slice(0, -3);
+    base = [s, s + "e", s.slice(0, -1)].find(c => VERB_BASES.has(c));
+    if(!base) return 0;
+    n = 1;
+  } else if(p0 === "to" && comp[1] && VERB_BASES.has(limpiaPal(comp[1]))){
+    base = limpiaPal(comp[1]);
+    n = 2;
+  } else return 0;
+  return n + particulasDelVerbo(base, comp.slice(n));
+}
+/* ¿La cabeza verbal es «doing» / «to do» a secas? Con partícula («doing up»)
+   ya es otro verbo y no se reemplaza. */
+function cabezaEsDo(comp, n){
+  const c = comp.slice(0, n).map(limpiaPal).join(" ");
+  return c === "doing" || c === "to do";
+}
+
 function flipComp(compTokens){
   /* Sin `mainBase`: aquí da igual si el `if` es condición o «whether». Lo que
      importa es que después de la conjunción empieza otra oración con su propio
@@ -1385,6 +1411,24 @@ function buildAnswer(ctx){
     && ((!beMain && ARG_WH.includes(whBase)) || beLike
         || (compEsTiempo && WH_ANTES_DEL_TIEMPO.includes(whBase)));
 
+  /* EL HUECO PUEDE ESTAR DENTRO DEL COMPLEMENTO. En «Where are you planning to
+     travel next week?» todo «to travel next week» se trataba como un bloque, y
+     el lugar caía al final: «I am planning to travel next week [+lugar]». Pero
+     el lugar es de «travel», no de «planning», y va antes del tiempo: «I am
+     planning to travel [lugar] next week». Lo mismo con un objeto: «What do you
+     like to eat for breakfast?» → «I like to eat [cosa] for breakfast». Lo
+     reportó el profesor trabajando verbos + gerundio / infinitivo.
+     Si el complemento EMPIEZA por un gerundio o por «to + verbo», esa pieza va
+     pegada al verbo principal y el hueco se busca en lo que queda detrás, con
+     las mismas reglas: objeto justo después, y lugar/modo antes de un tiempo.
+     La preposición colgada sigue mandando: «What do you like to talk about?»
+     deja el hueco al final. Y si la pieza es «doing» / «to do», ni siquiera
+     vuelve: la reemplaza la acción, como al «do» principal (ver más abajo). */
+  const nVerbal = (doMain || beMain || beLike || STRAND_PREPS.includes(lastComp)) ? 0 : cabezaVerbal(compTokens);
+  const restoComp = compTokens.slice(nVerbal);
+  const gapAfterVerbal = nVerbal > 0 && restoComp.length > 0
+    && (ARG_WH.includes(whBase) || (esComplementoDeTiempo(restoComp) && WH_ANTES_DEL_TIEMPO.includes(whBase)));
+
   const subjPiece = {role:"subj", text:cap(newSubj), label:"sujeto"};
   const compPiece = compFlipped ? {role:"comp", text:compFlipped, label:"complemento"} : null;
   const newPiece = {role:"new", text:`+ ${hint}`, label:"info nueva"};
@@ -1392,12 +1436,31 @@ function buildAnswer(ctx){
   if(doMain){
     // el verbo nuevo ya responde la wh: no hace falta más info nueva
     pieces = [subjPiece, ...verbPhrase, ...(compPiece ? [compPiece] : [])];
+  } else if(nVerbal > 0 && whBase === "what" && cabezaEsDo(compTokens, nVerbal)){
+    /* La misma excepción del «do» principal, una pieza más adentro: en «What
+       do you love doing?» o «What do you like to do?» el «do» no vuelve, lo
+       reemplaza la acción. «I love doing [+cosa]» no es la respuesta; lo es
+       «I love cooking». El «to» del infinitivo sí se queda. */
+    const ing = nVerbal === 1;
+    const restoPiece = restoComp.length ? {role:"comp", text:flipComp(restoComp), label:"complemento"} : null;
+    pieces = [subjPiece, ...verbPhrase,
+      ...(ing ? [] : [{role:"comp", text:"to", label:"complemento"}]),
+      {role:"new", text: ing ? "[la acción-ing: cooking, reading…]" : "[la acción: travel, study…]", label:"verbo nuevo"},
+      ...(restoPiece ? [restoPiece] : [])];
+    notes2.push(`Excepción del <b>do</b>: «${compTokens.slice(0, nVerbal).join(" ")}» no se devuelve, se reemplaza por la acción: «What do you love <b>doing</b>?» → «I love <b>cooking</b>».`);
+  } else if(nVerbal > 0){
+    const verbalPiece = {role:"comp", text:flipComp(compTokens.slice(0, nVerbal)), label:"complemento"};
+    const restoPiece = restoComp.length ? {role:"comp", text:flipComp(restoComp), label:"complemento"} : null;
+    pieces = gapAfterVerbal
+      ? [subjPiece, ...verbPhrase, verbalPiece, newPiece, restoPiece]
+      : [subjPiece, ...verbPhrase, verbalPiece, ...(restoPiece ? [restoPiece] : []), newPiece];
+    if(gapAfterVerbal && ARG_WH.includes(whBase)) notes2.push(`Tu respuesta ocupa el <b>hueco</b> que dejó «${whText}»: aquí no pregunta por el objeto de «${verbPhrase.map(p => p.text).join(" ")}», sino por el de «${verbalPiece.text}». Por eso la info nueva va <b>después</b> de esa pieza, antes del resto del complemento.`);
   } else if(gapAfterVerb){
     pieces = [subjPiece, ...verbPhrase, newPiece, compPiece];
   } else {
     pieces = [subjPiece, ...verbPhrase, ...(compPiece ? [compPiece] : []), newPiece];
   }
-  if(gapAfterVerb && !beLike) notes2.push(`Tu respuesta ocupa el <b>hueco</b> que dejó «${whText}»: como preguntaba por el objeto del verbo, la info nueva va justo después del verbo, antes del complemento.`);
+  if(gapAfterVerb && !beLike && !nVerbal) notes2.push(`Tu respuesta ocupa el <b>hueco</b> que dejó «${whText}»: como preguntaba por el objeto del verbo, la info nueva va justo después del verbo, antes del complemento.`);
   if(!doMain && !usedTo && !negative && aux==="did") notes2.push(`Devuelves el auxiliar prestado: «did» ya no hace falta, y el sello del tiempo que llevaba vuelve al verbo: «did … ${mainBase}» → «${pastOf(mainBase)}».`);
   if(!doMain && usedTo && !negative) notes2.push("Devuelves el auxiliar prestado: «did» ya no hace falta, y el sello del tiempo que llevaba pasa al semi-auxiliar: «did … use to» → «used to».");
   if(!doMain && !negative && aux==="does") notes2.push("Devuelves el auxiliar prestado: «does» ya no hace falta, y la «-s» de tercera persona que llevaba vuelve al verbo.");
